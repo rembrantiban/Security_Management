@@ -8,107 +8,113 @@ import {
   Download,
   Printer,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Dashboard() {
-    const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const { user } = useAuth();
   return (
     <>
-    <div className="space-y-6">
-      
-      {/* HEADER */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">
-          Security Dashboard
-        </h1>
-        <p className="text-sm text-gray-500">
-          View system analytics, monitor activities, and manage security operations.
-        </p>
-      </div>
+      <div className="space-y-2">
 
-      {/* KPI CARDS */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <Card title="Total Users" value="1,245" icon={<Users />} color="text-blue-500" />
-        <Card title="Active Guards" value="32" icon={<Shield />} color="text-green-500" />
-        <Card title="Incidents" value="8" icon={<AlertTriangle />} color="text-red-500" />
-        <Card title="Logs Today" value="356" icon={<FileText />} color="text-orange-500" />
-      </div>
-
-      {/* 🔥 ANALYTICS FEATURES */}
-      <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-        <h3 className="font-semibold text-gray-800 mb-4">
-          Analytics & Reports
-        </h3>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          
-          <Feature title="User Activity Logs" icon={<Activity />} onClick={() => { setSelected("Logs"); setOpen(true); }} />
-<Feature title="Security Alerts" icon={<Shield />} onClick={() => { setSelected("Alerts"); setOpen(true); }} />
-<Feature title="System Status" icon={<BarChart3 />} onClick={() => { setSelected("Status"); setOpen(true); }} />
-<Feature title="Export Data" icon={<Download />} onClick={() => { setSelected("Export"); setOpen(true); }} />
-<Feature title="Print Reports" icon={<Printer />} onClick={() => { setSelected("Reports"); setOpen(true); }} />
-
-        </div>
-      </div>
-
-      {/* MAIN GRID */}
-      <div className="grid md:grid-cols-3 gap-6">
-        
-        {/* ACTIVITY */}
-        <div className="md:col-span-2 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-          <h3 className="font-semibold text-gray-800 mb-4">
-            Recent Activity
-          </h3>
-
-          <div className="space-y-4 text-sm text-gray-600">
-            <ActivityItem text="User login detected" time="2 mins ago" />
-            <ActivityItem text="Unauthorized access attempt" time="10 mins ago" />
-            <ActivityItem text="Incident report submitted" time="30 mins ago" />
-            <ActivityItem text="Guard check-in completed" time="1 hour ago" />
+        {/* HEADER */}
+        <div className="flex justify-between items-center bg-white border border-gray-300 px-6 py-4" >
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">
+             Welcome {user?.first_name || "User"} 👋
+          </h1>
+          <p className="text-sm text-gray-500">
+            View system analytics, monitor activities, and manage security operations.
+          </p>
           </div>
+          <Button> <Download /> Export Data</Button>
         </div>
 
-        {/* SYSTEM STATUS */}
+        {/* KPI CARDS */}
+        <div className="grid md:grid-cols-4 gap-2">
+          <Card title="Total Users" value="1,245" icon={<Users />} color="text-blue-500" />
+          <Card title="Active Guards" value="32" icon={<Shield />} color="text-green-500" />
+          <Card title="Incidents" value="8" icon={<AlertTriangle />} color="text-red-500" />
+          <Card title="Logs Today" value="356" icon={<FileText />} color="text-orange-500" />
+        </div>
+
+        {/* 🔥 ANALYTICS FEATURES */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4">
-            System Status
+            Analytics & Reports
           </h3>
 
-          <div className="space-y-4 text-sm">
-            <Status label="System Health" value="Good" color="text-green-500" />
-            <Status label="Active Sessions" value="128" />
-            <Status label="Alerts" value="3" color="text-red-500" />
+          <div className="grid md:grid-cols-3 gap-4">
+
+            <Feature title="User Activity Logs" icon={<Activity />} onClick={() => { setSelected("Logs"); setOpen(true); }} />
+            <Feature title="Security Alerts" icon={<Shield />} onClick={() => { setSelected("Alerts"); setOpen(true); }} />
+            <Feature title="System Status" icon={<BarChart3 />} onClick={() => { setSelected("Status"); setOpen(true); }} />
+            <Feature title="Export Data" icon={<Download />} onClick={() => { setSelected("Export"); setOpen(true); }} />
+            <Feature title="Print Reports" icon={<Printer />} onClick={() => { setSelected("Reports"); setOpen(true); }} />
+
           </div>
         </div>
 
+        {/* MAIN GRID */}
+        <div className="grid md:grid-cols-3 gap-6">
+
+          {/* ACTIVITY */}
+          <div className="md:col-span-2 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <h3 className="font-semibold text-gray-800 mb-4">
+              Recent Activity
+            </h3>
+
+            <div className="space-y-4 text-sm text-gray-600">
+              <ActivityItem text="User login detected" time="2 mins ago" />
+              <ActivityItem text="Unauthorized access attempt" time="10 mins ago" />
+              <ActivityItem text="Incident report submitted" time="30 mins ago" />
+              <ActivityItem text="Guard check-in completed" time="1 hour ago" />
+            </div>
+          </div>
+
+          {/* SYSTEM STATUS */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <h3 className="font-semibold text-gray-800 mb-4">
+              System Status
+            </h3>
+
+            <div className="space-y-4 text-sm">
+              <Status label="System Health" value="Good" color="text-green-500" />
+              <Status label="Active Sessions" value="128" />
+              <Status label="Alerts" value="3" color="text-red-500" />
+            </div>
+          </div>
+
+        </div>
       </div>
-    </div>
 
-    {open && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    
-    <div className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-xl relative">
-      
-      {/* CLOSE */}
-      <button
-        onClick={() => setOpen(false)}
-        className="absolute top-4 right-4 text-gray-500 hover:text-black"
-      >
-        ✕
-      </button>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
 
-      {/* TITLE */}
-      <h2 className="text-xl font-bold mb-4">
-        {selected}
-      </h2>
+          <div className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-xl relative">
 
-      {/* CONTENT */}
-      <ModalContent type={selected} />
-    </div>
-  </div>
-)}
-</>
+            {/* CLOSE */}
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-black"
+            >
+              ✕
+            </button>
+
+            {/* TITLE */}
+            <h2 className="text-xl font-bold mb-4">
+              {selected}
+            </h2>
+
+            {/* CONTENT */}
+            <ModalContent type={selected} />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -116,7 +122,7 @@ export default function Dashboard() {
 
 function Card({ title, value, icon, color }: any) {
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+    <div className="bg-white p-5 rounded  shadow-sm border border-gray-300">
       <div className="flex justify-between items-center">
         <p className="text-sm text-gray-500">{title}</p>
         <div className={color}>{icon}</div>

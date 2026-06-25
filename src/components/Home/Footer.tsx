@@ -1,7 +1,7 @@
 
 export default function Footer() {
   return (
-    <footer className="bg-linear-to-b from-gray-900 to-black text-gray-300 pt-16 pb-8 px-6 md:px-12">
+    <footer className="bg-linear-to-b from-orange-800 to-amber-900 text-gray-300 pt-16 pb-8 px-6 md:px-12">
       
       {/* TOP SECTION */}
       <div className="grid md:grid-cols-3 gap-10 mb-10">
@@ -9,15 +9,15 @@ export default function Footer() {
         {/* BRAND */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="bg-white/40 p-2 rounded text-black shadow-md">
-             <img src="./logo.png" alt="logo" className="h-20" />
+            <div className="bg-white/90  rounded-full text-black shadow-md">
+             <img src="./sfc.png" alt="logo" className="h-20" />
             </div>
             <h1 className="text-lg font-bold text-white tracking-wide">
               SECURITY MANAGEMENT SYSTEM
             </h1>
           </div>
 
-          <p className="text-sm text-gray-400 leading-relaxed max-w-sm">
+          <p className="text-sm text-gray-200 leading-relaxed max-w-sm">
             A smart security management system that provides real-time monitoring,
             incident tracking, and advanced protection for safer environments.
           </p>
@@ -47,7 +47,7 @@ export default function Footer() {
       </div>
 
       {/* DIVIDER */}
-      <div className="border-t border-white/10 pt-6 text-center text-sm text-gray-500">
+      <div className="border-t border-white/10 pt-6 text-center text-sm text-gray-200">
         © {new Date().getFullYear()} Security Management System. All rights reserved.
       </div>
     </footer>

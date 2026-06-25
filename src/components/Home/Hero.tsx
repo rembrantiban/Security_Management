@@ -1,6 +1,6 @@
 export default function Hero() {
   return (
-    <section id="#home" className="relative flex items-center justify-center text-center py-42 px-6 text-white">
+    <section id="#home" className="relative flex items-center justify-center text-center py-55 px-6 text-white">
       
       <div className="absolute inset-0">
         <img

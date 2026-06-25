@@ -1,14 +1,28 @@
 import {
   LayoutDashboard,
   Users,
-  Shield,
   FileText,
   AlertTriangle,
-  Settings,
+  Bell,
   ChevronDown,
+  UserCircle,
+  LogOut,
+  ShieldCheck,
+  X,
+  ClipboardList,
 } from "lucide-react";
-import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import LogoutDialog from "../LogoutModal/LogoutModal";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type ItemType = {
   name: string;
@@ -22,120 +36,219 @@ type User = {
   role: string;
 };
 
-export default function Sidebar() {
- // const [active, setActive] = useState("Dashboard");
+type SidebarProps = {
+  open: boolean;
+  onClose: () => void;
+};
 
-  // 🔥 SAMPLE USER DATA (later connect to auth)
-  const user: User = {
-    firstName: "Scott",
-    lastName: "Talledo",
-    role: "Administrator",
+export default function Sidebar({ open, onClose }: SidebarProps) {
+  const { user, logout } = useAuth();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const userData: User = {
+    firstName: user?.first_name || "John",
+    lastName: user?.last_name || "Doe",
+    role: user?.role || "User",
   };
-const main: ItemType[] = [
-  { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/dashboard" },
-];
 
-const userManagement: ItemType[] = [
-  { name: "Users", icon: <Users size={18} />, path: "/users" },
-  { name: "Guards", icon: <Shield size={18} />, path: "/guards" },
-];
+  const main: ItemType[] = [
+    { name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/dashboard" },
+  ];
 
-const security: ItemType[] = [
-  { name: "Logs", icon: <FileText size={18} />, path: "/logs" },
-  { name: "Incidents", icon: <AlertTriangle size={18} />, path: "/incidents" },
-];
+  const userManagement: ItemType[] = [
+    { name: "Users", icon: <Users size={17} />, path: "/users" },
+  ];
 
-const system: ItemType[] = [
-  { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
-];
+  const security: ItemType[] = [
+    { name: "Incidents", icon: <AlertTriangle size={17} />, path: "/incidents" },
+    { name: "Monitoring", icon: <FileText size={17} />, path: "/logs" },
+    { name: "Access & Visitors", icon: <ShieldCheck size={17} />, path: "/access" },
+  ];
+
+   const reports: ItemType[] = [
+    { name: "Reports & Logs", icon: <ClipboardList size={17} />, path: "/incidents" },
+  ];
+
+    const record: ItemType[] = [
+    { name: "Record", icon: <ClipboardList size={17} />, path: "/incidents" },
+  ];
 
 
-  function Item({ item }: { item: ItemType }) {
-  return (
-    <NavLink
-      to={item.path}
-      className={({ isActive }) =>
-        `relative flex items-center gap-3 px-4 py-2 rounded-lg transition ${
-          isActive
-            ? "bg-orange-50 text-orange-600 font-medium"
-            : "text-gray-600 hover:bg-gray-100"
-        }`
-      }
-    >
-      {/* ACTIVE BAR */}
-      <span className="absolute left-0 top-0 h-full w-1 bg-orange-500 rounded-r opacity-0 group-[.active]:opacity-100"></span>
 
-      {item.icon}
-      <span className="text-sm">{item.name}</span>
-    </NavLink>
-  );
-}
-  return (
-    <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col">
-      
-      {/* HEADER */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+  const system: ItemType[] = [
+    { name: "Notifications", icon: <Bell size={17} />, path: "/settings" },
+  ];
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
+
+  function NavItem({ item }: { item: ItemType }) {
+    return (
+      <NavLink
+        to={item.path}
+        onClick={onClose}
+        className={({ isActive }) =>
+          `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 ${
+            isActive
+              ? "bg-linear-to-r from-orange-700 to-amber-700 text-white shadow-sm shadow-orange-900/30 font-medium"
+              : "text-gray-500 hover:bg-orange-50 hover:text-orange-800"
+          }`
+        }
+      >
+        {({ isActive }) => (
+          <>
+            <span className={`transition-colors ${isActive ? "text-orange-200" : "text-gray-400 group-hover:text-orange-600"}`}>
+              {item.icon}
+            </span>
+            <span>{item.name}</span>
+          </>
+        )}
+      </NavLink>
+    );
+  }
+
+  const SidebarContent = () => (
+    <aside className="w-64 h-full bg-white flex flex-col border-r border-gray-300">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-300">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-semibold">
-            S
+          <div className="w-9 h-9 rounded-xl  flex items-center justify-center shadow-xl border-2 ">
+            <img src="/sfc.png" alt="Logo" className="w-10 h-10 object-contain" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-800">SECURA</p>
-            <p className="text-xs text-gray-400">Security System</p>
+            <p className="text-sm font-semibold text-gray-800 leading-none">SMS</p>
+            <p className="text-[11px] text-orange-600 mt-0.5">Security Management</p>
           </div>
         </div>
-        <ChevronDown size={16} className="text-gray-400" />
+        {/* Close button — mobile only */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+          aria-label="Close sidebar"
+        >
+          <X size={16} />
+        </button>
       </div>
 
-      {/* CONTENT */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        
-        <div>
-          <p className="text-xs text-gray-400 mb-2 px-2">MAIN</p>
-          {main.map((item, i) => <Item key={i} item={item} />)}
-        </div>
+      {/* Nav groups */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+        <NavGroup label="Main" items={main} />
+        <NavGroup label="User Management" items={userManagement} />
+        <NavGroup label="Security" items={security} />
+        <NavGroup label="Reports & Logs" items={reports} />
+        <NavGroup label="Others" items={record} />
+        <NavGroup label="System" items={system} />
+      </nav>
 
-        <div>
-          <p className="text-xs text-gray-400 mb-2 px-2">USER MANAGEMENT</p>
-          {userManagement.map((item, i) => <Item key={i} item={item} />)}
-        </div>
+      {/* Profile section */}
+      <div className="px-3 py-3 border-t border-gray-300">
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-orange-50 group">
+              <Avatar firstName={userData.firstName} lastName={userData.lastName} size="md" />
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-sm font-medium text-gray-800 leading-none truncate">
+                  {userData.firstName} {userData.lastName}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 truncate">{userData.role}</p>
+              </div>
+              <ChevronDown size={14} className="text-gray-400 group-hover:text-orange-600 transition shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
 
-        <div>
-          <p className="text-xs text-gray-400 mb-2 px-2">SECURITY</p>
-          {security.map((item, i) => <Item key={i} item={item} />)}
-        </div>
-
-        <div>
-          <p className="text-xs text-gray-400 mb-2 px-2">SYSTEM</p>
-          {system.map((item, i) => <Item key={i} item={item} />)}
-        </div>
-
+          <DropdownMenuContent align="end" side="top" className="w-60 rounded-2xl shadow-xl border border-gray-100 p-1">
+            <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
+              <Avatar firstName={userData.firstName} lastName={userData.lastName} size="md" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-800 truncate">
+                  {userData.firstName} {userData.lastName}
+                </p>
+                <p className="text-xs text-gray-400 truncate">{userData.role}</p>
+              </div>
+            </div>
+            <DropdownMenuSeparator className="bg-gray-100" />
+            <DropdownMenuItem className="rounded-lg cursor-pointer gap-2 text-gray-700 hover:text-orange-700 hover:bg-orange-50">
+              <UserCircle size={15} />
+              My Profile
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-gray-100" />
+            <DropdownMenuItem
+              className="rounded-lg cursor-pointer gap-2 text-red-500 focus:text-red-600 focus:bg-red-50"
+              onClick={() => setLogoutOpen(true)}
+            >
+              <LogOut size={15} />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      {/* 🔥 PROFILE SECTION (BOTTOM) */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition cursor-pointer">
-          
-          {/* AVATAR */}
-          <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
-            {user.firstName[0]}
-            {user.lastName[0]}
-          </div>
-
-          {/* USER INFO */}
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-800 leading-none">
-              {user.firstName} {user.lastName}
-            </p>
-            <p className="text-xs text-gray-400">
-              {user.role}
-            </p>
-          </div>
-
-          {/* DROPDOWN ICON */}
-          <ChevronDown size={16} className="text-gray-400" />
-        </div>
-      </div>
+      <LogoutDialog open={logoutOpen} onOpenChange={setLogoutOpen} onConfirm={handleLogout} />
     </aside>
+  );
+
+  function NavGroup({ label, items }: { label: string; items: ItemType[] }) {
+    return (
+      <div>
+        <p className="text-xs tracking-widest text-gray-500 px-3 mb-1.5 uppercase">
+          {label}
+        </p>
+        <div className="space-y-0.5">
+          {items.map((item, i) => (
+            <NavItem key={i} item={item} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:hidden ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <SidebarContent />
+      </div>
+
+      {/* Desktop persistent sidebar */}
+      <div className="hidden lg:flex h-screen">
+        <SidebarContent />
+      </div>
+    </>
+  );
+}
+
+function Avatar({
+  firstName,
+  lastName,
+  size = "md",
+}: {
+  firstName: string;
+  lastName: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  const sizes = { sm: "w-7 h-7 text-xs", md: "w-9 h-9 text-sm", lg: "w-11 h-11 text-base" };
+  return (
+    <div
+      className={`shrink-0 flex items-center justify-center rounded-full bg-linear-to-br from-orange-700 to-amber-500 font-semibold text-white ${sizes[size]}`}
+    >
+      {firstName[0]}
+      {lastName[0]}
+    </div>
   );
 }
