@@ -3,7 +3,6 @@ import { RefreshCw, AlertCircle, Clock, Loader2, CheckCircle2, Lock } from "luci
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
     Dialog,
     DialogContent,
@@ -128,16 +127,6 @@ export default function UpdateStatusModal({
                                 );
                             })}
                         </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Status update note</Label>
-                        <Textarea
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                            placeholder="Describe what changed, e.g. site secured, awaiting witness statement..."
-                            className="min-h-20 resize-none rounded-xl"
-                        />
                     </div>
 
                     <div className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">

@@ -25,7 +25,7 @@ export default function LogoutDialog({
 }: LogoutDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md rounded-2xl border-0 p-0 overflow-hidden">
+      <AlertDialogContent className="max-w-md rounded-2xl  border-0 p-0 overflow-hidden">
         {/* Header */}
         <div className="bg-linear-to-r from-orange-600 to-orange-800 px-6 py-8 text-white">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/15 backdrop-blur">

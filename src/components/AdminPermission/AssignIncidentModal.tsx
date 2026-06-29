@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UserPlus, Siren, ShieldAlert, AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -20,47 +20,31 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
+import type { Incident } from "@/store/useIncidentReportStore";
 
-type IncidentSeverity = "Critical" | "High" | "Moderate" | "Low";
 
-type PersonnelType = {
-    id: number;
-    name: string;
-    role: string;
-    status: "Available" | "On Duty" | "Off Duty";
-    open_cases: number;
-};
-
-const personnel: PersonnelType[] = [
-    { id: 1, name: "Mark Reyes", role: "Security Guard", status: "Available", open_cases: 1 },
-    { id: 2, name: "Anna Cruz", role: "Security Guard", status: "Available", open_cases: 0 },
-    { id: 3, name: "Pedro Bautista", role: "Senior Guard", status: "On Duty", open_cases: 3 },
-    { id: 4, name: "Liza Domingo", role: "Security Guard", status: "Off Duty", open_cases: 0 },
-];
+type IncidentSeverity = "Critical" | "High" | "Medium" | "Low";
 
 const severityIcon: Record<IncidentSeverity, typeof Siren> = {
     Critical: Siren,
     High: ShieldAlert,
-    Moderate: AlertTriangle,
+    Medium: AlertTriangle,
     Low: AlertTriangle,
 };
 
-const statusDotClass: Record<PersonnelType["status"], string> = {
+{/*const statusDotClass: Record<PersonnelType["status"], string> = {
     Available: "bg-emerald-500",
     "On Duty": "bg-blue-500",
     "Off Duty": "bg-slate-300",
 };
+*/}
 
 type AssignIncidentModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    incident: {
-        reference: string;
-        title: string;
-        severity: IncidentSeverity;
-        assigned_to: string | null;
-    } | null;
-    onAssign: (personnelName: string, note: string) => void;
+    incident: Incident | null;
+    onAssign: (assignedTo: number, note: string) => Promise<void>;
 };
 
 export default function AssignIncidentModal({
@@ -72,17 +56,25 @@ export default function AssignIncidentModal({
     const [selectedId, setSelectedId] = useState<string>("");
     const [note, setNote] = useState("");
     const [submitting, setSubmitting] = useState(false);
+    const { securityPersonnel, getSecurityPersonnel } = useAuth();
+
+    useEffect(() => {
+        getSecurityPersonnel();
+        //eslint-disable-next-line
+    }, []);
 
     if (!incident) return null;
 
     const SeverityIcon = severityIcon[incident.severity];
-    const selectedPerson = personnel.find((p) => String(p.id) === selectedId);
+    const selectedPerson = securityPersonnel.find((p) => String(p.user_id) === selectedId);
 
     const handleAssign = async () => {
         if (!selectedPerson) return;
         setSubmitting(true);
-        await new Promise((resolve) => setTimeout(resolve, 600));
-        onAssign(selectedPerson.name, note);
+        await onAssign(
+            selectedPerson.user_id,
+            note
+        );
         setSubmitting(false);
         setSelectedId("");
         setNote("");
@@ -111,29 +103,32 @@ export default function AssignIncidentModal({
                         <p className="truncate text-sm font-semibold text-slate-900">
                             {incident.title}
                         </p>
-                        <p className="text-xs text-slate-500">{incident.reference}</p>
+                        <p className="text-xs text-slate-500">{incident.incident_number}</p>
                     </div>
                 </div>
 
                 <div className="space-y-4 py-2">
                     <div className="space-y-2">
                         <Label>Security personnel</Label>
-                        <Select value={selectedId} onValueChange={setSelectedId}>
+                        <Select
+                            value={selectedId}
+                            onValueChange={(value) => setSelectedId(value ?? "")}
+                        >
                             <SelectTrigger className="w-full rounded-xl">
-                                <SelectValue placeholder="Select personnel" />
+                                <SelectValue>
+                                    {selectedPerson
+                                        ? `${selectedPerson.first_name} ${selectedPerson.last_name}`
+                                        : "Select personnel"}
+                                </SelectValue>
                             </SelectTrigger>
+
                             <SelectContent>
-                                {personnel.map((person) => (
-                                    <SelectItem key={person.id} value={String(person.id)}>
-                                        <div className="flex items-center gap-2">
-                                            <span
-                                                className={`h-1.5 w-1.5 rounded-full ${statusDotClass[person.status]}`}
-                                            />
-                                            <span>{person.name}</span>
-                                            <span className="text-xs text-slate-400">
-                                                · {person.role}
-                                            </span>
-                                        </div>
+                                {securityPersonnel.map((person) => (
+                                    <SelectItem
+                                        key={person.user_id}
+                                        value={String(person.user_id)}
+                                    >
+                                        {person.first_name} {person.last_name} · {person.role}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -144,7 +139,7 @@ export default function AssignIncidentModal({
                         <div className="flex items-center gap-3 rounded-xl border border-gray-100 p-3">
                             <Avatar className="h-9 w-9 border">
                                 <AvatarFallback className="bg-linear-to-br from-orange-900 to-orange-600 text-xs font-bold text-white">
-                                    {selectedPerson.name
+                                    {selectedPerson.first_name
                                         .split(" ")
                                         .map((n) => n[0])
                                         .join("")}
@@ -152,11 +147,10 @@ export default function AssignIncidentModal({
                             </Avatar>
                             <div className="flex-1">
                                 <p className="text-sm font-medium text-slate-800">
-                                    {selectedPerson.name}
+                                    {selectedPerson.first_name} {selectedPerson.last_name}
                                 </p>
                                 <p className="text-xs text-slate-500">
-                                    {selectedPerson.open_cases} open case
-                                    {selectedPerson.open_cases === 1 ? "" : "s"} · {selectedPerson.status}
+                                    · {selectedPerson.status || "On Duty"}
                                 </p>
                             </div>
                         </div>
@@ -190,6 +184,6 @@ export default function AssignIncidentModal({
                     </Button>
                 </DialogFooter>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }

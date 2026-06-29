@@ -27,25 +27,25 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import StatusDialog from "./StatusDailog";
 import { useEffect, useState } from "react";
 
-type EditUserDialogProps = {
+type ViewEditUserDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     user: Users | null;
+    onSuccess: () => void;
+    onError: (message: string) => void;
 };
 
-export default function EditUserDialog({
+export default function ViewEditUserDialog({
     open,
     onOpenChange,
-    user
-}: EditUserDialogProps) {
-    const { updateUser, isLoading, error } = useAuth();
-    const [statusOpen, setStatusOpen] = useState(false);
-    const [statusType, setStatusType] = useState<"loading" | "success" | "error">("loading");
-    const [statusTitle, setStatusTitle] = useState("");
-    const [statusMessage, setStatusMessage] = useState("");
+    user,
+    onSuccess,
+    onError,
+}: ViewEditUserDialogProps) {
+    const { updateUser, isLoading } = useAuth();
+
 
     const initialFormData: RegisterData = {
         first_name: "",
@@ -74,45 +74,16 @@ export default function EditUserDialog({
     }, [user]);
 
     const handleSubmit = async () => {
+        if (!user) return;
 
-        if (!user) return
-        onOpenChange(false);
-        setStatusOpen(true);
-        setStatusType("loading");
-        setStatusTitle("Updating User");
-        setStatusMessage(
-            "Please wait while we update the user account."
-        );
+        const result = await updateUser(user.user_id, formData);
 
-        const success = await updateUser(user.user_id, formData);
-
-        if (success) {
-            setStatusType("success");
-            setStatusTitle("User Updated");
-            setStatusMessage(
-                "The user account has been updated successfully."
-            );
-
-            setFormData({
-                first_name: "",
-                middle_name: "",
-                last_name: "",
-                username: "",
-                email: "",
-                password: "",
-                role: "",
-            });
-
-            setTimeout(() => {
-                onOpenChange(false);
-                setStatusOpen(false);
-            }, 1500);
+        if (result.success) {
+            onOpenChange(false);
+            onSuccess();
+            setFormData(initialFormData);
         } else {
-            setStatusType("error");
-            setStatusTitle("Update Failed");
-            setStatusMessage(
-                error ?? "Something went wrong."
-            );
+            onError(result.message);
         }
     };
     return (
@@ -338,13 +309,6 @@ export default function EditUserDialog({
 
                 </DialogContent>
             </Dialog>
-            <StatusDialog
-                open={statusOpen}
-                type={statusType}
-                title={statusTitle}
-                message={statusMessage}
-                onClose={() => setStatusOpen(false)}
-            />
         </>
     );
 }

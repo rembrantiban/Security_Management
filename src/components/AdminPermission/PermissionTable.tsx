@@ -43,76 +43,21 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
+import { useIncidentReport } from "@/hooks/useIncidentsReport";
 import AssignIncidentModal from "./AssignIncidentModal";
-import UpdateStatusModal from "./UpdateStatusModal";
+//import UpdateStatusModal from "./UpdateStatusModal";
+import type { Incident } from "@/store/useIncidentReportStore"
 
-type IncidentSeverity = "Critical" | "High" | "Moderate" | "Low";
-type IncidentStatus = "Open" | "In Progress" | "Resolved" | "Closed";
 
-type IncidentType = {
-    id: number;
-    reference: string;
-    title: string;
-    category: string;
-    location: string;
-    severity: IncidentSeverity;
-    status: IncidentStatus;
-    reported_by: string;
-    assigned_to: string | null;
-    reported_at: string;
-};
 
-const incidents: IncidentType[] = [
-    {
-        id: 1,
-        reference: "INC-2026-0142",
-        title: "Unauthorized entry at south gate",
-        category: "Security breach",
-        location: "South Gate, Main Campus",
-        severity: "Critical",
-        status: "Open",
-        reported_by: "Gate Checkpoint System",
-        assigned_to: null,
-        reported_at: "10 mins ago",
-    },
-    {
-        id: 2,
-        reference: "INC-2026-0141",
-        title: "Suspicious package near library entrance",
-        category: "Public safety",
-        location: "Library Annex",
-        severity: "High",
-        status: "In Progress",
-        reported_by: "Maria Santos",
-        assigned_to: "Mark Reyes",
-        reported_at: "1 hour ago",
-    },
-    {
-        id: 3,
-        reference: "INC-2026-0139",
-        title: "Vandalism on parking lot signage",
-        category: "Property damage",
-        location: "Parking Lot B",
-        severity: "Low",
-        status: "Resolved",
-        reported_by: "John Doe",
-        assigned_to: "Anna Cruz",
-        reported_at: "Jun 24, 2026",
-    },
-    {
-        id: 4,
-        reference: "INC-2026-0136",
-        title: "Altercation between students",
-        category: "Disturbance",
-        location: "Student Commons",
-        severity: "Moderate",
-        status: "Closed",
-        reported_by: "Faculty Office",
-        assigned_to: "Mark Reyes",
-        reported_at: "Jun 22, 2026",
-    },
-];
+type IncidentSeverity =
+    | "Critical"
+    | "High"
+    | "Medium"
+    | "Low";
+
+//type IncidentStatus = "Open" | "In Progress" | "Resolved" | "Closed";
+
 
 const severityConfig: Record<
     IncidentSeverity,
@@ -126,7 +71,7 @@ const severityConfig: Record<
         icon: ShieldAlert,
         className: "bg-orange-100 text-orange-700 hover:bg-orange-100",
     },
-    Moderate: {
+    Medium: {
         icon: AlertTriangle,
         className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
     },
@@ -136,8 +81,8 @@ const severityConfig: Record<
     },
 };
 
-const statusConfig: Record<IncidentStatus, { dot: string; className: string }> = {
-    Open: {
+const statusConfig: Record<string, { dot: string; className: string }> = {
+    Pending: {
         dot: "●",
         className: "bg-red-100 text-red-700 hover:bg-red-100",
     },
@@ -158,60 +103,56 @@ const statusConfig: Record<IncidentStatus, { dot: string; className: string }> =
 
 
 export default function IncidentTable() {
-    const [data, setData] = useState<IncidentType[]>(incidents);
-
-    const [assignTarget, setAssignTarget] = useState<IncidentType | null>(null);
+    const [assignTarget, setAssignTarget] = useState<Incident | null>(null);
     const [assignOpen, setAssignOpen] = useState(false);
+    //const [statusTarget, setStatusTarget] = useState<Incident | null>(null);
+    //const [statusOpen, setStatusOpen] = useState(false);
 
-    const [statusTarget, setStatusTarget] = useState<IncidentType | null>(null);
-    const [statusOpen, setStatusOpen] = useState(false);
-
-    const [deleteTarget, setDeleteTarget] = useState<IncidentType | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<Incident | null>(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
+    const { incidents, assignIncident, reAssignIncident, closeIncident, isLoading } = useIncidentReport()
 
+    const [closeTarget, setCloseTarget] = useState<Incident | null>(null);
+    const [closeOpen, setCloseOpen] = useState(false);
     // 5.1.2 Assign Incident to Security Personnel
-    const handleAssign = (personnelName: string, note: string) => {
-        if (!assignTarget) return;
-        setData((prev) =>
-            prev.map((item) =>
-                item.id === assignTarget.id
-                    ? { ...item, assigned_to: personnelName }
-                    : item
-            )
-        );
-        console.log("Assignment note:", note);
-    };
-
-    // 5.1.3 Update Incident Status
-    const handleStatusUpdate = (
-        newStatus: IncidentStatus,
+    const handleAssign = async (
+        assignedTo: number,
         note: string
     ) => {
-        if (!statusTarget) return;
-        setData((prev) =>
-            prev.map((item) =>
-                item.id === statusTarget.id ? { ...item, status: newStatus } : item
-            )
-        );
-        console.log("Status update note:", note);
+        if (!assignTarget) return;
+
+        let success = false;
+
+        if (assignTarget.assigned_to) {
+            success = await reAssignIncident(
+                assignTarget.incident_id,
+                assignedTo,
+                note
+            );
+        } else {
+            success = await assignIncident(
+                assignTarget.incident_id,
+                assignedTo,
+                note
+            );
+        }
+
+        if (success) {
+            setAssignOpen(false);
+            setAssignTarget(null);
+        }
     };
 
-    // 5.1.4 Close Incident Report
-    const handleClose = (incident: IncidentType) => {
-        setData((prev) =>
-            prev.map((item) =>
-                item.id === incident.id ? { ...item, status: "Closed" } : item
-            )
-        );
-    };
+    const handleCloseIncident = async () => {
+    if (!closeTarget) return;
 
-    // 5.1.5 Delete Incident Record
-    const handleDeleteConfirm = () => {
-        if (!deleteTarget) return;
-        setData((prev) => prev.filter((item) => item.id !== deleteTarget.id));
-        setDeleteOpen(false);
-        setDeleteTarget(null);
-    };
+    const success = await closeIncident(closeTarget.incident_id);
+
+    if (success) {
+        setCloseOpen(false);
+        setCloseTarget(null);
+    }
+};
 
     return (
         <div className="overflow-hidden rounded border border-gray-300 bg-white shadow-sm">
@@ -230,12 +171,12 @@ export default function IncidentTable() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.map((incident, index) => {
+                        {incidents.map((incident, index) => {
                             const SeverityIcon = severityConfig[incident.severity].icon;
 
                             return (
                                 <TableRow
-                                    key={incident.id}
+                                    key={incident.incident_id}
                                     className={`
                                         transition-all
                                         duration-300
@@ -249,7 +190,7 @@ export default function IncidentTable() {
                                 >
                                     {/* Incident */}
                                     <TableCell>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2">
                                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border shadow bg-linear-to-br from-orange-900 to-orange-600 text-white">
                                                 <SeverityIcon className="h-5 w-5" />
                                             </div>
@@ -259,8 +200,8 @@ export default function IncidentTable() {
                                                     {incident.title}
                                                 </p>
                                                 <p className="text-xs text-slate-500">
-                                                    {incident.reference} · Reported by{" "}
-                                                    {incident.reported_by}
+                                                    {incident.incident_number} · Reported by{" "}
+                                                    {incident.reported_by_name}
                                                 </p>
                                             </div>
                                         </div>
@@ -302,7 +243,7 @@ export default function IncidentTable() {
                                     <TableCell>
                                         {incident.assigned_to ? (
                                             <span className="font-medium text-slate-700">
-                                                {incident.assigned_to}
+                                                {incident.assigned_to_name}
                                             </span>
                                         ) : (
                                             <span className="text-sm text-slate-400 italic">
@@ -313,10 +254,29 @@ export default function IncidentTable() {
 
                                     {/* Reported */}
                                     <TableCell>
-                                        <span className="flex items-center gap-1.5 text-sm text-slate-500">
-                                            <Clock className="h-3.5 w-3.5" />
-                                            {incident.reported_at}
-                                        </span>
+                                        <div className="flex items-start gap-2">
+                                            <div className="mt-0.5 rounded-lg bg-orange-100 p-1.5">
+                                                <Clock className="h-3.5 w-3.5 text-orange-700" />
+                                            </div>
+
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-slate-800">
+                                                    {new Date(incident.created_at).toLocaleDateString("en-US", {
+                                                        month: "short",
+                                                        day: "numeric",
+                                                        year: "numeric",
+                                                    })}
+                                                </span>
+
+                                                <span className="text-xs text-slate-500">
+                                                    {new Date(incident.created_at).toLocaleTimeString("en-US", {
+                                                        hour: "numeric",
+                                                        minute: "2-digit",
+                                                        hour12: true,
+                                                    })}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </TableCell>
 
                                     {/* Actions */}
@@ -356,10 +316,7 @@ export default function IncidentTable() {
 
                                                 {/* 5.1.3 Update Incident Status */}
                                                 <DropdownMenuItem
-                                                    onClick={() => {
-                                                        setStatusTarget(incident);
-                                                        setStatusOpen(true);
-                                                    }}
+
                                                 >
                                                     <RefreshCw className="mr-2 h-4 w-4" />
                                                     Update Status
@@ -368,7 +325,10 @@ export default function IncidentTable() {
                                                 {/* 5.1.4 Close Incident Report */}
                                                 <DropdownMenuItem
                                                     disabled={incident.status === "Closed"}
-                                                    onClick={() => handleClose(incident)}
+                                                    onClick={() => {
+                                                        setCloseTarget(incident);
+                                                        setCloseOpen(true);
+                                                    }}
                                                 >
                                                     <CheckCircle2 className="mr-2 h-4 w-4" />
                                                     Close Incident
@@ -404,12 +364,12 @@ export default function IncidentTable() {
                 onAssign={handleAssign}
             />
 
-            <UpdateStatusModal
+            {/* <UpdateStatusModal
                 open={statusOpen}
                 onOpenChange={setStatusOpen}
                 incident={statusTarget}
                 onUpdate={handleStatusUpdate}
-            />
+            /> */}
 
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                 <AlertDialogContent className="rounded-2xl">
@@ -420,7 +380,7 @@ export default function IncidentTable() {
                                 <>
                                     This will permanently delete{" "}
                                     <span className="font-medium text-slate-700">
-                                        {deleteTarget.reference}
+                                        {deleteTarget.incident_number}
                                     </span>{" "}
                                     ({deleteTarget.title}). This action cannot be undone.
                                 </>
@@ -432,10 +392,45 @@ export default function IncidentTable() {
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={handleDeleteConfirm}
+                            // onClick={handleDeleteConfirm}
                             className="rounded-xl bg-red-600 hover:bg-red-700"
                         >
                             Delete Record
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+
+
+
+            {/* Close Incident Modal */}
+            <AlertDialog open={closeOpen} onOpenChange={setCloseOpen}>
+                <AlertDialogContent className="rounded-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Close Incident?
+                        </AlertDialogTitle>
+
+                        <AlertDialogDescription>
+                            Are you sure you want to close incident{" "}
+                            <span className="font-semibold">
+                                {closeTarget?.incident_number}
+                            </span>
+                            ? This will mark the incident as <b>Closed</b>.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>
+                            Cancel
+                        </AlertDialogCancel>
+
+                        <AlertDialogAction
+                            onClick={handleCloseIncident}
+                            className="bg-emerald-600 hover:bg-emerald-700"
+                        >
+                           {isLoading ? "Closing..." : "Close Incident"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

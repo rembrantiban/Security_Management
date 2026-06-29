@@ -10,6 +10,10 @@ import {
   ShieldCheck,
   X,
   ClipboardList,
+  MapPinned,
+  Layers,
+  HatGlasses,
+  ShieldAlert,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -67,18 +71,52 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   ];
 
    const reports: ItemType[] = [
-    { name: "Reports & Logs", icon: <ClipboardList size={17} />, path: "/incidents" },
+    { name: "Reports & Logs", icon: <ClipboardList size={17} />, path: "/reports" },
   ];
 
     const record: ItemType[] = [
-    { name: "Record", icon: <ClipboardList size={17} />, path: "/incidents" },
+    { name: "Record", icon: <ClipboardList size={17} />, path: "/record" },
   ];
 
 
 
   const system: ItemType[] = [
     { name: "Notifications", icon: <Bell size={17} />, path: "/settings" },
-  ];
+  ];  
+
+
+  //Personnel Item Dashboard
+
+  const personelDashboard: ItemType[] = [
+     { name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/personnel/dashboard" }
+  ]
+
+   const personnelAccount: ItemType[] = [
+     { name: "Account", icon: <Layers size={17} />, path: "/other-role-account" }
+  ]
+
+    const personnelIncidents: ItemType[] = [
+     { name: "Incidents", icon: <AlertTriangle size={17} />, path: "/personnel/incidents" },
+     { name: "Incidents Tasks", icon: <ShieldAlert  size={17} />, path: "/personnel/incidents-tasks" },
+     { name: "Assign Areas", icon: <MapPinned  size={17} />, path: "/personnel/surveillance" }
+    ];
+
+    
+    const personnelVisitors: ItemType[] = [
+     { name: "Visitors", icon: <HatGlasses size={17} />, path: "/personnel/visitors" },
+    ];
+
+      const personnelRecord: ItemType[] = [
+     { name: "Record", icon: <ClipboardList size={17} />, path: "/personnel/record" },
+    ];
+
+
+        const personnelNotifications: ItemType[] = [
+     { name: "Notifications", icon: <Bell size={17} />, path: "/personnel/notifications" },
+    ];
+
+
+
 
   const handleLogout = async () => {
     await logout();
@@ -134,7 +172,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </div>
 
       {/* Nav groups */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+       { user?.role === "Administrator" && (
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
         <NavGroup label="Main" items={main} />
         <NavGroup label="User Management" items={userManagement} />
         <NavGroup label="Security" items={security} />
@@ -142,6 +181,19 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         <NavGroup label="Others" items={record} />
         <NavGroup label="System" items={system} />
       </nav>
+       )}
+
+
+       { user?.role === "Security Personnel" && (
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          <NavGroup label="Main" items={personelDashboard} />
+          <NavGroup label="Account" items={personnelAccount} />
+          <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
+          <NavGroup label="Permissions" items={personnelVisitors} />
+          <NavGroup label="Record" items={personnelRecord} />
+          <NavGroup label="Notifications" items={personnelNotifications} />
+        </nav>
+       )}
 
       {/* Profile section */}
       <div className="px-3 py-3 border-t border-gray-300">
@@ -170,10 +222,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               </div>
             </div>
             <DropdownMenuSeparator className="bg-gray-100" />
-            <DropdownMenuItem className="rounded-lg cursor-pointer gap-2 text-gray-700 hover:text-orange-700 hover:bg-orange-50">
+            { userData.role === "Administrator" && (
+              <DropdownMenuItem onClick={() => navigate("/my-account")} className="rounded-lg cursor-pointer gap-2 text-gray-700 hover:text-orange-700 hover:bg-orange-50">
               <UserCircle size={15} />
               My Profile
             </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator className="bg-gray-100" />
             <DropdownMenuItem
               className="rounded-lg cursor-pointer gap-2 text-red-500 focus:text-red-600 focus:bg-red-50"

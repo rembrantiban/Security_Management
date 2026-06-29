@@ -19,10 +19,10 @@ type DeleteUserDialogProps = {
   onOpenChange: (open: boolean) => void;
   user: Users | null;
   loading?: boolean;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
 };
 
-export default function DeleteUserDialog({
+export default function ViewDeleteUserDialog({
   open,
   onOpenChange,
   user,
@@ -30,7 +30,8 @@ export default function DeleteUserDialog({
   onConfirm,
 }: DeleteUserDialogProps) {
   if (!user) return null;
-  
+
+
   return (
     <Dialog
       open={open}

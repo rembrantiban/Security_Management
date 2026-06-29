@@ -15,7 +15,7 @@ const stats = [
     bg: "bg-orange-50",
   },
   {
-    title: "Open Incidents",
+    title: "Pending Incidents",
     value: "1",
     description: "Awaiting Response",
     icon: Loader2,

@@ -6,24 +6,24 @@ import {
     User,
     UserCheck,
     EllipsisVertical,
+    CircleCheck,
+    Ban,
+    CalendarClock,
 } from "lucide-react";
 
 import {
     Avatar,
     AvatarFallback,
 } from "@/components/ui/avatar";
-
 import { Badge } from "@/components/ui/badge";
-
 import { Button } from "@/components/ui/button";
-
+import UserSkeleton from "./UserTableSkeleton"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useEffect } from "react"
 import {
     Table,
     TableBody,
@@ -33,17 +33,71 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { useAuth } from "@/hooks/useAuth";
+import type { Users } from "@/store/useAuthStore"
+import { useNavigate } from "react-router-dom";
+import { useState } from "react"
+import EditUserDialog from "./EditUserDialog";
+import DeleteUserDialog from "./DeleteUserDialog";
+import UpdateUserStatusDialog from "./UpdateUserStatusDialog";
+import SetDutyScheduleDialog from "./SetDutyScheduleDialog";
+import { useToast } from "@/hooks/useToast"
 
+type Props = {
+    users: Users[]
+};
 
+export default function UserTable({ users }: Props) {
 
+    const { isFetchingUsers, deleteUser, isLoading, updateUserStatus, setDutySchedule } = useAuth();
+    const navigate = useNavigate()
+    const [open, setOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<Users | null>(null);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [selectedUserDelete, setSelectedUserDelete] = useState<Users | null>(null);
+    const [statusOpen, setStatusOpen] = useState(false);
+    const [selectedUserStatus, setSelectedUserStatus] = useState<Users | null>(null);
+    const [scheduleOpen, setScheduleOpen] = useState(false);
+    const [selectedScheduleUser, setSelectedScheduleUser] = useState<Users | null>(null);
+    const { showToast } = useToast();
 
-export default function UserTable() {
+    if (isFetchingUsers) {
+        return <UserSkeleton />;
+    }
 
-    const { users, getAllUsers } = useAuth();
+    const handleSetSchedule = async (
+        duty_start: string,
+        duty_end: string
+    ) => {
+        if (!selectedScheduleUser) return;
 
-    useEffect(() => {
-        getAllUsers();
-    }, [getAllUsers]);
+        const success = await setDutySchedule(
+            selectedScheduleUser.user_id,
+            { 
+                duty_start,
+                duty_end,
+            }
+        );
+
+        if (success) {
+            setScheduleOpen(false);
+            setSelectedScheduleUser(null);
+        }
+    };
+
+    const handleUpdateUserStatus = async () => {
+        if (!selectedUserStatus) return;
+
+        const success = await updateUserStatus(
+            selectedUserStatus.user_id,
+            !selectedUserStatus.status
+        );
+
+        if (success) {
+            setStatusOpen(false);
+            setSelectedUserStatus(null);
+        }
+    };
+
 
     return (
         <div className="overflow-hidden rounded border border-gray-300 bg-white shadow-sm">
@@ -141,10 +195,10 @@ export default function UserTable() {
 
                                     )}
 
-                                    {user.role === "Security Guard" && (
+                                    {user.role === "Security Personnel" && (
                                         <Badge className="rounded-full bg-orange-100 text-orange-700 hover:bg-orange-100">
                                             <User className="mr-1 h-3 w-3" />
-                                            Security Guard
+                                            Security Personnel
                                         </Badge>
 
                                     )}
@@ -155,13 +209,13 @@ export default function UserTable() {
                                 <TableCell>
                                     {user.status ? (
                                         <Badge className="rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
-                                            ● Active
+                                            <CircleCheck /> Active
                                         </Badge>
 
                                     ) : (
 
                                         <Badge className="rounded-full bg-red-100 text-red-700 hover:bg-red-100">
-                                            ● Disabled
+                                            <Ban /> Deactivate
                                         </Badge>
 
                                     )}
@@ -172,13 +226,29 @@ export default function UserTable() {
 
                                 <TableCell>
                                     <span className="text-slate-500">
-                                        {user.created_at}
+                                        {new Date(user.created_at).toLocaleString("en-US", {
+                                            month: "short",
+                                            day: "2-digit",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: true,
+                                        })}
                                     </span>
                                 </TableCell>
 
                                 <TableCell>
                                     <span className="text-sm text-slate-500">
-                                        {user.last_login}
+                                        {user.last_login
+                                            ? new Date(user.last_login).toLocaleString("en-US", {
+                                                month: "short",
+                                                day: "2-digit",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
+                                            })
+                                            : "Never"}
                                     </span>
                                 </TableCell>
 
@@ -199,17 +269,62 @@ export default function UserTable() {
                                             align="end"
                                             className="w-48 rounded-xl"
                                         >
-                                            <DropdownMenuItem>
+                                            {user.role === "Security Personnel" && (
+                                                <DropdownMenuItem
+                                                    onClick={() => {
+                                                        setSelectedScheduleUser(user);
+                                                        setScheduleOpen(true);
+                                                    }}
+                                                >
+                                                    <CalendarClock className="mr-2 h-4 w-4 text-orange-600" />
+                                                    Set Duty Schedule
+                                                </DropdownMenuItem>
+                                            )}
+                                            <DropdownMenuItem
+                                                onClick={() =>
+                                                    navigate(`/users/view/${user.user_id}`)
+                                                }
+                                            >
                                                 <Eye className="mr-2 h-4 w-4" />
                                                 View Profile
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => {
+                                                    setSelectedUser(user);
+                                                    setOpen(true);
+                                                }}
+                                            >
                                                 <Pencil className="mr-2 h-4 w-4" />
                                                 Edit User
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem className="text-red-600">
+                                            <DropdownMenuItem
+                                                className="text-red-600"
+                                                onClick={() => {
+                                                    setSelectedUserDelete(user);
+                                                    setDeleteOpen(true);
+                                                }}
+                                            >
                                                 <Trash2 className="mr-2 h-4 w-4" />
                                                 Delete User
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                className={`${user.status ? 'text-red-700' : 'text-green-700'}`}
+                                                onClick={() => {
+                                                    setSelectedUserStatus(user);
+                                                    setStatusOpen(true);
+                                                }}
+                                            >
+                                                {user.status ? (
+                                                    <>
+                                                        <Ban className="mr-2 h-4 w-4" />
+                                                        Deactivate
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <CircleCheck className="mr-2 h-4 w-4" />
+                                                        Activate
+                                                    </>
+                                                )}
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -221,6 +336,45 @@ export default function UserTable() {
                     </TableBody>
 
                 </Table>
+                <EditUserDialog open={open} onOpenChange={setOpen} user={selectedUser} />
+                <DeleteUserDialog
+                    open={deleteOpen}
+                    onOpenChange={setDeleteOpen}
+                    user={selectedUserDelete}
+                    loading={isLoading}
+                    onConfirm={async () => {
+                        if (!selectedUserDelete) return;
+
+                        const success = await deleteUser(selectedUserDelete.user_id);
+
+                        if (success) {
+                            setDeleteOpen(false);
+                            setSelectedUserDelete(null);
+
+                            showToast(
+                                "success",
+                                "User Deleted",
+                                "The user account has been deleted successfully."
+                            );
+                        }
+                    }}
+                />
+
+                <UpdateUserStatusDialog
+                    open={statusOpen}
+                    onOpenChange={setStatusOpen}
+                    user={selectedUserStatus}
+                    loading={isLoading}
+                    onConfirm={handleUpdateUserStatus}
+                />
+
+                <SetDutyScheduleDialog
+                    key={selectedScheduleUser?.user_id}
+                    open={scheduleOpen}
+                    onOpenChange={setScheduleOpen}
+                    personnel={selectedScheduleUser}
+                    onSave={handleSetSchedule}
+                />
             </div>
         </div>
     );

@@ -1,8 +1,9 @@
 import { useAuth } from "@/hooks/useAuth";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import StatusModal from "./StatusModal"
 import { useNavigate } from "react-router";
+import { useAuthStore } from "@/store/useAuthStore";
 
 
 type LoginModalProps = {
@@ -16,6 +17,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     login: "",
     password: ""
   });
+  
   const [statusOpen, setStatusOpen] = useState(false);
   const [statusType, setStatusType] = useState<"success" | "error">("success");
   const [statusMessage, setStatusMessage] = useState("");
@@ -25,33 +27,47 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     formData.login.trim() !== "" &&
     formData.password.trim() !== "";
 
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const success = await login(
       formData.login,
       formData.password
     );
 
-    if (success) {
-      setStatusType("success");
-      setStatusMessage(
-        "Welcome back! Login successful."
-      );
-      setStatusOpen(true);
-        setTimeout(() => {
-      onClose();
-      navigate("/dashboard");
-    }, 1500);
-    } else {
+    if (!success) {
       setStatusType("error");
-      setStatusMessage(
-        error || "Login failed."
-      );
+      setStatusMessage(error || "Login failed.");
       setStatusOpen(true);
+      return;
     }
+
+    // Read the updated store AFTER login succeeds
+    const loggedInUser = useAuthStore.getState().user;
+
+    setStatusType("success");
+    setStatusMessage("Welcome back! Login successful.");
+    setStatusOpen(true);
+
+    setTimeout(() => {
+      onClose();
+
+      switch (loggedInUser?.role) {
+        case "Administrator":
+          navigate("/dashboard");
+          break;
+
+        case "Security Personnel":
+          navigate("/personnel/dashboard");
+          break;
+
+        case "Authorized Staff":
+          navigate("/staff/dashboard");
+          break;
+
+        default:
+          navigate("/");
+      }
+    }, 1500);
   };
 
   if (!isOpen) return null;
@@ -125,7 +141,15 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error &&
+            <div className="flex gap-4 items-center text-red-500 text-sm  border border-red-500 px-3 py-2 rounded-2xl bg-red-200">
+              <TriangleAlert size={24} />
+
+              <div>
+                <h2>Login Failed</h2>
+                <span>{error}</span>
+              </div>
+            </div>}
 
           <h3 className="text-sm text-center">Don't have an account? <a href="#" className="text-blue-500 hover:underline">Sign up</a></h3>
         </form>

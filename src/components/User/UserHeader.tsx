@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Plus, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import AddUserDialog from "./AddUserDialog";
 
 export default function UserHeader() {
+
+  const [ open, setOpen ] = useState(false);
   return (
     <div className="flex flex-col gap-6 rounded border  border-gray-300 bg-linear-to-r from-orange-50 via-white to-orange-100 opacity-70 p-4 shadow-sm md:flex-row md:items-center md:justify-between">
       {/* Left */}
@@ -26,12 +30,15 @@ export default function UserHeader() {
 
       {/* Right */}
       <Button
+       onClick={() => setOpen(true)} 
         size="lg"
         className="rounded-xl bg-linear-to-r from-orange-900 to-orange-600 px-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
       >
         <Plus className="mr-2 h-5 w-5" />
         Add User
       </Button>
+
+      <AddUserDialog open={open} onOpenChange={setOpen} />
     </div>
   );
 }
