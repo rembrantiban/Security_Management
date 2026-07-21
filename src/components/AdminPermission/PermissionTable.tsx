@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
     Eye,
     UserPlus,
-    RefreshCw,
     CheckCircle2,
     Trash2,
     EllipsisVertical,
@@ -45,9 +44,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useIncidentReport } from "@/hooks/useIncidentsReport";
 import AssignIncidentModal from "./AssignIncidentModal";
-//import UpdateStatusModal from "./UpdateStatusModal";
 import type { Incident } from "@/store/useIncidentReportStore"
-
+import ViewFullReport from "@/components/AdminPermission/ViewFullReport"
 
 
 type IncidentSeverity =
@@ -107,13 +105,26 @@ export default function IncidentTable() {
     const [assignOpen, setAssignOpen] = useState(false);
     //const [statusTarget, setStatusTarget] = useState<Incident | null>(null);
     //const [statusOpen, setStatusOpen] = useState(false);
-
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
     const [deleteTarget, setDeleteTarget] = useState<Incident | null>(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const { incidents, assignIncident, reAssignIncident, closeIncident, isLoading } = useIncidentReport()
 
     const [closeTarget, setCloseTarget] = useState<Incident | null>(null);
     const [closeOpen, setCloseOpen] = useState(false);
+
+    const [viewTarget, setViewTarget] = useState<Incident | null>(null);
+    const [viewOpen, setViewOpen] = useState(false);
+
+
+    const totalPages = Math.ceil(incidents.length / itemsPerPage);
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    const currentIncidents = incidents.slice(startIndex, endIndex);
+
     // 5.1.2 Assign Incident to Security Personnel
     const handleAssign = async (
         assignedTo: number,
@@ -144,15 +155,15 @@ export default function IncidentTable() {
     };
 
     const handleCloseIncident = async () => {
-    if (!closeTarget) return;
+        if (!closeTarget) return;
 
-    const success = await closeIncident(closeTarget.incident_id);
+        const success = await closeIncident(closeTarget.incident_id);
 
-    if (success) {
-        setCloseOpen(false);
-        setCloseTarget(null);
-    }
-};
+        if (success) {
+            setCloseOpen(false);
+            setCloseTarget(null);
+        }
+    };
 
     return (
         <div className="overflow-hidden rounded border border-gray-300 bg-white shadow-sm">
@@ -171,7 +182,7 @@ export default function IncidentTable() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {incidents.map((incident, index) => {
+                        {currentIncidents.map((incident, index) => {
                             const SeverityIcon = severityConfig[incident.severity].icon;
 
                             return (
@@ -295,8 +306,15 @@ export default function IncidentTable() {
                                                 align="end"
                                                 className="w-56 rounded-xl"
                                             >
-                                                {/* 5.1.1 View All Incident Reports -> View detail */}
-                                                <DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => {
+                                                        console.log("CLICKED");
+                                                        console.log(incident);
+
+                                                        setViewTarget(incident);
+                                                        setViewOpen(true);
+                                                    }}
+                                                >
                                                     <Eye className="mr-2 h-4 w-4" />
                                                     View Full Report
                                                 </DropdownMenuItem>
@@ -314,13 +332,6 @@ export default function IncidentTable() {
                                                         : "Assign Personnel"}
                                                 </DropdownMenuItem>
 
-                                                {/* 5.1.3 Update Incident Status */}
-                                                <DropdownMenuItem
-
-                                                >
-                                                    <RefreshCw className="mr-2 h-4 w-4" />
-                                                    Update Status
-                                                </DropdownMenuItem>
 
                                                 {/* 5.1.4 Close Incident Report */}
                                                 <DropdownMenuItem
@@ -353,8 +364,80 @@ export default function IncidentTable() {
                                 </TableRow>
                             );
                         })}
+
+
                     </TableBody>
                 </Table>
+                <div className="flex items-center justify-between border-t bg-white px-6 py-4">
+
+                    <p className="text-sm text-slate-500">
+                        Showing{" "}
+                        <span className="font-semibold">
+                            {incidents.length === 0 ? 0 : startIndex + 1}
+                        </span>{" "}
+                        -
+                        <span className="font-semibold">
+                            {Math.min(endIndex, incidents.length)}
+                        </span>{" "}
+                        of{" "}
+                        <span className="font-semibold">
+                            {incidents.length}
+                        </span>{" "}
+                        incidents
+                    </p>
+
+                    <div className="flex items-center gap-2">
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={currentPage === 1}
+                            onClick={() =>
+                                setCurrentPage((prev) => prev - 1)
+                            }
+                        >
+                            Previous
+                        </Button>
+
+                        {Array.from(
+                            { length: totalPages },
+                            (_, i) => (
+                                <Button
+                                    key={i}
+                                    size="sm"
+                                    variant={
+                                        currentPage === i + 1
+                                            ? "default"
+                                            : "outline"
+                                    }
+                                    onClick={() =>
+                                        setCurrentPage(i + 1)
+                                    }
+                                    className={
+                                        currentPage === i + 1
+                                            ? "bg-orange-600 hover:bg-orange-700"
+                                            : ""
+                                    }
+                                >
+                                    {i + 1}
+                                </Button>
+                            )
+                        )}
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={currentPage === totalPages}
+                            onClick={() =>
+                                setCurrentPage((prev) => prev + 1)
+                            }
+                        >
+                            Next
+                        </Button>
+
+                    </div>
+
+                </div>
             </div>
 
             <AssignIncidentModal
@@ -362,6 +445,12 @@ export default function IncidentTable() {
                 onOpenChange={setAssignOpen}
                 incident={assignTarget}
                 onAssign={handleAssign}
+            />
+
+            <ViewFullReport
+                open={viewOpen}
+                onOpenChange={setViewOpen}
+                incident={viewTarget}
             />
 
             {/* <UpdateStatusModal
@@ -430,7 +519,7 @@ export default function IncidentTable() {
                             onClick={handleCloseIncident}
                             className="bg-emerald-600 hover:bg-emerald-700"
                         >
-                           {isLoading ? "Closing..." : "Close Incident"}
+                            {isLoading ? "Closing..." : "Close Incident"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

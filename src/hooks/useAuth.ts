@@ -1,5 +1,4 @@
-import { useAuthStore  } from "@/store/useAuthStore";
-
+import { useAuthStore } from "@/store/useAuthStore";
 
 export const useAuth = () => {
     const user = useAuthStore((state) => state.user);
@@ -22,12 +21,35 @@ export const useAuth = () => {
     const updateUserStatus = useAuthStore((state) => state.updateUserStatus);
     const getSecurityPersonnel = useAuthStore((state) => state.getSecurityPersonnel);
     const securityPersonnel = useAuthStore((state) => state.securityPersonnel);
-    const setDutySchedule = useAuthStore((state) => state.setDutySchedule);
     const selectedUserById = useAuthStore((state) => state.selectedUserById);
     const getUserById = useAuthStore((state) => state.getUserById);
+    const changeAccountDetails = useAuthStore((state) => state.changeAccountDetails);
+    const changePassword = useAuthStore((state) => state.changePassword);
 
-    return { 
+    const permissions = user?.permissions ?? [];
+
+    const hasPermission = (permission: string) =>
+        permissions.some(
+            (p) => p.permission_name === permission
+        );
+
+    const hasModulePermission = (
+        module: string,
+        permission: string
+    ) =>
+        permissions.some(
+            (p) =>
+                p.module_name === module &&
+                p.permission_name === permission
+        );
+
+    return {
         user,
+        permissions,
+
+        hasPermission,
+        hasModulePermission,
+
         isAuthenticated,
         isLoading,
         getMeLoading,
@@ -47,8 +69,9 @@ export const useAuth = () => {
         updateUserStatus,
         getSecurityPersonnel,
         securityPersonnel,
-        setDutySchedule,
         selectedUserById,
-        getUserById
-     };
-}
+        getUserById,
+        changeAccountDetails,
+        changePassword,
+    };
+};

@@ -3,23 +3,20 @@ import {
     User as UserIcon,
     Mail,
     Shield,
-    Camera,
     Eye,
     EyeOff,
     Lock,
-    CheckCircle2,
     Pencil,
     X,
     Save,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-
+import { useToast } from "@/hooks/useToast"
 type ProfileForm = {
     first_name: string;
     middle_name: string;
     last_name: string;
     email: string;
-
 };
 
 type PasswordForm = {
@@ -29,7 +26,8 @@ type PasswordForm = {
 };
 
 export default function MyAccount() {
-    const { user } = useAuth();
+    const { showToast } = useToast();
+    const { user, changeAccountDetails, changePassword } = useAuth();
 
 
 
@@ -64,31 +62,11 @@ export default function MyAccount() {
     }, [user]);
 
     const [showPw, setShowPw] = useState({ current: false, next: false, confirm: false });
-    const [saved, setSaved] = useState<"profile" | "password" | null>(null);
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
 
 
-   const initials = `${user?.first_name?.[0] ?? ""}${user?.last_name?.[0] ?? ""}`.toUpperCase();
-    const passwordStrength = (() => {
-        const v = password.next;
-        if (!v) return 0;
-        let score = 0;
-        if (v.length >= 8) score++;
-        if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
-        if (/\d/.test(v)) score++;
-        if (/[^A-Za-z0-9]/.test(v)) score++;
-        return score;
-    })();
-
-    const strengthLabel = ["Too short", "Weak", "Fair", "Good", "Strong"][passwordStrength];
-    const strengthColor = [
-        "bg-gray-200",
-        "bg-red-400",
-        "bg-amber-400",
-        "bg-amber-500",
-        "bg-emerald-500",
-    ][passwordStrength];
+    const initials = `${user?.first_name?.[0] ?? ""}${user?.last_name?.[0] ?? ""}`.toUpperCase();
 
     function handleEditToggle() {
         if (isEditing) {
@@ -97,27 +75,67 @@ export default function MyAccount() {
         setIsEditing((v) => !v);
     }
 
-    function handleSaveProfile() {
+    const handleSaveProfile = async () => {
         setSavingProfile(true);
-        setTimeout(() => {
+
+        const result = await changeAccountDetails({
+            first_name: draft.first_name,
+            middle_name: draft.middle_name,
+            last_name: draft.last_name,
+            email: draft.email,
+        });
+
+        if (result.success) {
             setProfile(draft);
             setIsEditing(false);
-            setSavingProfile(false);
-            setSaved("profile");
-            setTimeout(() => setSaved(null), 2500);
-        }, 700);
-    }
 
-    function handleSavePassword() {
-        if (!password.current || !password.next || password.next !== password.confirm) return;
+            showToast(
+                "success",
+                "Profile Updated",
+                result.message
+            );
+        } else {
+            showToast(
+                "error",
+                "Update Failed",
+                result.message
+            );
+        }
+        setSavingProfile(false);
+    };
+
+
+    const handleSavePassword = async () => {
         setSavingPassword(true);
-        setTimeout(() => {
-            setPassword({ current: "", next: "", confirm: "" });
-            setSavingPassword(false);
-            setSaved("password");
-            setTimeout(() => setSaved(null), 2500);
-        }, 700);
-    }
+
+        const result = await changePassword({
+            current_password: password.current,
+            new_password: password.next,
+            confirm_password: password.confirm,
+        });
+
+        if (result.success) {
+            setPassword({
+                current: "",
+                next: "",
+                confirm: "",
+            });
+
+            showToast(
+                "success",
+                "Password Updated",
+                result.message
+            );
+        } else {
+            showToast(
+                "error",
+                "Update Failed",
+                result.message
+            );
+        }
+
+        setSavingPassword(false);
+    };
 
     const passwordsMismatch =
         password.confirm.length > 0 && password.next !== password.confirm;
@@ -136,17 +154,6 @@ export default function MyAccount() {
                         Manage your profile information and security settings.
                     </p>
                 </div>
-
-                {/* Success toast (inline, top of content) */}
-                {saved && (
-                    <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                        <CheckCircle2 size={16} className="shrink-0" />
-                        {saved === "profile"
-                            ? "Profile updated successfully."
-                            : "Password changed successfully."}
-                    </div>
-                )}
-
                 {/* Profile header card */}
                 <div className="rounded-2xl border border-gray-300 bg-white p-5 sm:p-6 mb-5 shadow-sm">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-5">
@@ -154,13 +161,7 @@ export default function MyAccount() {
                             <div className="w-20 h-20 rounded-full bg-linear-to-br from-orange-700 to-amber-500 flex items-center justify-center text-white text-2xl font-semibold shadow-sm shadow-orange-900/20">
                                 {initials}
                             </div>
-                            <button
-                                type="button"
-                                aria-label="Change photo"
-                                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-500 hover:text-orange-700 hover:border-orange-300 transition shadow-sm"
-                            >
-                                <Camera size={13} />
-                            </button>
+
                         </div>
 
                         <div className="flex-1 text-center sm:text-left">
@@ -168,9 +169,10 @@ export default function MyAccount() {
                                 {user?.first_name} {user?.last_name}
                             </p>
                             <div className="mt-1.5 flex items-center justify-center sm:justify-start gap-2">
+
                                 <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700 border border-orange-200">
                                     <Shield size={12} />
-                                    {user?.role }
+                                    {user?.role}
                                 </span>
                             </div>
                         </div>
@@ -311,21 +313,7 @@ export default function MyAccount() {
                         />
                     </div>
 
-                    {/* Strength meter */}
-                    {password.next.length > 0 && (
-                        <div className="mt-3 sm:max-w-[calc(50%-0.5rem)]">
-                            <div className="flex gap-1.5">
-                                {[0, 1, 2, 3].map((i) => (
-                                    <div
-                                        key={i}
-                                        className={`h-1.5 flex-1 rounded-full transition-colors ${i < passwordStrength ? strengthColor : "bg-gray-200"
-                                            }`}
-                                    />
-                                ))}
-                            </div>
-                            <p className="mt-1.5 text-xs text-gray-400">{strengthLabel}</p>
-                        </div>
-                    )}
+
 
                     <div className="mt-5 flex justify-end border-t border-gray-100 pt-4">
                         <button

@@ -1,6 +1,4 @@
 import {
-  Download,
-  Plus,
   RefreshCw,
   Search,
 } from "lucide-react";
@@ -117,26 +115,6 @@ const IncidentToolbar = () => {
             Refresh
 
           </Button>
-
-          <Button
-            variant="outline"
-            className="rounded-xl"
-          >
-            <Download className="mr-2 h-4 w-4" />
-
-            Export
-
-          </Button>
-
-          <Button
-            className="rounded-xl bg-orange-950 text-white hover:bg-orange-900"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-
-            Report Incident
-
-          </Button>
-
         </div>
 
       </div>

@@ -133,20 +133,6 @@ export default function ViewUserPage() {
       })
       : "Never";
 
-  const formatTime = (time: string | null) => {
-    if (!time) return "Not Assigned";
-
-    const [hours, minutes] = time.split(":");
-
-    const date = new Date();
-    date.setHours(Number(hours), Number(minutes));
-
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
   const handleDelete = async () => {
     if (!selectedUser) return;
@@ -283,18 +269,6 @@ export default function ViewUserPage() {
           icon={<Clock size={15} className="text-orange-600" />}
           label="Last login"
           value={fmt(user.last_login)}
-        />
-
-        <InfoCard
-          icon={<Clock size={15} className="text-orange-600" />}
-          label="time in"
-          value={formatTime(user.duty_start)}
-        />
-
-        <InfoCard
-          icon={<Clock size={15} className="text-orange-600" />}
-          label="time out"
-          value={formatTime(user.duty_end)}
         />
       </div>
 

@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
     MoreVertical,
     Pencil,
-    Upload,
     CheckCircle2,
     MapPin,
     Calendar,
@@ -10,6 +9,7 @@ import {
     ShieldAlert,
     AlertTriangle,
     ClipboardList,
+    CircleUser,
 } from "lucide-react";
 import {
     Table,
@@ -35,6 +35,7 @@ import {
     DialogContent,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import  UpdateReportIncidentModal  from "./UpdateReportIncidentModal"
 
 
 type PersonnelIncidentTableProps = {
@@ -81,16 +82,26 @@ const severityConfig = {
 } as const;
 
 export default function PersonnelIncidentTable({
-    onUpdateDetails,
-    onUploadEvidence,
     onMarkResolved,
 }: PersonnelIncidentTableProps) {
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
     const { myIncidents } = useIncidentReport();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [updateModalOpen, setUpdateModalOpen] = useState(false);
+    const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+
+    const totalPages = Math.ceil(myIncidents.length / rowsPerPage);
+
+    const paginatedIncidents = myIncidents.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
+
 
     if (myIncidents.length === 0) {
         return (
-            <div className="rounded border border-gray-300 bg-white py-16 text-center shadow-sm">
+            <div className="rounded-2xl mt-4 border border-gray-100 bg-white py-16  text-center ">
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
                     <ClipboardList className="h-7 w-7 text-orange-600" />
                 </div>
@@ -136,6 +147,9 @@ export default function PersonnelIncidentTable({
                         <TableHead className="text-xs uppercase tracking-wider text-gray-500">
                             Evidence
                         </TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-gray-500">
+                            Assign to
+                        </TableHead>
                         <TableHead className="text-xs uppercase tracking-wider text-gray-500 text-right">
                             Actions
                         </TableHead>
@@ -143,7 +157,7 @@ export default function PersonnelIncidentTable({
                 </TableHeader>
 
                 <TableBody>
-                    {myIncidents.map((incident) => {
+                    {paginatedIncidents.map((incident) => {
                         const isResolved = incident.status === "Resolved";
                         const SeverityIcon = severityConfig[incident.severity].icon;
                         return (
@@ -224,7 +238,12 @@ export default function PersonnelIncidentTable({
                                         </DialogContent>
                                     </Dialog>
                                 </TableCell>
-
+                                <TableCell>
+                                    <div className="flex items-center space-x-1.5 ">
+                                        <CircleUser className="text-amber-700" size={20} />
+                                        <p>{incident.assigned_to_name || 'Unassigned'}</p>
+                                    </div>
+                                </TableCell>
                                 <TableCell className="text-right">
                                     <DropdownMenu
                                         open={openMenuId === incident.incident_id}
@@ -245,7 +264,10 @@ export default function PersonnelIncidentTable({
                                             className="w-52 rounded-xl border border-gray-200 shadow-lg p-1"
                                         >
                                             <DropdownMenuItem
-                                                onClick={() => onUpdateDetails(incident)}
+                                                onClick={() => {
+                                                    setSelectedIncident(incident);
+                                                    setUpdateModalOpen(true);
+                                                }}
                                                 disabled={isResolved}
                                                 className="rounded-lg cursor-pointer gap-2 text-gray-700 hover:text-orange-700 hover:bg-orange-50 focus:text-orange-700 focus:bg-orange-50"
                                             >
@@ -253,14 +275,7 @@ export default function PersonnelIncidentTable({
                                                 Update Details
                                             </DropdownMenuItem>
 
-                                            <DropdownMenuItem
-                                                onClick={() => onUploadEvidence(incident)}
-                                                className="rounded-lg cursor-pointer gap-2 text-gray-700 hover:text-orange-700 hover:bg-orange-50 focus:text-orange-700 focus:bg-orange-50"
-                                            >
-                                                <Upload size={14} />
-                                                Upload Evidence
-                                            </DropdownMenuItem>
-
+                                        
                                             <DropdownMenuSeparator className="bg-gray-100" />
 
                                             <DropdownMenuItem
@@ -279,6 +294,92 @@ export default function PersonnelIncidentTable({
                     })}
                 </TableBody>
             </Table>
+            <div className="border-t border-slate-200 bg-slate-50 px-6 py-4">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+                    {/* Left */}
+                    <div className="text-sm text-slate-500">
+                        Showing{" "}
+                        <span className="font-semibold text-slate-800">
+                            {myIncidents.length === 0
+                                ? 0
+                                : (currentPage - 1) * rowsPerPage + 1}
+                        </span>
+
+                        {" "}to{" "}
+
+                        <span className="font-semibold text-slate-800">
+                            {Math.min(currentPage * rowsPerPage, myIncidents.length)}
+                        </span>
+
+                        {" "}of{" "}
+
+                        <span className="font-semibold text-slate-800">
+                            {myIncidents.length}
+                        </span>{" "}
+                        incidents
+                    </div>
+
+                    {/* Right */}
+                    <div className="flex items-center gap-3">
+
+                        <div className="flex items-center gap-2">
+
+                            <span className="text-sm text-slate-500">
+                                Rows
+                            </span>
+
+                            <select
+                                value={rowsPerPage}
+                                onChange={(e) => {
+                                    setRowsPerPage(Number(e.target.value));
+                                    setCurrentPage(1);
+                                }}
+                                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm outline-none"
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                            </select>
+
+                        </div>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage((p) => p - 1)}
+                        >
+                            Previous
+                        </Button>
+
+                        <span className="rounded-md border bg-white px-3 py-1 text-sm font-medium shadow-sm">
+                            {currentPage} / {totalPages || 1}
+                        </span>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={
+                                currentPage === totalPages ||
+                                totalPages === 0
+                            }
+                            onClick={() => setCurrentPage((p) => p + 1)}
+                        >
+                            Next
+                        </Button>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <UpdateReportIncidentModal
+                open={updateModalOpen}
+                onOpenChange={setUpdateModalOpen}
+                incident={selectedIncident}
+            />
         </div>
     );
 }

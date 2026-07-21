@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     AlertTriangle,
     MapPin,
@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useIncidentReport } from "@/hooks/useIncidentsReport"
+import type { Incident } from "@/store/useIncidentReportStore"
+import { useToast } from "@/hooks/useToast";
 
 type Severity = "Low" | "Medium" | "High" | "Critical";
 type Category =
@@ -30,13 +32,15 @@ type Category =
 
 type EvidenceFile = {
     id: string;
-    file: File;
+    file?: File;
     preview?: string;
+    existing?: boolean;
 };
 
 type ReportIncidentModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    incident: Incident | null;
 };
 
 const categories: Category[] = [
@@ -60,6 +64,7 @@ const severities: { value: Severity; dot: string }[] = [
 export default function UpdateReportIncidentModal({
     open,
     onOpenChange,
+    incident,
 }: ReportIncidentModalProps) {
     const [title, setTitle] = useState("");
     const [category, setCategory] = useState<Category | "">("");
@@ -71,6 +76,35 @@ export default function UpdateReportIncidentModal({
     const [dragActive, setDragActive] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { updateIncident, isLoading } = useIncidentReport();
+    const { showToast } = useToast();
+
+
+    useEffect(() => {
+        if (!incident) return;
+        //eslint-disable-next-line
+        setTitle(incident.title);
+
+        setCategory(incident.category as Category);
+
+        setSeverity(incident.severity);
+
+        setLocation(incident.location);
+
+        setDescription(incident.description);
+
+        // Show existing image (if any) when opening the modal
+        setEvidence(
+            incident.incident_image
+                ? [
+                      {
+                          id: "existing-image",
+                          preview: incident.incident_image,
+                          existing: true,
+                      },
+                  ]
+                : []
+        );
+    }, [incident]);
 
     const isValid =
         title.trim().length > 0 &&
@@ -85,7 +119,17 @@ export default function UpdateReportIncidentModal({
         setSeverity("Medium");
         setLocation("");
         setDescription("");
-        setEvidence([]);
+        setEvidence(
+            incident?.incident_image
+                ? [
+                    {
+                        id: "existing-image",
+                        preview: incident.incident_image,
+                        existing: true,
+                    },
+                ]
+                : []
+        );
     }
 
     function handleClose() {
@@ -112,11 +156,16 @@ export default function UpdateReportIncidentModal({
         setDragActive(false);
         if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
     }
+const handleSubmit = async () => {
+    if (!isValid || !incident) return;
 
-    const handleSubmit = async () => {
-        if (!isValid) return;
+    // Only upload a newly selected file
+    const newImage =
+        evidence.find((item) => item.file)?.file ?? null;
 
-        const success = await updateIncident({
+    const success = await updateIncident(
+        incident.incident_id,
+        {
             title,
             category:
                 category === "Other"
@@ -125,18 +174,22 @@ export default function UpdateReportIncidentModal({
             severity,
             location,
             description,
-            incident_image:
-                evidence.length > 0
-                    ? evidence[0].file
-                    : null,
-        });
-
-        if (success) {
-            handleClose();
+            incident_image: newImage,
         }
-    };
+    );
 
-    
+    if (success) {
+        handleClose();
+
+        showToast(
+            "success",
+            "Incident Updated",
+            "The incident report has been updated successfully."
+        );
+    }
+};
+
+
     return (
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-xl rounded p-0 gap-0 overflow-hidden border border-gray-200">
@@ -304,14 +357,13 @@ export default function UpdateReportIncidentModal({
                                         {item.preview ? (
                                             <img
                                                 src={item.preview}
-                                                alt={item.file.name}
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center gap-1 px-1.5">
                                                 <FileIcon size={18} className="text-gray-400" />
                                                 <span className="text-[10px] text-gray-500 truncate w-full text-center">
-                                                    {item.file.name}
+                                                    {item.file?.name ?? "Current Evidence"}
                                                 </span>
                                             </div>
                                         )}

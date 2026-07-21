@@ -6,12 +6,12 @@ import {
   Eye,
   EyeOff,
   Lock,
-  CheckCircle2,
   Pencil,
   X,
   Save,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 
 type ProfileForm = {
   first_name: string;
@@ -27,8 +27,8 @@ type PasswordForm = {
 };
 
 export default function OtherRoleAccount() {
-  const { user } = useAuth();
-
+  const { user, changeAccountDetails, changePassword } = useAuth();
+  const { showToast } = useToast();
   const initialProfile: ProfileForm = {
     first_name: user?.first_name || "John",
     middle_name: user?.middle_name || "",
@@ -46,7 +46,6 @@ export default function OtherRoleAccount() {
     confirm: "",
   });
   const [showPw, setShowPw] = useState({ current: false, next: false, confirm: false });
-  const [saved, setSaved] = useState<"profile" | "password" | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
@@ -54,26 +53,7 @@ export default function OtherRoleAccount() {
 
   const initials = `${profile.first_name[0] ?? ""}${profile.last_name[0] ?? ""}`.toUpperCase();
 
-  const passwordStrength = (() => {
-    const v = password.next;
-    if (!v) return 0;
-    let score = 0;
-    if (v.length >= 8) score++;
-    if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
-    if (/\d/.test(v)) score++;
-    if (/[^A-Za-z0-9]/.test(v)) score++;
-    return score;
-  })();
-
-  const strengthLabel = ["Too short", "Weak", "Fair", "Good", "Strong"][passwordStrength];
-  const strengthColor = [
-    "bg-gray-200",
-    "bg-red-400",
-    "bg-amber-400",
-    "bg-amber-500",
-    "bg-emerald-500",
-  ][passwordStrength];
-
+ 
   function handleEditToggle() {
     if (isEditing) {
       setDraft(profile);
@@ -81,27 +61,66 @@ export default function OtherRoleAccount() {
     setIsEditing((v) => !v);
   }
 
-  function handleSaveProfile() {
+  const handleSaveProfile = async () => {
     setSavingProfile(true);
-    setTimeout(() => {
+
+    const result = await changeAccountDetails({
+      first_name: draft.first_name,
+      middle_name: draft.middle_name,
+      last_name: draft.last_name,
+      email: draft.email,
+    });
+
+    if (result.success) {
       setProfile(draft);
       setIsEditing(false);
-      setSavingProfile(false);
-      setSaved("profile");
-      setTimeout(() => setSaved(null), 2500);
-    }, 700);
-  }
 
-  function handleSavePassword() {
-    if (!password.current || !password.next || password.next !== password.confirm) return;
+      showToast(
+        "success",
+        "Profile Updated",
+        result.message
+      );
+    } else {
+      showToast(
+        "error",
+        "Update Failed",
+        result.message
+      );
+    }
+    setSavingProfile(false);
+  };
+
+  const handleSavePassword = async () => {
     setSavingPassword(true);
-    setTimeout(() => {
-      setPassword({ current: "", next: "", confirm: "" });
-      setSavingPassword(false);
-      setSaved("password");
-      setTimeout(() => setSaved(null), 2500);
-    }, 700);
-  }
+
+    const result = await changePassword({
+      current_password: password.current,
+      new_password: password.next,
+      confirm_password: password.confirm,
+    });
+
+    if (result.success) {
+      setPassword({
+        current: "",
+        next: "",
+        confirm: "",
+      });
+
+      showToast(
+        "success",
+        "Password Updated",
+        result.message
+      );
+    } else {
+      showToast(
+        "error",
+        "Update Failed",
+        result.message
+      );
+    }
+
+    setSavingPassword(false);
+  };
 
   const passwordsMismatch =
     password.confirm.length > 0 && password.next !== password.confirm;
@@ -122,14 +141,6 @@ export default function OtherRoleAccount() {
         </div>
 
         {/* Success toast (inline, top of content) */}
-        {saved && (
-          <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            <CheckCircle2 size={16} className="shrink-0" />
-            {saved === "profile"
-              ? "Profile updated successfully."
-              : "Password changed successfully."}
-          </div>
-        )}
 
         {/* Profile header card */}
         <div className="rounded-2xl border border-gray-300 bg-white p-5 sm:p-6 mb-5 shadow-sm">
@@ -138,7 +149,7 @@ export default function OtherRoleAccount() {
               <div className="w-20 h-20 rounded-full bg-linear-to-br from-orange-700 to-amber-500 flex items-center justify-center text-white text-2xl font-semibold shadow-sm shadow-orange-900/20">
                 {initials}
               </div>
-            
+
             </div>
 
             <div className="flex-1 text-center sm:text-left">
@@ -156,11 +167,10 @@ export default function OtherRoleAccount() {
             <button
               type="button"
               onClick={handleEditToggle}
-              className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-150 ${
-                isEditing
+              className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-150 ${isEditing
                   ? "border border-gray-300 text-gray-600 hover:bg-gray-50"
                   : "bg-linear-to-r from-orange-700 to-amber-700 text-white shadow-sm shadow-orange-900/30 hover:brightness-105"
-              }`}
+                }`}
             >
               {isEditing ? (
                 <>
@@ -191,7 +201,7 @@ export default function OtherRoleAccount() {
               editable={isEditing}
               onChange={(v) => setDraft((d) => ({ ...d, first_name: v }))}
             />
-             <Field
+            <Field
               label="Middle Name"
               icon={<UserIcon size={15} />}
               value={isEditing ? draft.middle_name : profile.middle_name}
@@ -206,7 +216,7 @@ export default function OtherRoleAccount() {
               editable={isEditing}
               onChange={(v) => setDraft((d) => ({ ...d, last_name: v }))}
             />
-           
+
             <Field
               label="Email Address"
               icon={<Mail size={15} />}
@@ -215,7 +225,7 @@ export default function OtherRoleAccount() {
               type="email"
               onChange={(v) => setDraft((d) => ({ ...d, email: v }))}
             />
-            
+
           </div>
 
           {isEditing && (
@@ -291,23 +301,6 @@ export default function OtherRoleAccount() {
             />
           </div>
 
-          {/* Strength meter */}
-          {password.next.length > 0 && (
-            <div className="mt-3 sm:max-w-[calc(50%-0.5rem)]">
-              <div className="flex gap-1.5">
-                {[0, 1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 flex-1 rounded-full transition-colors ${
-                      i < passwordStrength ? strengthColor : "bg-gray-200"
-                    }`}
-                  />
-                ))}
-              </div>
-              <p className="mt-1.5 text-xs text-gray-400">{strengthLabel}</p>
-            </div>
-          )}
-
           <div className="mt-5 flex justify-end border-t border-gray-100 pt-4">
             <button
               type="button"
@@ -353,11 +346,10 @@ function Field({
     <div>
       <label className="text-xs font-medium text-gray-500 mb-1.5 block">{label}</label>
       <div
-        className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 transition-colors ${
-          editable
+        className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 transition-colors ${editable
             ? "border-gray-300 bg-white focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-100"
             : "border-gray-200 bg-gray-50"
-        }`}
+          }`}
       >
         <span className={editable ? "text-orange-600" : "text-gray-400"}>{icon}</span>
         {editable ? (
@@ -394,11 +386,10 @@ function PasswordField({
     <div>
       <label className="text-xs font-medium text-gray-500 mb-1.5 block">{label}</label>
       <div
-        className={`flex items-center gap-2.5 rounded-xl border bg-white px-3 py-2.5 transition-colors focus-within:ring-2 ${
-          error
+        className={`flex items-center gap-2.5 rounded-xl border bg-white px-3 py-2.5 transition-colors focus-within:ring-2 ${error
             ? "border-red-300 focus-within:border-red-400 focus-within:ring-red-100"
             : "border-gray-300 focus-within:border-orange-400 focus-within:ring-orange-100"
-        }`}
+          }`}
       >
         <Lock size={15} className="text-gray-400 shrink-0" />
         <input

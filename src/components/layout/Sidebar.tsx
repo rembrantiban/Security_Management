@@ -13,7 +13,7 @@ import {
   MapPinned,
   Layers,
   HatGlasses,
-  ShieldAlert,
+  Key,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -46,7 +46,7 @@ type SidebarProps = {
 };
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, hasModulePermission } = useAuth();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -57,24 +57,50 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   };
 
   const main: ItemType[] = [
-    { name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/dashboard" },
-  ];
+     hasModulePermission("Dashboard Module", "View Administrator Dashboard") && {
+       name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/dashboard" },
+  ].filter(Boolean) as ItemType[];
 
   const userManagement: ItemType[] = [
-    { name: "Users", icon: <Users size={17} />, path: "/users" },
-  ];
+    hasModulePermission("User Role and Access Control Module", "View Users Accounts") && {
+      name: "Users",
+      icon: <Users size={17} />,
+      path: "/users",
+    },
+  ].filter(Boolean) as ItemType[];
 
   const security: ItemType[] = [
-    { name: "Incidents", icon: <AlertTriangle size={17} />, path: "/incidents" },
-    { name: "Monitoring", icon: <FileText size={17} />, path: "/logs" },
-    { name: "Access & Visitors", icon: <ShieldCheck size={17} />, path: "/access" },
-  ];
 
-   const reports: ItemType[] = [
+    hasModulePermission(
+      "Incident Reporting and Management Module",
+      "Admin View"
+    ) && {
+      name: "Incidents",
+      icon: <AlertTriangle size={17} />,
+      path: "/incidents",
+    },
+
+    hasModulePermission("Security Monitoring Module", "Assign Patrol Schedules") && {
+      name: "Monitoring",
+      icon: <FileText size={17} />,
+      path: "/monitoring",
+    },
+
+    hasModulePermission("Visitor and Access Control Module", "Administrator View Register") && {
+      name: "Access & Visitors",
+      icon: <ShieldCheck size={17} />,
+      path: "/access",
+    },
+  ].filter(Boolean) as ItemType[];
+
+
+
+
+  const reports: ItemType[] = [
     { name: "Reports & Logs", icon: <ClipboardList size={17} />, path: "/reports" },
   ];
 
-    const record: ItemType[] = [
+  const record: ItemType[] = [
     { name: "Record", icon: <ClipboardList size={17} />, path: "/record" },
   ];
 
@@ -82,38 +108,57 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
   const system: ItemType[] = [
     { name: "Notifications", icon: <Bell size={17} />, path: "/settings" },
-  ];  
+  ];
 
 
   //Personnel Item Dashboard
 
   const personelDashboard: ItemType[] = [
-     { name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/personnel/dashboard" }
-  ]
+    hasModulePermission("Dashboard Module", "View Personnel Dashboard") && {
+      name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/personnel/dashboard" }
+  ].filter(Boolean) as ItemType[];
 
-   const personnelAccount: ItemType[] = [
-     { name: "Account", icon: <Layers size={17} />, path: "/other-role-account" }
-  ]
+  const personnelAccount: ItemType[] = [
+    hasModulePermission("Account Management Module", "View") && {
+      name: "Account", icon: <Layers size={17} />, path: "/other-role-account" }
+  ].filter(Boolean) as ItemType[];
 
-    const personnelIncidents: ItemType[] = [
-     { name: "Incidents", icon: <AlertTriangle size={17} />, path: "/personnel/incidents" },
-     { name: "Incidents Tasks", icon: <ShieldAlert  size={17} />, path: "/personnel/incidents-tasks" },
-     { name: "Assign Areas", icon: <MapPinned  size={17} />, path: "/personnel/surveillance" }
-    ];
-
-    
-    const personnelVisitors: ItemType[] = [
-     { name: "Visitors", icon: <HatGlasses size={17} />, path: "/personnel/visitors" },
-    ];
-
-      const personnelRecord: ItemType[] = [
-     { name: "Record", icon: <ClipboardList size={17} />, path: "/personnel/record" },
-    ];
+  const personnelIncidents: ItemType[] = [
+    hasModulePermission("Incident Reporting and Management Module", "Personnel View") && {
+      name: "Incidents", icon: <AlertTriangle size={17} />, path: "/personnel/incidents" },
+    hasModulePermission("Surveillance and Monitoring Module", "View") && {
+      name: "Assign Areas", icon: <MapPinned size={17} />, path: "/personnel/surveillance" }
+  ].filter(Boolean) as ItemType[];
 
 
-        const personnelNotifications: ItemType[] = [
-     { name: "Notifications", icon: <Bell size={17} />, path: "/personnel/notifications" },
-    ];
+  const personnelVisitors: ItemType[] = [
+    hasModulePermission("Visitor and Access Control Module", "View") && {
+      name: "Visitors", icon: <HatGlasses size={17} />, path: "/personnel/visitors" },
+  ].filter(Boolean) as ItemType[];
+
+  const personnelReports: ItemType[] = [
+    hasModulePermission("Reports Module", "View Personnel Reports") && {
+      name: "Reports & Logs", icon: <FileText size={17} />, path: "/personnel/reports" },
+  ].filter(Boolean) as ItemType[];
+
+  const personnelRecord: ItemType[] = [
+    hasModulePermission("Record Module", "View Personnel Records") && {
+      name: "Record", icon: <ClipboardList size={17} />, path: "/personnel/record" },
+  ].filter(Boolean) as ItemType[];
+
+
+  const personnelNotifications: ItemType[] = [
+    hasModulePermission("Notifications Module", "View") && {
+      name: "Notifications", icon: <Bell size={17} />, path: "/personnel/notifications" },
+  ].filter(Boolean) as ItemType[];
+
+
+  //IT SYSTEM ADMINISTRATOR 
+
+  const itSystemAdministrator: ItemType[] = [
+    { name: "Permissions", icon: <ShieldCheck size={17} />, path: "/it-system-administrator/permissions" },
+    { name: "Role Access", icon: <Key size={17} />, path: "/it-system-administrator/role-access" }
+  ].filter(Boolean) as ItemType[];
 
 
 
@@ -129,10 +174,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         to={item.path}
         onClick={onClose}
         className={({ isActive }) =>
-          `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 ${
-            isActive
-              ? "bg-linear-to-r from-orange-700 to-amber-700 text-white shadow-sm shadow-orange-900/30 font-medium"
-              : "text-gray-500 hover:bg-orange-50 hover:text-orange-800"
+          `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 ${isActive
+            ? "bg-linear-to-r from-orange-700 to-amber-700 text-white shadow-sm shadow-orange-900/30 font-medium"
+            : "text-gray-500 hover:bg-orange-50 hover:text-orange-800"
           }`
         }
       >
@@ -172,28 +216,34 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </div>
 
       {/* Nav groups */}
-       { user?.role === "Administrator" && (
+      {security.length > 0 && (
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-        <NavGroup label="Main" items={main} />
-        <NavGroup label="User Management" items={userManagement} />
-        <NavGroup label="Security" items={security} />
-        <NavGroup label="Reports & Logs" items={reports} />
-        <NavGroup label="Others" items={record} />
-        <NavGroup label="System" items={system} />
-      </nav>
-       )}
+          <NavGroup label="Main" items={main} />
+          <NavGroup label="User Management" items={userManagement} />
+          <NavGroup label="Security" items={security} />
+          <NavGroup label="Reports & Logs" items={reports} />
+          <NavGroup label="Others" items={record} />
+          <NavGroup label="System" items={system} />
 
+          {/*Personnel pages */}
 
-       { user?.role === "Security Personnel" && (
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-          <NavGroup label="Main" items={personelDashboard} />
+           <NavGroup label="Main" items={personelDashboard} />
           <NavGroup label="Account" items={personnelAccount} />
           <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
           <NavGroup label="Permissions" items={personnelVisitors} />
+          <NavGroup label="Reports & Logs" items={personnelReports} />
           <NavGroup label="Record" items={personnelRecord} />
           <NavGroup label="Notifications" items={personnelNotifications} />
+
+
         </nav>
-       )}
+      )}
+
+      {user?.role === "IT System Administrator" && (
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          <NavGroup label="RBAC" items={itSystemAdministrator} />
+        </nav>
+      )}
 
       {/* Profile section */}
       <div className="px-3 py-3 border-t border-gray-300">
@@ -222,11 +272,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               </div>
             </div>
             <DropdownMenuSeparator className="bg-gray-100" />
-            { userData.role === "Administrator" && (
+            {userData.role === "Administrator" && (
               <DropdownMenuItem onClick={() => navigate("/my-account")} className="rounded-lg cursor-pointer gap-2 text-gray-700 hover:text-orange-700 hover:bg-orange-50">
-              <UserCircle size={15} />
-              My Profile
-            </DropdownMenuItem>
+                <UserCircle size={15} />
+                My Profile
+              </DropdownMenuItem>
             )}
             <DropdownMenuSeparator className="bg-gray-100" />
             <DropdownMenuItem
@@ -244,21 +294,35 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     </aside>
   );
 
-  function NavGroup({ label, items }: { label: string; items: ItemType[] }) {
-    return (
-      <div>
-        <p className="text-xs tracking-widest text-gray-500 px-3 mb-1.5 uppercase">
-          {label}
-        </p>
-        <div className="space-y-0.5">
-          {items.map((item, i) => (
-            <NavItem key={i} item={item} />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  
+function NavGroup({
+  label,
+  items,
+}: {
+  label: string;
+  items: ItemType[];
+}) {
+  return (
+    <>
+      {items.length > 0 && (
+        <div>
+          <p className="text-xs tracking-widest text-gray-500 px-3 mb-1.5 uppercase">
+            {label}
+          </p>
 
+          <div className="space-y-0.5">
+            {items.map((item) => (
+              <NavItem
+                key={item.path}
+                item={item}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
   return (
     <>
       {/* Mobile overlay */}
@@ -272,9 +336,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
       {/* Mobile drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:hidden ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:hidden ${open ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <SidebarContent />
       </div>

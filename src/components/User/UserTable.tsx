@@ -8,7 +8,6 @@ import {
     EllipsisVertical,
     CircleCheck,
     Ban,
-    CalendarClock,
 } from "lucide-react";
 
 import {
@@ -72,7 +71,7 @@ export default function UserTable({ users }: Props) {
 
         const success = await setDutySchedule(
             selectedScheduleUser.user_id,
-            { 
+            {
                 duty_start,
                 duty_end,
             }
@@ -108,7 +107,6 @@ export default function UserTable({ users }: Props) {
                             <TableHead className="w-70">
                                 User
                             </TableHead>
-                            <TableHead>Username</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Role</TableHead>
                             <TableHead>Status</TableHead>
@@ -141,7 +139,9 @@ export default function UserTable({ users }: Props) {
 
                                 <TableCell>
                                     <div className="flex items-center gap-4">
-                                        <Avatar className="h-12 w-12 border shadow">
+                                        <Avatar onClick={() =>
+                                                    navigate(`/users/view/${user.user_id}`)
+                                                } className="h-12 w-12 border shadow">
                                             <AvatarFallback className="bg-linear-to-br from-orange-900 to-orange-600 text-white font-bold">
                                                 {user.first_name[0]}
                                                 {user.last_name[0]}
@@ -153,20 +153,14 @@ export default function UserTable({ users }: Props) {
                                                 {user.first_name} {user.last_name}
                                             </p>
 
-                                            <p className="text-xs text-slate-500">
-                                                ID #{user.user_id}
+                                            <p className="text-xs text-green-600">
+                                                {user.username}
                                             </p>
                                         </div>
                                     </div>
                                 </TableCell>
 
                                 {/* Username */}
-
-                                <TableCell>
-                                    <span className="font-medium">
-                                        @{user.username}
-                                    </span>
-                                </TableCell>
 
                                 {/* Email */}
 
@@ -175,6 +169,28 @@ export default function UserTable({ users }: Props) {
                                         {user.email}
                                     </span>
                                 </TableCell>
+
+
+
+
+                                <TableCell>
+                                    {user.status ? (
+                                        <Badge className="rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                                            <CircleCheck /> Active
+                                        </Badge>
+
+                                    ) : (
+
+                                        <Badge className="rounded-full bg-red-100 text-red-700 hover:bg-red-100">
+                                            <Ban /> Deactivate
+                                        </Badge>
+
+                                    )}
+
+                                </TableCell>
+
+                                {/* Status */}
+
 
                                 {/* Role */}
 
@@ -204,23 +220,7 @@ export default function UserTable({ users }: Props) {
                                     )}
 
                                 </TableCell>
-                                {/* Status */}
 
-                                <TableCell>
-                                    {user.status ? (
-                                        <Badge className="rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
-                                            <CircleCheck /> Active
-                                        </Badge>
-
-                                    ) : (
-
-                                        <Badge className="rounded-full bg-red-100 text-red-700 hover:bg-red-100">
-                                            <Ban /> Deactivate
-                                        </Badge>
-
-                                    )}
-
-                                </TableCell>
 
                                 {/* Created */}
 
@@ -269,17 +269,7 @@ export default function UserTable({ users }: Props) {
                                             align="end"
                                             className="w-48 rounded-xl"
                                         >
-                                            {user.role === "Security Personnel" && (
-                                                <DropdownMenuItem
-                                                    onClick={() => {
-                                                        setSelectedScheduleUser(user);
-                                                        setScheduleOpen(true);
-                                                    }}
-                                                >
-                                                    <CalendarClock className="mr-2 h-4 w-4 text-orange-600" />
-                                                    Set Duty Schedule
-                                                </DropdownMenuItem>
-                                            )}
+                                           
                                             <DropdownMenuItem
                                                 onClick={() =>
                                                     navigate(`/users/view/${user.user_id}`)

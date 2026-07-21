@@ -1,87 +1,56 @@
-import { Plus, AlertTriangle, Clock, CheckCircle2, FileWarning } from "lucide-react";
+import { Plus, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type IncidentHeaderProps = {
-  total: number;
-  pending: number;
-  inProgress: number;
-  resolved: number;
   onCreateIncident: () => void;
 };
 
 export default function PersonnelIncidentHeader({
-  total,
-  pending,
-  inProgress,
-  resolved,
   onCreateIncident,
 }: IncidentHeaderProps) {
-  const stats = [
-    {
-      label: "Total Reported",
-      value: total,
-      icon: <FileWarning size={16} />,
-      accent: "text-orange-700 bg-orange-50 border-orange-200",
-    },
-    {
-      label: "Pending",
-      value: pending,
-      icon: <Clock size={16} />,
-      accent: "text-amber-700 bg-amber-50 border-amber-200",
-    },
-    {
-      label: "In Progress",
-      value: inProgress,
-      icon: <AlertTriangle size={16} />,
-      accent: "text-blue-700 bg-blue-50 border-blue-200",
-    },
-    {
-      label: "Resolved",
-      value: resolved,
-      icon: <CheckCircle2 size={16} />,
-      accent: "text-emerald-700 bg-emerald-50 border-emerald-200",
-    },
-  ];
-
   return (
-    <div className="mb-2">
-      {/* Title row */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="relative overflow-hidden rounded border border-orange-100 bg-white shadow-sm">
+
+      {/* Background */}
+      <div className="absolute inset-0 bg-linear-to-r from-orange-50 via-white to-orange-100" />
+
+      {/* Decorative blur */}
+      <div className="absolute -top-10 right-0 h-44 w-44 rounded-full bg-orange-200/30 blur-3xl" />
+
+      <div className="relative flex flex-col gap-6 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+
+        {/* Left */}
         <div>
-          <h1 className="text-xl font-semibold text-gray-800">My Incident Reports</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Incidents you've reported and their current status.
+
+          <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700">
+            <TriangleAlert className="h-3.5 w-3.5" />
+            Incident Management
+          </span>
+
+          <h1 className="mt-2 text-xl font-bold tracking-tight text-slate-900">
+            My Incident Reports
+          </h1>
+
+          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
+            View all incidents you've reported, monitor their progress,
+            check assignment status, and follow updates until each incident
+            has been resolved.
           </p>
+
         </div>
 
+        {/* Right */}
         <Button
+          size="lg"
           onClick={onCreateIncident}
-          className="bg-linear-to-r from-orange-700 to-amber-700 text-white shadow-sm shadow-orange-900/30 hover:brightness-105 rounded-xl gap-2 px-4 h-10"
+          className="rounded-xl text-xs bg-orange-700 px-6 shadow-md hover:bg-orange-800"
         >
-          <Plus size={16} />
+          <Plus className="mr-2 h-4 w-4" />
           Report Incident
         </Button>
+
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded border border-gray-300 bg-white px-4 py-3.5 shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <span
-                className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border ${s.accent}`}
-              >
-                {s.icon}
-              </span>
-              <span className="text-xl font-semibold text-gray-800">{s.value}</span>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">{s.label}</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import PersonnelIncidentHeader from "@/components/Incident/PersonnelIncidentHeader";
 import ReportIncidentModal from "@/components/Incident/ReportIncidentModal";
 import PersonnelIncidentTable from "@/components/Incident/PersonnelIncidentTable";
@@ -19,23 +19,12 @@ export default function PersonnelIncidentsPage() {
         //eslint-disable-next-line
     }, []);
 
-    const stats = useMemo(() => {
-        return {
-            total: myIncidents.length,
-            pending: myIncidents.filter((i) => i.status === "Pending").length,
-            inProgress: myIncidents.filter((i) => i.status === "In Progress").length,
-            resolved: myIncidents.filter((i) => i.status === "Resolved").length,
-        };
-    }, [myIncidents]);
+  
 
     return (
-        <div className="min-h-full  bg-gray-50/60 ">
-            <div>
+        <div className="min-h-full bg-gray-50/60 ">
+            <div className="space-y-2">
                 <PersonnelIncidentHeader
-                    total={stats.total}
-                    pending={stats.pending}
-                    inProgress={stats.inProgress}
-                    resolved={stats.resolved}
                     onCreateIncident={() => setReportOpen(true)}
                 />
 

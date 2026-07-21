@@ -12,11 +12,22 @@ export const useIncidentReport = () => {
             assignIncident,
             reAssignIncident,
             closeIncident,
+            stats,
+            getIncidentStatistics,
+            getMyAssignedIncidents,
+            fetchMyAssignedIncidents,
+            fetchPersonnelDashboardStats,
+            personnelStats,
+            resolvedIncident,
+            updateIncident
      } = useIncidentStore();
 
      useEffect(() => {
          getMyIncidentReports();
          getAllIncidents();
+         getIncidentStatistics();
+         fetchMyAssignedIncidents();
+         fetchPersonnelDashboardStats();
          // eslint-disable-next-line react-hooks/exhaustive-deps
      }, []);
 
@@ -28,6 +39,11 @@ export const useIncidentReport = () => {
              myIncidents,
              assignIncident,
              reAssignIncident,
-             closeIncident
+             closeIncident,
+             stats,
+             getMyAssignedIncidents,
+             personnelStats,
+             resolvedIncident,
+             updateIncident
      };
 };

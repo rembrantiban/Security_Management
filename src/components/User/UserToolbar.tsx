@@ -86,7 +86,7 @@ export default function UserToolbar({ search, onSearchChange, role, onRoleChange
             </SelectItem>
 
             <SelectItem value="disabled">
-              Disabled
+              Deactivated
             </SelectItem>
           </SelectContent>
         </Select>

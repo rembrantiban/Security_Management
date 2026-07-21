@@ -2,6 +2,13 @@ import { create } from "zustand";
 import AxiosInstance from "@/api/AxiosInstance";
 import { AxiosError } from "axios";
 
+
+export interface UserPermission {
+    permission_id: number;
+    module_name: string;
+    permission_name: string;
+}
+
 export interface Users {
     user_id: number;
     first_name: string;
@@ -12,14 +19,12 @@ export interface Users {
     role: string;
     status: boolean;
 
-    on_duty: boolean;
-    duty_start: string | null;
     duty_end: string | null;
 
     created_at: string;
     last_login: string;
+    permissions: UserPermission[];
 }
-
 
 export interface RegisterData {
     first_name: string;
@@ -48,10 +53,20 @@ export interface UpdateUserData {
     password?: string;
 }
 
-export interface DutyScheduleData {
-    duty_start: string;
-    duty_end: string;
+
+export interface ChangeAccountData {
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
+    email: string;
 }
+
+export type ChangePasswordData = {
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
+};
+
 
 interface AuthState {
     user: Users | null;
@@ -64,6 +79,8 @@ interface AuthState {
     securityPersonnel: Users[],
     login: (login: string, password: string) => Promise<Users | null>;
     register: (date: RegisterData) => Promise<boolean>;
+    changeAccountDetails: (data: ChangeAccountData) => Promise<{ success: boolean; message: string }>;
+    changePassword: (data: ChangePasswordData) => Promise<{ success: boolean; message: string }>;
     selectedUserById: Users | null;
     logout: () => Promise<void>;
 
@@ -80,8 +97,6 @@ interface AuthState {
     getUserById: (user_id: number) => Promise<boolean>;
     deleteUser: (user_id: number) => Promise<boolean>;
     updateUserStatus: (user_id: number, status: boolean) => Promise<boolean>;
-
-    setDutySchedule: (user_id: number, data: DutyScheduleData) => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -101,7 +116,87 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
     securityPersonnel: [],
 
+    
+    changePassword: async (data) => {
+    try {
+        set({
+            isLoading: true,
+            error: null,
+        });
 
+        const { data: response } = await AxiosInstance.put(
+            "/auth/change-password",
+            data
+        );
+
+        set({
+            isLoading: false,
+            error: null,
+        });
+
+        return {
+            success: true,
+            message: response.message,
+        };
+    } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+
+        const message =
+            err.response?.data?.message ??
+            "Failed to change password.";
+
+        set({
+            isLoading: false,
+            error: message,
+        });
+
+        return {
+            success: false,
+            message,
+        };
+    }
+},
+
+    changeAccountDetails: async (data) => {
+        try {
+            set({
+                isLoading: true,
+                error: null,
+            });
+
+            const { data: response } = await AxiosInstance.put(
+                "/auth/change-account-details",
+                data
+            );
+
+            set({
+                user: response.user,
+                isLoading: false,
+                error: null,
+            });
+
+            return {
+                success: true,
+                message: "Account updated successfully."
+            };
+        } catch (error) {
+            const err = error as AxiosError<{ message: string }>;
+
+            const message =
+                err.response?.data?.message ??
+                "Failed to update account.";
+
+            set({
+                isLoading: false,
+                error: message,
+            });
+
+            return {
+                success: false,
+                message,
+            };
+        }
+    },
     getUserById: async (user_id) => {
         try {
             set({
@@ -132,49 +227,6 @@ export const useAuthStore = create<AuthState>((set) => ({
             return false;
         }
     },
-    setDutySchedule: async (user_id, data) => {
-        try {
-            set({
-                isLoading: true,
-                error: null,
-            });
-
-            const response = await AxiosInstance.put(
-                `/auth/set-duty-schedule/${user_id}`,
-                data
-            );
-
-            set((state) => ({
-                users: state.users.map((user) =>
-                    user.user_id === user_id
-                        ? {
-                            ...user,
-                            duty_start: response.data.user.duty_start,
-                            duty_end: response.data.user.duty_end,
-                            on_duty: response.data.user.on_duty,
-                        }
-                        : user
-                ),
-                isLoading: false,
-            }));
-
-            return true;
-        } catch (error) {
-            const err = error as AxiosError<{
-                message: string;
-            }>;
-
-            set({
-                isLoading: false,
-                error:
-                    err.response?.data.message ??
-                    "Failed to assign duty schedule.",
-            });
-
-            return false;
-        }
-    },
-
     getSecurityPersonnel: async () => {
         try {
             set({
