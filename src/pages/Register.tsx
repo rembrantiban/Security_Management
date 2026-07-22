@@ -153,7 +153,7 @@ export default function RegisterPage() {
         if (success) {
             setTimeout(() => {
                 setStatusModal((prev) => ({ ...prev, open: false }));
-                navigate("/login");
+                navigate("/");
             }, 2000);
             setStatusModal({
                 open: true,

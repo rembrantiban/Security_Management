@@ -10,7 +10,6 @@ import {
   ShieldCheck,
   X,
   ClipboardList,
-  MapPinned,
   Layers,
   HatGlasses,
   Key,
@@ -51,9 +50,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const navigate = useNavigate();
 
 
-console.log("SIDEBAR USER:", user);
-console.log("SIDEBAR PERMISSIONS:", user?.permissions);
-  
+  console.log("SIDEBAR USER:", user);
+  console.log("SIDEBAR PERMISSIONS:", user?.permissions);
+
 
   const userData: User = {
     firstName: user?.first_name || "John",
@@ -62,8 +61,9 @@ console.log("SIDEBAR PERMISSIONS:", user?.permissions);
   };
 
   const main: ItemType[] = [
-     hasModulePermission("Dashboard Module", "View Administrator Dashboard") && {
-       name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/dashboard" },
+    hasModulePermission("Dashboard Module", "View Administrator Dashboard") && {
+      name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/dashboard"
+    },
   ].filter(Boolean) as ItemType[];
 
   const userManagement: ItemType[] = [
@@ -72,7 +72,7 @@ console.log("SIDEBAR PERMISSIONS:", user?.permissions);
       icon: <Users size={17} />,
       path: "/users",
     },
-    
+
   ].filter(Boolean) as ItemType[];
 
   const security: ItemType[] = [
@@ -97,7 +97,7 @@ console.log("SIDEBAR PERMISSIONS:", user?.permissions);
       icon: <ShieldCheck size={17} />,
       path: "/access",
     },
-    
+
   ].filter(Boolean) as ItemType[];
 
 
@@ -122,41 +122,38 @@ console.log("SIDEBAR PERMISSIONS:", user?.permissions);
 
   const personelDashboard: ItemType[] = [
     hasModulePermission("Dashbaord Module", "View Personnel Dashboard") && {
-      name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/personnel/dashboard" }
+      name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/personnel/dashboard"
+    }
   ].filter(Boolean) as ItemType[];
 
   const personnelAccount: ItemType[] = [
-    hasModulePermission("Account Management Module", "View") && {
-      name: "Account", icon: <Layers size={17} />, path: "/other-role-account" }
+  { name: "Account", icon: <Layers size={17} />, path: "/other-role-account" }
   ].filter(Boolean) as ItemType[];
 
   const personnelIncidents: ItemType[] = [
     hasModulePermission("Incident Reporting and Management Module", "Personnel View") && {
-      name: "Incidents", icon: <AlertTriangle size={17} />, path: "/personnel/incidents" },
-    hasModulePermission("Surveillance and Monitoring Module", "Personnel View") && {
-      name: "Assign Areas", icon: <MapPinned size={17} />, path: "/personnel/surveillance" }
+      name: "Incidents", icon: <AlertTriangle size={17} />, path: "/personnel/incidents"
+    },
   ].filter(Boolean) as ItemType[];
 
 
   const personnelVisitors: ItemType[] = [
-    hasModulePermission("Visitor and Access Control Module", "Personnel View") && {
-      name: "Visitors", icon: <HatGlasses size={17} />, path: "/personnel/visitors" },
+    {name: "Visitors", icon: <HatGlasses size={17} />, path: "/personnel/visitors"},
   ].filter(Boolean) as ItemType[];
 
   const personnelReports: ItemType[] = [
-    hasModulePermission("Reports Module", "View Personnel Reports") && {
-      name: "Reports & Logs", icon: <FileText size={17} />, path: "/personnel/reports" },
+    { name: "Reports & Logs", icon: <FileText size={17} />, path: "/personnel/reports"},
   ].filter(Boolean) as ItemType[];
 
   const personnelRecord: ItemType[] = [
-    hasModulePermission("Record Module", "View Personnel Records") && {
-      name: "Record", icon: <ClipboardList size={17} />, path: "/personnel/record" },
+    {  name: "Record", icon: <ClipboardList size={17} />, path: "/personnel/record" },
   ].filter(Boolean) as ItemType[];
 
 
   const personnelNotifications: ItemType[] = [
-    hasModulePermission("Notifications Module", "View") && {
-      name: "Notifications", icon: <Bell size={17} />, path: "/personnel/notifications" },
+    hasModulePermission("Notifications Module", "Personnel View Notification") && {
+      name: "Notifications", icon: <Bell size={17} />, path: "/personnel/notifications"
+    },
   ].filter(Boolean) as ItemType[];
 
 
@@ -222,28 +219,28 @@ console.log("SIDEBAR PERMISSIONS:", user?.permissions);
       </div>
 
       {/* Nav groups */}
-     {user?.role === "Administrator" && (
-  <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-    <NavGroup label="Main" items={main} />
-    <NavGroup label="User Management" items={userManagement} />
-    <NavGroup label="Security" items={security} />
-    <NavGroup label="Reports & Logs" items={reports} />
-    <NavGroup label="Others" items={record} />
-    <NavGroup label="System" items={system} />
-  </nav>
-)}
+      {user?.role === "Administrator" && (
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          <NavGroup label="Main" items={main} />
+          <NavGroup label="User Management" items={userManagement} />
+          <NavGroup label="Security" items={security} />
+          <NavGroup label="Reports & Logs" items={reports} />
+          <NavGroup label="Others" items={record} />
+          <NavGroup label="System" items={system} />
+        </nav>
+      )}
 
-{user?.role === "Security Personnel" && (
-  <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-    <NavGroup label="Main" items={personelDashboard} />
-    <NavGroup label="Account" items={personnelAccount} />
-    <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
-    <NavGroup label="Visitors" items={personnelVisitors} />
-    <NavGroup label="Reports" items={personnelReports} />
-    <NavGroup label="Record" items={personnelRecord} />
-    <NavGroup label="Notifications" items={personnelNotifications} />
-  </nav>
-)}
+      {user?.role === "Security Personnel" && (
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          <NavGroup label="Main" items={personelDashboard} />
+          <NavGroup label="Account" items={personnelAccount} />
+          <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
+          <NavGroup label="Visitors" items={personnelVisitors} />
+          <NavGroup label="Reports" items={personnelReports} />
+          <NavGroup label="Record" items={personnelRecord} />
+          <NavGroup label="Notifications" items={personnelNotifications} />
+        </nav>
+      )}
 
       {user?.role === "IT System Administrator" && (
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
@@ -300,35 +297,35 @@ console.log("SIDEBAR PERMISSIONS:", user?.permissions);
     </aside>
   );
 
-  
-function NavGroup({
-  label,
-  items,
-}: {
-  label: string;
-  items: ItemType[];
-}) {
-  return (
-    <>
-      {items.length > 0 && (
-        <div>
-          <p className="text-xs tracking-widest text-gray-500 px-3 mb-1.5 uppercase">
-            {label}
-          </p>
 
-          <div className="space-y-0.5">
-            {items.map((item) => (
-              <NavItem
-                key={item.path}
-                item={item}
-              />
-            ))}
+  function NavGroup({
+    label,
+    items,
+  }: {
+    label: string;
+    items: ItemType[];
+  }) {
+    return (
+      <>
+        {items.length > 0 && (
+          <div>
+            <p className="text-xs tracking-widest text-gray-500 px-3 mb-1.5 uppercase">
+              {label}
+            </p>
+
+            <div className="space-y-0.5">
+              {items.map((item) => (
+                <NavItem
+                  key={item.path}
+                  item={item}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-    </>
-  );
-}
+        )}
+      </>
+    );
+  }
   return (
     <>
       {/* Mobile overlay */}

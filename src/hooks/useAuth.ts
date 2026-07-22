@@ -25,6 +25,7 @@ export const useAuth = () => {
     const getUserById = useAuthStore((state) => state.getUserById);
     const changeAccountDetails = useAuthStore((state) => state.changeAccountDetails);
     const changePassword = useAuthStore((state) => state.changePassword);
+    const updateApprovalStatus = useAuthStore((state) => state.updateApprovalStatus);
 
     const permissions = user?.permissions ?? [];
 
@@ -73,5 +74,6 @@ export const useAuth = () => {
         getUserById,
         changeAccountDetails,
         changePassword,
+        updateApprovalStatus,
     };
 };

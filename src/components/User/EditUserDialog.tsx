@@ -128,7 +128,7 @@ export default function EditUserDialog({
                             <div className="bg-orange-100 p-2 rounded-full">
                                 <UserPen className="h-6 w-6 text-orange-500" />
                             </div>
-                            Edit User
+                            Update User
                         </DialogTitle>
 
                         <DialogDescription>

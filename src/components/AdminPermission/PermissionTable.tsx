@@ -46,6 +46,7 @@ import { useIncidentReport } from "@/hooks/useIncidentsReport";
 import AssignIncidentModal from "./AssignIncidentModal";
 import type { Incident } from "@/store/useIncidentReportStore"
 import ViewFullReport from "@/components/AdminPermission/ViewFullReport"
+import { useToast } from "@/hooks/useToast";
 
 
 type IncidentSeverity =
@@ -116,7 +117,7 @@ export default function IncidentTable() {
 
     const [viewTarget, setViewTarget] = useState<Incident | null>(null);
     const [viewOpen, setViewOpen] = useState(false);
-
+    const { showToast } = useToast();
 
     const totalPages = Math.ceil(incidents.length / itemsPerPage);
 
@@ -131,7 +132,6 @@ export default function IncidentTable() {
         note: string
     ) => {
         if (!assignTarget) return;
-
         let success = false;
 
         if (assignTarget.assigned_to) {
@@ -149,8 +149,24 @@ export default function IncidentTable() {
         }
 
         if (success) {
+            showToast(
+                "success",
+                assignTarget.assigned_to
+                    ? "Incident Reassigned"
+                    : "Successfully Assigned",
+                assignTarget.assigned_to
+                    ? "The incident has been reassigned successfully."
+                    : "The incident has been assigned to the selected personnel."
+            );
+
             setAssignOpen(false);
             setAssignTarget(null);
+        } else {
+            showToast(
+                "error",
+                "Assignment Failed",
+                "Unable to assign the incident. Please try again."
+            );
         }
     };
 
@@ -182,7 +198,30 @@ export default function IncidentTable() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {currentIncidents.map((incident, index) => {
+                        {currentIncidents.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={8}
+                                    className="h-72 text-center"
+                                >
+                                    <div className="flex flex-col items-center justify-center gap-4">
+                                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
+                                            <AlertTriangle className="h-8 w-8 text-orange-600" />
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-slate-900">
+                                                No Incident Reports
+                                            </h3>
+
+                                            <p className="mt-1 text-sm text-slate-500">
+                                                There are currently no incident reports available.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : (currentIncidents.map((incident, index) => {
                             const SeverityIcon = severityConfig[incident.severity].icon;
 
                             return (
@@ -363,7 +402,7 @@ export default function IncidentTable() {
                                     </TableCell>
                                 </TableRow>
                             );
-                        })}
+                        }))}
 
 
                     </TableBody>

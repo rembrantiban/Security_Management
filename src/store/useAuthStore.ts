@@ -18,7 +18,9 @@ export interface Users {
     email: string;
     role: UserRole;
     status: boolean;
+    approval_status: string;
     duty_start?: string,
+
 
     duty_end: string | null;
 
@@ -98,6 +100,7 @@ interface AuthState {
     getUserById: (user_id: number) => Promise<boolean>;
     deleteUser: (user_id: number) => Promise<boolean>;
     updateUserStatus: (user_id: number, status: boolean) => Promise<boolean>;
+    updateApprovalStatus: (user_id: number,approval_status: "Approved" | "Rejected") => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -119,6 +122,56 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     securityPersonnel: [],
 
 
+    updateApprovalStatus: async (
+    user_id: number,
+    approval_status: "Approved" | "Rejected"
+) => {
+    try {
+        set({
+            isLoading: true,
+            error: null,
+        });
+
+        const response = await AxiosInstance.put(
+            `/auth/update-approval-status/${user_id}`,
+            {
+                approval_status,
+            }
+        );
+
+        set((state) => ({
+            users: state.users.map((user) =>
+                user.user_id === user_id
+                    ? {
+                          ...user,
+                          approval_status:
+                              response.data.user.approval_status,
+                      }
+                    : user
+            ),
+        }));
+
+        // refresh dashboard stats if needed
+        await get().getUserStatistics();
+
+        set({
+            isLoading: false,
+        });
+
+        return true;
+    } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+
+        set({
+            isLoading: false,
+            error:
+                err.response?.data?.message ??
+                "Failed to update approval status.",
+        });
+
+        return false;
+    }
+},
     changePassword: async (data) => {
         try {
             set({

@@ -8,6 +8,9 @@ import {
     EllipsisVertical,
     CircleCheck,
     Ban,
+    Clock,
+    Check,
+    X,
 } from "lucide-react";
 
 import {
@@ -39,6 +42,7 @@ import EditUserDialog from "./EditUserDialog";
 import DeleteUserDialog from "./DeleteUserDialog";
 import UpdateUserStatusDialog from "./UpdateUserStatusDialog";
 import { useToast } from "@/hooks/useToast"
+import AccountApproval from "./AccounAproval";
 
 type Props = {
     users: Users[]
@@ -55,6 +59,9 @@ export default function UserTable({ users }: Props) {
     const [statusOpen, setStatusOpen] = useState(false);
     const [selectedUserStatus, setSelectedUserStatus] = useState<Users | null>(null);
     const { showToast } = useToast();
+    const [approvalOpen, setApprovalOpen] = useState(false);
+    const [selectedApprovalUser, setSelectedApprovalUser] =
+        useState<Users | null>(null);
 
     if (isFetchingUsers) {
         return <UserSkeleton />;
@@ -89,6 +96,7 @@ export default function UserTable({ users }: Props) {
                             <TableHead>Email</TableHead>
                             <TableHead>Role</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Approval Status</TableHead>
                             <TableHead>Created</TableHead>
                             <TableHead>Last Login</TableHead>
                             <TableHead className="text-right">
@@ -119,8 +127,8 @@ export default function UserTable({ users }: Props) {
                                 <TableCell>
                                     <div className="flex items-center gap-4">
                                         <Avatar onClick={() =>
-                                                    navigate(`/users/view/${user.user_id}`)
-                                                } className="h-12 w-12 border shadow">
+                                            navigate(`/users/view/${user.user_id}`)
+                                        } className="h-12 w-12 border shadow">
                                             <AvatarFallback className="bg-linear-to-br from-orange-900 to-orange-600 text-white font-bold">
                                                 {user.first_name[0]}
                                                 {user.last_name[0]}
@@ -171,6 +179,7 @@ export default function UserTable({ users }: Props) {
                                 {/* Status */}
 
 
+
                                 {/* Role */}
 
                                 <TableCell>
@@ -200,7 +209,25 @@ export default function UserTable({ users }: Props) {
 
                                 </TableCell>
 
-
+                                {/* Approval Status */}
+                                <TableCell>
+                                    {user.approval_status === "Approved" ? (
+                                        <Badge className="rounded-full bg-green-100 text-green-700 hover:bg-green-100">
+                                            <Check className="mr-1 h-3 w-3" />
+                                            Approved
+                                        </Badge>
+                                    ) : user.approval_status === "Rejected" ? (
+                                        <Badge className="rounded-full bg-red-100 text-red-700 hover:bg-red-100">
+                                            <X className="mr-1 h-3 w-3" />
+                                            Rejected
+                                        </Badge>
+                                    ) : (
+                                        <Badge className="rounded-full bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+                                            <Clock className="mr-1 h-3 w-3" />
+                                            Pending
+                                        </Badge>
+                                    )}
+                                </TableCell>
                                 {/* Created */}
 
                                 <TableCell>
@@ -248,7 +275,7 @@ export default function UserTable({ users }: Props) {
                                             align="end"
                                             className="w-48 rounded-xl"
                                         >
-                                           
+
                                             <DropdownMenuItem
                                                 onClick={() =>
                                                     navigate(`/users/view/${user.user_id}`)
@@ -264,7 +291,7 @@ export default function UserTable({ users }: Props) {
                                                 }}
                                             >
                                                 <Pencil className="mr-2 h-4 w-4" />
-                                                Edit User
+                                                Update User
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 className="text-red-600"
@@ -276,6 +303,17 @@ export default function UserTable({ users }: Props) {
                                                 <Trash2 className="mr-2 h-4 w-4" />
                                                 Delete User
                                             </DropdownMenuItem>
+                                           {user.approval_status === "Pending" && (
+                                             <DropdownMenuItem
+                                                onClick={() => {
+                                                    setSelectedApprovalUser(user);
+                                                    setApprovalOpen(true);
+                                                }}
+                                            >
+                                                <Check className="mr-2 h-4 w-4 text-green-600" />
+                                                Account Approval
+                                            </DropdownMenuItem>
+                                           )}
                                             <DropdownMenuItem
                                                 className={`${user.status ? 'text-red-700' : 'text-green-700'}`}
                                                 onClick={() => {
@@ -335,6 +373,11 @@ export default function UserTable({ users }: Props) {
                     user={selectedUserStatus}
                     loading={isLoading}
                     onConfirm={handleUpdateUserStatus}
+                />
+                <AccountApproval
+                    open={approvalOpen}
+                    onOpenChange={setApprovalOpen}
+                    user={selectedApprovalUser}
                 />
             </div>
         </div>
