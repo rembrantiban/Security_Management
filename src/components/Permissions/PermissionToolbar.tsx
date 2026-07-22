@@ -21,7 +21,7 @@ type PermissionToolbarProps = {
     setSearch: (value: string) => void;
 
     moduleFilter: string;
-    setModuleFilter: (value: string) => void;
+    setModuleFilter: (value: string | null) => void;
 
     modules: string[];
 

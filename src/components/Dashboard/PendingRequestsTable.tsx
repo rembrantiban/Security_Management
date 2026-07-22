@@ -68,7 +68,7 @@ const requests = [
     waiting: "18 min",
     icon: Building2,
   },
-];
+] as const;
 
 const statusStyles = {
   Waiting:

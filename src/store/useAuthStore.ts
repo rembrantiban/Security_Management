@@ -18,6 +18,7 @@ export interface Users {
     email: string;
     role: UserRole;
     status: boolean;
+    duty_start?: string,
 
     duty_end: string | null;
 
