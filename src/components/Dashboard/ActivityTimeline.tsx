@@ -16,9 +16,23 @@ import {
   Shield,
   TriangleAlert,
   History,
+  type LucideIcon,
 } from "lucide-react";
 
-const activities = [
+
+type ActivityColor = keyof typeof colorMap;
+
+type Activity = {
+  id: number;
+  title: string;
+  description: string;
+  time: string;
+  badge: string;
+  color: ActivityColor;
+  icon: LucideIcon;
+};
+  
+const activities : Activity[] = [
   {
     id: 1,
     title: "John Doe",

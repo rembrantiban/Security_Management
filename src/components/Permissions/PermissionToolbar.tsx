@@ -21,7 +21,7 @@ type PermissionToolbarProps = {
     setSearch: (value: string) => void;
 
     moduleFilter: string;
-    setModuleFilter: (value: string | null) => void;
+    setModuleFilter: (value: string) => void;
 
     modules: string[];
 
@@ -110,7 +110,7 @@ export default function PermissionToolbar({
 
                     <Select
                         value={moduleFilter}
-                        onValueChange={setModuleFilter}
+                         onValueChange={(value) => setModuleFilter(value ?? "All")}
                     >
                         <SelectTrigger className="w-full md:w-60">
 
