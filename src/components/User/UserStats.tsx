@@ -31,14 +31,14 @@ export default function UserStats() {
     color: "from-emerald-500 to-green-500",
   },
   {
-    title: "Administrators",
-    value: stats.administrators,
-    subtitle: "Full Access",
+    title: "Authorized Staff",
+    value: stats.authorized_staff,
+    subtitle: "Staff accounts with system access",
     icon: Shield,
     color: "from-violet-500 to-purple-500",
   },
   {
-    title: "Disabled",
+    title: "Deactivated Users",
     value: stats.disabledUsers,
     subtitle: "Need Review",
     icon: UserX,

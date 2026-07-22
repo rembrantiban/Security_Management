@@ -40,7 +40,7 @@ export interface RegisterData {
 export interface UserStatistics {
     totalUsers: number;
     activeUsers: number;
-    administrators: number;
+    authorized_staff: number;
     disabledUsers: number;
 }
 
@@ -100,7 +100,7 @@ interface AuthState {
     updateUserStatus: (user_id: number, status: boolean) => Promise<boolean>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     selectedUserById: null,
     isAuthenticated: false,
@@ -112,9 +112,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     stats: {
         totalUsers: 0,
         activeUsers: 0,
-        administrators: 0,
+        authorized_staff: 0,
         disabledUsers: 0,
     },
+
     securityPersonnel: [],
 
 
@@ -129,6 +130,8 @@ export const useAuthStore = create<AuthState>((set) => ({
                 "/auth/change-password",
                 data
             );
+
+            await get().getCurrentUser();
 
             set({
                 isLoading: false,
@@ -170,11 +173,17 @@ export const useAuthStore = create<AuthState>((set) => ({
                 data
             );
 
-            set({
-                user: response.user,
+            await get().getCurrentUser();
+            set((state) => ({
+                user: state.user
+                    ? {
+                        ...state.user,
+                        ...response.user,
+                    }
+                    : response.user,
                 isLoading: false,
                 error: null,
-            });
+            }));
 
             return {
                 success: true,
@@ -198,6 +207,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             };
         }
     },
+
     getUserById: async (user_id) => {
         try {
             set({
@@ -209,10 +219,13 @@ export const useAuthStore = create<AuthState>((set) => ({
                 `/auth/user/${user_id}`
             );
 
+
+
             set({
                 selectedUserById: data.user,
                 isLoading: false,
             });
+
 
             return true;
         } catch (error) {
@@ -228,6 +241,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             return false;
         }
     },
+
     getSecurityPersonnel: async () => {
         try {
             set({
@@ -253,45 +267,51 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
     },
 
-    updateUserStatus: async (user_id: number, status: boolean
-    ) => {
-        try {
-            set({
-                isLoading: true,
-                error: null,
-            });
+  updateUserStatus: async (user_id: number, status: boolean) => {
+    try {
+        set({
+            isLoading: true,
+            error: null,
+        });
 
-            const response = await AxiosInstance.put(
-                `/auth/update-user-status/${user_id}`,
-                { status }
-            );
+      const response =  await AxiosInstance.put(
+            `/auth/update-user-status/${user_id}`,
+            { status }
+        );
+       
+        set((state) => ({
+            users: state.users.map((user) =>
+                user.user_id === user_id
+                    ? {
+                          ...user,
+                          status: response.data.user.status,
+                      }
+                    : user
+            ),
+        }));
 
-            set((state) => ({
-                users: state.users.map((user) =>
-                    user.user_id === user_id
-                        ? {
-                            ...user,
-                            status: response.data.user.status,
-                        }
-                        : user
-                ),
-                isLoading: false,
-            }));
+        // Refresh dashboard statistics
+        await get().getUserStatistics();
 
-            return true;
-        } catch (error) {
-            const err = error as AxiosError<{ message: string }>;
+        set({
+            isLoading: false,
+        });
 
-            set({
-                isLoading: false,
-                error:
-                    err.response?.data?.message ??
-                    "Failed to update user status",
-            });
+        return true;
+    } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
 
-            return false;
-        }
-    },
+        set({
+            isLoading: false,
+            error:
+                err.response?.data?.message ??
+                "Failed to update user status",
+        });
+
+        return false;
+    }
+},
+
     deleteUser: async (user_id: number) => {
         try {
             set({
@@ -375,37 +395,35 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
     },
     createUserByAdmin: async (data: RegisterData) => {
-        try {
-            set({
-                isLoading: true,
-                error: null,
-            });
+    try {
+        set({
+            isLoading: true,
+            error: null,
+        });
 
-            const response = await AxiosInstance.post(
-                "/auth/create-user",
-                data
-            );
+        await AxiosInstance.post("/auth/create-user", data);
 
-            set((state) => ({
-                users: [response.data.user, ...state.users],
-                isLoading: false,
-            }));
+        await get().getAllUsers();
 
-            return true;
-        } catch (error) {
-            const err = error as AxiosError<{ message: string }>;
+        set({
+            isLoading: false,
+            error: null,
+        });
 
-            set({
-                isLoading: false,
-                error:
-                    err.response?.data?.message ||
-                    "Failed to create user",
-            });
+        return true;
+    } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
 
-            return false;
-        }
-    },
+        set({
+            isLoading: false,
+            error:
+                err.response?.data?.message ||
+                "Failed to create user",
+        });
 
+        return false;
+    }
+},
 
     getAllUsers: async () => {
         try {
