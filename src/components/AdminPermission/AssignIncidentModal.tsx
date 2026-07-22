@@ -149,8 +149,8 @@ export default function AssignIncidentModal({
                                 <p className="text-sm font-medium text-slate-800">
                                     {selectedPerson.first_name} {selectedPerson.last_name}
                                 </p>
-                                <p className={`text-xs ${selectedPerson.on_duty ? "text-green-600" : "text-red-600"}`}>
-                                    · {selectedPerson.on_duty ? "On Duty" : "Not On Duty"}
+                                <p className="text-xs  text-green-600">
+                                    On Duty
                                 </p>
                             </div>
                         </div>

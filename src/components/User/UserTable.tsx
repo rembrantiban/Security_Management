@@ -38,7 +38,6 @@ import { useState } from "react"
 import EditUserDialog from "./EditUserDialog";
 import DeleteUserDialog from "./DeleteUserDialog";
 import UpdateUserStatusDialog from "./UpdateUserStatusDialog";
-import SetDutyScheduleDialog from "./SetDutyScheduleDialog";
 import { useToast } from "@/hooks/useToast"
 
 type Props = {
@@ -47,7 +46,7 @@ type Props = {
 
 export default function UserTable({ users }: Props) {
 
-    const { isFetchingUsers, deleteUser, isLoading, updateUserStatus, setDutySchedule } = useAuth();
+    const { isFetchingUsers, deleteUser, isLoading, updateUserStatus } = useAuth();
     const navigate = useNavigate()
     const [open, setOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<Users | null>(null);
@@ -55,33 +54,13 @@ export default function UserTable({ users }: Props) {
     const [selectedUserDelete, setSelectedUserDelete] = useState<Users | null>(null);
     const [statusOpen, setStatusOpen] = useState(false);
     const [selectedUserStatus, setSelectedUserStatus] = useState<Users | null>(null);
-    const [scheduleOpen, setScheduleOpen] = useState(false);
-    const [selectedScheduleUser, setSelectedScheduleUser] = useState<Users | null>(null);
     const { showToast } = useToast();
 
     if (isFetchingUsers) {
         return <UserSkeleton />;
     }
 
-    const handleSetSchedule = async (
-        duty_start: string,
-        duty_end: string
-    ) => {
-        if (!selectedScheduleUser) return;
 
-        const success = await setDutySchedule(
-            selectedScheduleUser.user_id,
-            {
-                duty_start,
-                duty_end,
-            }
-        );
-
-        if (success) {
-            setScheduleOpen(false);
-            setSelectedScheduleUser(null);
-        }
-    };
 
     const handleUpdateUserStatus = async () => {
         if (!selectedUserStatus) return;
@@ -356,14 +335,6 @@ export default function UserTable({ users }: Props) {
                     user={selectedUserStatus}
                     loading={isLoading}
                     onConfirm={handleUpdateUserStatus}
-                />
-
-                <SetDutyScheduleDialog
-                    key={selectedScheduleUser?.user_id}
-                    open={scheduleOpen}
-                    onOpenChange={setScheduleOpen}
-                    personnel={selectedScheduleUser}
-                    onSave={handleSetSchedule}
                 />
             </div>
         </div>

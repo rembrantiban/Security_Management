@@ -122,7 +122,7 @@ export default function AddUserDialog({
             open={open}
             onOpenChange={onOpenChange}
         >
-            <DialogContent className="sm:max-w-2xl rounded">
+            <DialogContent className="sm:max-w-2xl rounded-2xl">
 
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
@@ -302,11 +302,6 @@ export default function AddUserDialog({
                                 <SelectItem value="Authorized Staff">
                                     Authorized Staff
                                 </SelectItem>
-
-                                <SelectItem value="Administrator">
-                                    Administrator
-                                </SelectItem>
-
                             </SelectContent>
 
                         </Select>

@@ -1,11 +1,11 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Mail, Lock, TriangleAlert, ShieldCheck, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StatusModal from "@/components/Modal/StatusModal";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "@/store/useAuthStore";
 import { motion, type Variants } from "framer-motion";
-
+import { useRolePermissionStore } from "@/store/useRolePermissionStore";
 
 const fadeLeft: Variants = {
   hidden: {
@@ -51,6 +51,7 @@ export default function LoginPage() {
   const [statusType, setStatusType] = useState<"success" | "error">("success");
   const [statusMessage, setStatusMessage] = useState("");
   const { isLoading, login, error } = useAuth();
+  const { getRolePermissions } = useRolePermissionStore();
   const navigate = useNavigate();
 
   const isValid =
@@ -59,45 +60,81 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(formData.login, formData.password);
 
-    if (!success) {
-      setStatusType("error");
-      setStatusMessage(error || "Login failed.");
-      setStatusOpen(true);
-      return;
-    }
+    try {
+      const loggedInUser = await login(
+        formData.login,
+        formData.password
+      );
 
-    const loggedInUser = useAuthStore.getState().user;
-
-    setStatusType("success");
-    setStatusMessage("Welcome back! Login successful.");
-    setStatusOpen(true);
-
-    setTimeout(() => {
-      switch (loggedInUser?.role) {
-        case "Administrator":
-          navigate("/dashboard");
-          break;
-
-        case "Security Personnel":
-          navigate("/personnel/dashboard");
-          break;
-
-        case "Authorized Staff":
-          navigate("/staff/dashboard");
-          break;
-
-        case "IT System Administrator":
-          navigate("/it-system-administrator/permissions");
-          break;
-
-        default:
-          navigate("/");
+      if (!loggedInUser) {
+        setStatusType("error");
+        setStatusMessage(error || "Login failed.");
+        setStatusOpen(true);
+        return;
       }
-    }, 1500);
+
+
+      console.log("✅ Login Success");
+
+      console.log("✅ Current User Loaded");
+
+      const user = useAuthStore.getState().user;
+
+      if (user) {
+        await getRolePermissions(user.role);
+        console.log("✅ Permissions Loaded");
+      }
+
+      console.log("✅ Showing Success Modal");
+
+      setStatusType("success");
+      setStatusMessage("Welcome back! Login successful.");
+      setStatusOpen(true);
+
+      setTimeout(() => {
+        switch (loggedInUser.role) {
+          case "Administrator":
+            navigate("/dashboard");
+            break;
+
+          case "Security Personnel":
+            navigate("/personnel/dashboard");
+            break;
+
+          case "Authorized Staff":
+            navigate("/staff/dashboard");
+            break;
+
+          case "IT System Administrator":
+            navigate("/it-system-administrator/permissions");
+            break;
+
+          default:
+            navigate("/");
+        }
+      }, 1500);
+
+    } catch (err) {
+      console.error("HANDLE SUBMIT ERROR:", err);
+
+      setStatusType("error");
+      setStatusMessage("Something went wrong.");
+      setStatusOpen(true);
+    }
   };
 
+  useEffect(() => {
+    console.log("Status:", statusOpen, statusType);
+  }, [statusOpen, statusType]);
+
+  useEffect(() => {
+    console.log("LoginPage Mounted");
+
+    return () => {
+      console.log("LoginPage Unmounted");
+    };
+  }, []);
 
   return (
     <div className="min-h-screen w-full bg-white lg:grid lg:grid-cols-2">

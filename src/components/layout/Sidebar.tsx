@@ -50,6 +50,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const navigate = useNavigate();
 
+
+console.log("SIDEBAR USER:", user);
+console.log("SIDEBAR PERMISSIONS:", user?.permissions);
+  
+
   const userData: User = {
     firstName: user?.first_name || "John",
     lastName: user?.last_name || "Doe",
@@ -67,6 +72,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       icon: <Users size={17} />,
       path: "/users",
     },
+    
   ].filter(Boolean) as ItemType[];
 
   const security: ItemType[] = [
@@ -91,6 +97,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       icon: <ShieldCheck size={17} />,
       path: "/access",
     },
+    
   ].filter(Boolean) as ItemType[];
 
 
@@ -114,7 +121,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   //Personnel Item Dashboard
 
   const personelDashboard: ItemType[] = [
-    hasModulePermission("Dashboard Module", "View Personnel Dashboard") && {
+    hasModulePermission("Dashbaord Module", "View Personnel Dashboard") && {
       name: "Dashboard", icon: <LayoutDashboard size={17} />, path: "/personnel/dashboard" }
   ].filter(Boolean) as ItemType[];
 
@@ -126,13 +133,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const personnelIncidents: ItemType[] = [
     hasModulePermission("Incident Reporting and Management Module", "Personnel View") && {
       name: "Incidents", icon: <AlertTriangle size={17} />, path: "/personnel/incidents" },
-    hasModulePermission("Surveillance and Monitoring Module", "View") && {
+    hasModulePermission("Surveillance and Monitoring Module", "Personnel View") && {
       name: "Assign Areas", icon: <MapPinned size={17} />, path: "/personnel/surveillance" }
   ].filter(Boolean) as ItemType[];
 
 
   const personnelVisitors: ItemType[] = [
-    hasModulePermission("Visitor and Access Control Module", "View") && {
+    hasModulePermission("Visitor and Access Control Module", "Personnel View") && {
       name: "Visitors", icon: <HatGlasses size={17} />, path: "/personnel/visitors" },
   ].filter(Boolean) as ItemType[];
 
@@ -159,7 +166,6 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     { name: "Permissions", icon: <ShieldCheck size={17} />, path: "/it-system-administrator/permissions" },
     { name: "Role Access", icon: <Key size={17} />, path: "/it-system-administrator/role-access" }
   ].filter(Boolean) as ItemType[];
-
 
 
 
@@ -216,28 +222,28 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </div>
 
       {/* Nav groups */}
-      {security.length > 0 && (
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-          <NavGroup label="Main" items={main} />
-          <NavGroup label="User Management" items={userManagement} />
-          <NavGroup label="Security" items={security} />
-          <NavGroup label="Reports & Logs" items={reports} />
-          <NavGroup label="Others" items={record} />
-          <NavGroup label="System" items={system} />
+     {user?.role === "Administrator" && (
+  <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+    <NavGroup label="Main" items={main} />
+    <NavGroup label="User Management" items={userManagement} />
+    <NavGroup label="Security" items={security} />
+    <NavGroup label="Reports & Logs" items={reports} />
+    <NavGroup label="Others" items={record} />
+    <NavGroup label="System" items={system} />
+  </nav>
+)}
 
-          {/*Personnel pages */}
-
-           <NavGroup label="Main" items={personelDashboard} />
-          <NavGroup label="Account" items={personnelAccount} />
-          <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
-          <NavGroup label="Permissions" items={personnelVisitors} />
-          <NavGroup label="Reports & Logs" items={personnelReports} />
-          <NavGroup label="Record" items={personnelRecord} />
-          <NavGroup label="Notifications" items={personnelNotifications} />
-
-
-        </nav>
-      )}
+{user?.role === "Security Personnel" && (
+  <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+    <NavGroup label="Main" items={personelDashboard} />
+    <NavGroup label="Account" items={personnelAccount} />
+    <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
+    <NavGroup label="Visitors" items={personnelVisitors} />
+    <NavGroup label="Reports" items={personnelReports} />
+    <NavGroup label="Record" items={personnelRecord} />
+    <NavGroup label="Notifications" items={personnelNotifications} />
+  </nav>
+)}
 
       {user?.role === "IT System Administrator" && (
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">

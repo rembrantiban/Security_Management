@@ -24,14 +24,19 @@ import AdminVisitorRequestsPage from "./pages/Adminvisitorrequestspage";
 import MyPatrolReportsPage from "./pages/MyPatrolReportsPage";
 import Permissions from "./pages/Permissions";
 import RolePermission from "@/pages/RolePermissions"
+import { useAuthStore } from "./store/useAuthStore";
 
 
 function App() {
   const { getMeLoading, getCurrentUser } = useAuth();
-  useEffect(() => {
-    getCurrentUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+ useEffect(() => {
+    const { isAuthenticated } = useAuthStore.getState();
+
+    if (!isAuthenticated) {
+        getCurrentUser();
+    }
+  //eslint-disable-next-line
+}, []);
 
 
   if (getMeLoading) {

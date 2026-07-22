@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import AxiosInstance from "@/api/AxiosInstance";
 import { AxiosError } from "axios";
-
+import type { UserRole } from "./useRolePermissionStore"
 
 export interface UserPermission {
     permission_id: number;
@@ -16,7 +16,7 @@ export interface Users {
     last_name: string;
     username: string;
     email: string;
-    role: string;
+    role: UserRole;
     status: boolean;
 
     duty_end: string | null;
@@ -116,46 +116,46 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
     securityPersonnel: [],
 
-    
+
     changePassword: async (data) => {
-    try {
-        set({
-            isLoading: true,
-            error: null,
-        });
+        try {
+            set({
+                isLoading: true,
+                error: null,
+            });
 
-        const { data: response } = await AxiosInstance.put(
-            "/auth/change-password",
-            data
-        );
+            const { data: response } = await AxiosInstance.put(
+                "/auth/change-password",
+                data
+            );
 
-        set({
-            isLoading: false,
-            error: null,
-        });
+            set({
+                isLoading: false,
+                error: null,
+            });
 
-        return {
-            success: true,
-            message: response.message,
-        };
-    } catch (error) {
-        const err = error as AxiosError<{ message: string }>;
+            return {
+                success: true,
+                message: response.message,
+            };
+        } catch (error) {
+            const err = error as AxiosError<{ message: string }>;
 
-        const message =
-            err.response?.data?.message ??
-            "Failed to change password.";
+            const message =
+                err.response?.data?.message ??
+                "Failed to change password.";
 
-        set({
-            isLoading: false,
-            error: message,
-        });
+            set({
+                isLoading: false,
+                error: message,
+            });
 
-        return {
-            success: false,
-            message,
-        };
-    }
-},
+            return {
+                success: false,
+                message,
+            };
+        }
+    },
 
     changeAccountDetails: async (data) => {
         try {
@@ -468,32 +468,29 @@ export const useAuthStore = create<AuthState>((set) => ({
                 error: null,
             });
 
-            const { data } = await AxiosInstance.post(
-                "/auth/login",
-                {
-                    login,
-                    password,
-                }
-            );
+            const { data } = await AxiosInstance.post("/auth/login", {
+                login,
+                password,
+            });
 
             set({
                 user: data.user,
                 isAuthenticated: true,
                 isLoading: false,
+                error: null,
             });
 
+            console.log("LOGIN USER:", useAuthStore.getState().user);
             return data.user;
         } catch (error) {
             const err = error as AxiosError<{ message: string }>;
 
             set({
                 isLoading: false,
-                error:
-                    err.response?.data?.message ||
-                    "Login failed",
+                error: err.response?.data?.message ?? "Login failed",
             });
 
-            return false;
+            return null;
         }
     },
 
