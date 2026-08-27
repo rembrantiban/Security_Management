@@ -205,7 +205,7 @@ export default function AssignedDashboard() {
                                                 <span className="text-xs font-medium opacity-70">
                                                     {alert.id}
                                                 </span>
-                                            </div>
+                                            </div>  
                                             <p className="mt-0.5 text-xs opacity-80">
                                                 {alert.area} · {alert.time}
                                             </p>
@@ -234,7 +234,6 @@ export default function AssignedDashboard() {
         </section>
     );
 }
-
 const summaryTones = {
     orange: "bg-orange-50 text-orange-600",
     amber: "bg-amber-50 text-amber-600",
