@@ -21,7 +21,11 @@ export default function DashboardLayout() {
         {/* Readability wash */}
         <div className="pointer-events-none absolute inset-0 bg-slate-100/40 dark:bg-slate-900/85" />
 
-        <div className="relative z-10">
+        {/* Topbar must sit in a higher stacking context than <main>, otherwise
+            page content (cards, tables, charts) paints over the notification /
+            profile dropdowns since they share the same z-index and <main> comes
+            later in the DOM. */}
+        <div className="relative z-30">
           <Topbar onMenuClick={() => setSidebarOpen(true)} />
         </div>
 

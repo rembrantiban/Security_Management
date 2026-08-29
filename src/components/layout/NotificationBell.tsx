@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Bell,
     Check,
@@ -12,6 +13,7 @@ import {
     type MyNotification,
     type NotificationType,
 } from "@/store/useNotificationStore";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import type { ToastType } from "@/store/useToastStore";
 
@@ -55,16 +57,31 @@ function timeAgo(iso: string | null): string {
 
 function NotificationRow({
     n,
+    onOpen,
     onAcknowledge,
 }: {
     n: MyNotification;
+    onOpen: () => void;
     onAcknowledge: () => void;
 }) {
     const meta = typeMeta[n.type];
     const Icon = meta.icon;
 
     return (
-        <li className="flex gap-3 px-4 py-3">
+        <li
+            role="button"
+            tabIndex={0}
+            onClick={onOpen}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onOpen();
+                }
+            }}
+            className={`flex cursor-pointer gap-3 px-4 py-3 transition hover:bg-slate-50 ${
+                n.read_at ? "" : "bg-amber-50/40"
+            }`}
+        >
             <div
                 className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ring-1 ${meta.tile}`}
             >
@@ -100,7 +117,10 @@ function NotificationRow({
                     ) : (
                         <button
                             type="button"
-                            onClick={onAcknowledge}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAcknowledge();
+                            }}
                             className="inline-flex items-center gap-1.5 rounded-lg bg-amber-800 px-2.5 py-1 text-[10.5px] font-medium text-white transition hover:bg-amber-900"
                         >
                             <Check className="h-3 w-3" />
@@ -119,10 +139,18 @@ export default function NotificationBell() {
         unreadCount,
         unacknowledgedCount,
         getMyNotifications,
+        markRead,
         markAllRead,
         acknowledge,
     } = useNotificationStore();
     const { showToast } = useToast();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    const notifPath =
+        user?.role === "Security Personnel"
+            ? "/personnel/notifications"
+            : "/notifications";
 
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
@@ -166,10 +194,19 @@ export default function NotificationBell() {
         return () => document.removeEventListener("mousedown", onDoc);
     }, [open]);
 
-    const toggle = () => {
-        const next = !open;
-        setOpen(next);
-        if (next && unreadCount > 0) markAllRead();
+    const toggle = () => setOpen((v) => !v);
+
+    // Open one notification: mark it read, then jump to the full inbox with
+    // that notification focused — same behaviour as a real notification tray.
+    const openNotification = (n: MyNotification) => {
+        if (!n.read_at) markRead(n.notification_id);
+        setOpen(false);
+        navigate(`${notifPath}?focus=${n.notification_id}`);
+    };
+
+    const viewAll = () => {
+        setOpen(false);
+        navigate(notifPath);
     };
 
     return (
@@ -200,13 +237,23 @@ export default function NotificationBell() {
                                     : "You're all caught up"}
                             </p>
                         </div>
-                        <button
-                            onClick={() => setOpen(false)}
-                            className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                            aria-label="Close"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                            {unreadCount > 0 && (
+                                <button
+                                    onClick={() => markAllRead()}
+                                    className="rounded-lg px-2 py-1 text-[10.5px] font-medium text-amber-800 transition hover:bg-amber-50"
+                                >
+                                    Mark all read
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setOpen(false)}
+                                className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                                aria-label="Close"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="max-h-[380px] overflow-y-auto">
@@ -228,6 +275,7 @@ export default function NotificationBell() {
                                     <NotificationRow
                                         key={n.notification_id}
                                         n={n}
+                                        onOpen={() => openNotification(n)}
                                         onAcknowledge={() =>
                                             acknowledge(n.notification_id)
                                         }
@@ -236,6 +284,15 @@ export default function NotificationBell() {
                             </ul>
                         )}
                     </div>
+
+                    {myNotifications.length > 0 && (
+                        <button
+                            onClick={viewAll}
+                            className="block w-full border-t border-slate-100 px-4 py-2.5 text-center text-[11.5px] font-medium text-amber-800 transition hover:bg-amber-50"
+                        >
+                            View all notifications
+                        </button>
+                    )}
                 </div>
             )}
         </div>

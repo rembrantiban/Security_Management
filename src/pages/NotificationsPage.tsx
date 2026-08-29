@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
     BellRing,
     Siren,
@@ -7,6 +8,8 @@ import {
     Send,
     CalendarClock,
     Check,
+    ChevronLeft,
+    ChevronRight,
     Clock3,
     Users2,
     Loader2,
@@ -62,6 +65,9 @@ const AUDIENCES: NotificationAudience[] = [
     "Authorized Staff",
 ];
 
+/** Rows per page in the admin notification-history table. */
+const HISTORY_PAGE_SIZE = 8;
+
 function fmtDateTime(value: string | null) {
     if (!value) return "—";
     return new Date(value).toLocaleString("en-US", {
@@ -89,10 +95,30 @@ function AdminConsole() {
     const [scheduleOn, setScheduleOn] = useState(false);
     const [scheduledFor, setScheduledFor] = useState("");
 
+    const [page, setPage] = useState(1);
+
     useEffect(() => {
         getHistory();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const pageCount = Math.max(
+        1,
+        Math.ceil(history.length / HISTORY_PAGE_SIZE)
+    );
+
+    useEffect(() => {
+        if (page > pageCount) setPage(pageCount);
+    }, [page, pageCount]);
+
+    const pagedHistory = useMemo(
+        () =>
+            history.slice(
+                (page - 1) * HISTORY_PAGE_SIZE,
+                page * HISTORY_PAGE_SIZE
+            ),
+        [history, page]
+    );
 
     const canSend =
         title.trim() !== "" &&
@@ -308,7 +334,7 @@ function AdminConsole() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {history.map((n) => {
+                                {pagedHistory.map((n) => {
                                     const Icon = typeIcon[n.type];
                                     return (
                                         <TableRow
@@ -391,6 +417,48 @@ function AdminConsole() {
                             </TableBody>
                         </Table>
                     </div>
+
+                    {history.length > 0 && (
+                        <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-3">
+                            <p className="text-[11px] text-slate-400 tabular-nums">
+                                {(page - 1) * HISTORY_PAGE_SIZE + 1}–
+                                {Math.min(
+                                    page * HISTORY_PAGE_SIZE,
+                                    history.length
+                                )}{" "}
+                                of {history.length}
+                            </p>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setPage((p) => Math.max(1, p - 1))
+                                    }
+                                    disabled={page <= 1}
+                                    className="inline-flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-transparent"
+                                >
+                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                    Prev
+                                </button>
+                                <span className="px-2 text-[11px] tabular-nums text-slate-500">
+                                    Page {page} of {pageCount}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setPage((p) =>
+                                            Math.min(pageCount, p + 1)
+                                        )
+                                    }
+                                    disabled={page >= pageCount}
+                                    className="inline-flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-transparent"
+                                >
+                                    Next
+                                    <ChevronRight className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -407,10 +475,16 @@ function RecipientInbox() {
         myNotifications,
         unacknowledgedCount,
         getMyNotifications,
+        markRead,
         acknowledge,
     } = useNotificationStore();
 
     const [filter, setFilter] = useState<"all" | "unacknowledged">("all");
+
+    const [searchParams] = useSearchParams();
+    const focusId = Number(searchParams.get("focus")) || null;
+    const rowRefs = useRef<Map<number, HTMLElement>>(new Map());
+    const [highlightId, setHighlightId] = useState<number | null>(null);
 
     useEffect(() => {
         getMyNotifications();
@@ -424,6 +498,21 @@ function RecipientInbox() {
                 : myNotifications,
         [myNotifications, filter]
     );
+
+    // Arriving from the topbar bell (?focus=<id>): scroll the notification into
+    // view, flag it read, and pulse a highlight ring for a couple of seconds.
+    useEffect(() => {
+        if (!focusId || myNotifications.length === 0) return;
+
+        const el = rowRefs.current.get(focusId);
+        if (!el) return;
+
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        markRead(focusId);
+        setHighlightId(focusId);
+        const t = setTimeout(() => setHighlightId(null), 2500);
+        return () => clearTimeout(t);
+    }, [focusId, myNotifications, markRead]);
 
     const onAck = async (id: number) => {
         const ok = await acknowledge(id);
@@ -508,7 +597,22 @@ function RecipientInbox() {
                         return (
                             <article
                                 key={n.notification_id}
-                                className="rounded-2xl bg-white/50 p-4 shadow-sm ring-1 ring-slate-200"
+                                ref={(el) => {
+                                    if (el)
+                                        rowRefs.current.set(
+                                            n.notification_id,
+                                            el
+                                        );
+                                    else
+                                        rowRefs.current.delete(
+                                            n.notification_id
+                                        );
+                                }}
+                                className={`scroll-mt-24 rounded-2xl bg-white/50 p-4 shadow-sm ring-1 transition-all duration-500 ${
+                                    highlightId === n.notification_id
+                                        ? "ring-2 ring-amber-400 bg-amber-50/60"
+                                        : "ring-slate-200"
+                                }`}
                             >
                                 <div className="flex gap-3">
                                     <div

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotificationStore } from "@/store/useNotificationStore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +37,7 @@ type ItemType = {
   icon: React.ReactNode;
   path: string;
   children?: ItemType[];
+  badge?: number;
 };
 
 type User = {
@@ -54,6 +56,24 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const getMyNotifications = useNotificationStore((s) => s.getMyNotifications);
+
+  // Keep the sidebar notification badge in sync for the roles that receive
+  // notifications. The store is shared with the topbar bell, so reads there
+  // (mark-as-read / acknowledge) update this badge immediately too.
+  useEffect(() => {
+    if (
+      user?.role !== "Security Personnel" &&
+      user?.role !== "Authorized Staff"
+    ) {
+      return;
+    }
+    getMyNotifications();
+    const timer = setInterval(getMyNotifications, 30_000);
+    return () => clearInterval(timer);
+  }, [user?.role, getMyNotifications]);
 
   const userData: User = {
     firstName: user?.first_name || "John",
@@ -171,6 +191,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       name: "Notifications",
       icon: <Bell size={16} />,
       path: "/personnel/notifications",
+      badge: unreadCount,
     },
   ].filter(Boolean) as ItemType[];
 
@@ -200,7 +221,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   ].filter(Boolean) as ItemType[];
 
   const staffNotifications: ItemType[] = [
-    { name: "Notifications", icon: <Bell size={16} />, path: "/notifications" },
+    {
+      name: "Notifications",
+      icon: <Bell size={16} />,
+      path: "/notifications",
+      badge: unreadCount,
+    },
   ];
 
   const handleLogout = async () => {
@@ -236,6 +262,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               {item.icon}
             </span>
             <span className="truncate">{item.name}</span>
+            {typeof item.badge === "number" && item.badge > 0 && (
+              <span className="ml-auto flex h-4.5 min-w-4.5 shrink-0 items-center justify-center rounded-full bg-amber-200 px-1 text-[10px] font-semibold text-amber-900">
+                {item.badge > 99 ? "99+" : item.badge}
+              </span>
+            )}
           </>
         )}
       </NavLink>
