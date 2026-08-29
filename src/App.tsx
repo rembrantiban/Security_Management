@@ -33,6 +33,7 @@ import StaffIncidentsPage from "@/pages/StaffIncidentsPage"
 import VisitorHistoryPage from "@/pages/VisitorHistoryPage"
 import VisitorBlacklistPage from "@/pages/VisitorBlacklistPage"
 import NotificationsPage from "@/pages/NotificationsPage"
+import RecordPage from "@/pages/RecordPage"
 
 
 function App() {
@@ -86,6 +87,7 @@ function App() {
           <Route path="/it-system-administrator/permissions" element={<Permissions />} />
           <Route path="/it-system-administrator/role-access" element={<RolePermission />} />
           <Route path="/reports" element={<Report />} />
+          <Route path="/record" element={<RecordPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/personnel/notifications" element={<NotificationsPage />} />
         </Route>
