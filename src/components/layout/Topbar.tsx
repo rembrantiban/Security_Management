@@ -1,14 +1,30 @@
-import { Search, Bell, HelpCircle, Menu } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Menu, ChevronDown, UserCircle, LogOut } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import LogoutDialog from "@/components/LogoutModal/LogoutModal";
+import NotificationBell from "@/components/layout/NotificationBell";
 
 type TopbarProps = {
   onMenuClick: () => void;
 };
 
+/** Roles that see the notifications bell. */
+const NOTIFICATION_ROLES = new Set(["Authorized Staff", "Security Personnel"]);
+
 export default function Topbar({ onMenuClick }: TopbarProps) {
   const location = useLocation();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   const getTitle = () => {
     if (location.pathname === "/dashboard") return "Dashboard";
@@ -20,70 +36,128 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
     return "Security Management System";
   };
 
-  const getSubtitle = () => {
-    const now = new Date();
-    return now.toLocaleDateString("en-US", {
+  const getSubtitle = () =>
+    new Date().toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
       day: "numeric",
     });
+
+  const firstName = user?.first_name ?? "";
+  const lastName = user?.last_name ?? "";
+  const fullName = `${firstName} ${lastName}`.trim() || "User";
+  const role = user?.role ?? "—";
+  const initials =
+    `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "U";
+
+  const showNotifications = !!user?.role && NOTIFICATION_ROLES.has(user.role);
+  const profilePath =
+    user?.role === "Administrator" ? "/my-account" : "/other-role-account";
+
+  const handleLogout = async () => {
+    await logout();
   };
 
-  const firstName = user?.first_name || "S";
-  const lastName = user?.last_name || "T";
-
   return (
-    <header className="w-full h-15 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-4 py-3 gap-4 shadow-sm">
+    <header className="flex h-15 w-full items-center justify-between gap-4 border-b border-slate-200/80 bg-white px-4 py-3 shadow-sm">
 
-      {/* LEFT: Hamburger (mobile) + Title */}
-      <div className="flex items-center gap-3 min-w-0">
+      {/* LEFT: menu + title */}
+      <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="lg:hidden shrink-0 p-2 rounded-xl text-gray-500 hover:bg-orange-50 hover:text-orange-700 transition"
+          className="shrink-0 rounded-xl p-2 text-slate-500 transition hover:bg-amber-50 hover:text-amber-800 lg:hidden"
           aria-label="Open menu"
         >
           <Menu size={20} />
         </button>
 
         <div className="min-w-0">
-          <h1 className="text-base font-semibold text-gray-800 leading-tight truncate">
+          <h1 className="truncate text-[15px] font-semibold leading-tight text-slate-800">
             {getTitle()}
           </h1>
-          <p className="hidden sm:block text-xs text-gray-400 mt-0.5">{getSubtitle()}</p>
+          <p className="mt-0.5 hidden text-[11px] text-slate-400 sm:block">
+            {getSubtitle()}
+          </p>
         </div>
       </div>
 
       {/* RIGHT */}
-      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
 
-        {/* Search — hidden on mobile */}
-        <button className="hidden md:flex items-center gap-2 bg-gray-50 border border-gray-200 hover:border-orange-300 hover:bg-orange-50 px-3 py-2 rounded-xl text-sm text-gray-400 transition group">
-          <Search size={14} className="group-hover:text-orange-600 transition" />
-          <span className="text-gray-400 group-hover:text-orange-600 transition">Search</span>
-          <kbd className="bg-white border border-gray-200 px-1.5 py-0.5 rounded-md text-[10px] text-gray-400 font-mono">
-            ⌘K
-          </kbd>
-        </button>
-
-        {/* Notifications */}
-        <button className="relative p-2 rounded-xl text-gray-500 hover:bg-orange-50 hover:text-orange-700 transition">
-          <Bell size={18} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white" />
-        </button>
-
-        {/* Help */}
-        <button className="p-2 rounded-xl text-gray-500 hover:bg-orange-50 hover:text-orange-700 transition">
-          <HelpCircle size={18} />
-        </button>
+        {/* Notifications — Authorized Staff & Security Personnel only */}
+        {showNotifications && <NotificationBell />}
 
         {/* Divider */}
-        <div className="hidden sm:block w-px h-6 bg-gray-200 mx-1" />
+        <div className="mx-0.5 hidden h-6 w-px bg-slate-200 sm:block" />
 
-        {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-linear-to-br from-orange-700 to-amber-500 text-white flex items-center justify-center text-sm font-semibold shadow-sm shadow-orange-900/20 cursor-pointer hover:scale-105 transition-transform">
-          {firstName[0]}{lastName[0]}
-        </div>
+        {/* User menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <button className="group flex items-center gap-2.5 rounded-xl p-1 pr-1.5 transition hover:bg-slate-50 sm:pr-2">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-800 text-[12px] font-semibold text-amber-50 ring-1 ring-amber-900/10">
+                {initials}
+              </span>
+
+              <span className="hidden min-w-0 text-left sm:block">
+                <span className="block max-w-[160px] truncate text-[12.5px] font-medium leading-none text-slate-800">
+                  {fullName}
+                </span>
+                <span className="mt-1 block max-w-[160px] truncate text-[11px] text-slate-400">
+                  {role}
+                </span>
+              </span>
+
+              <ChevronDown
+                size={14}
+                className="hidden shrink-0 text-slate-400 transition group-hover:text-slate-600 sm:block"
+              />
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="end"
+            className="w-60 rounded-2xl border-0 p-1 shadow-xl ring-1 ring-slate-200"
+          >
+            <div className="mb-1 flex items-center gap-2.5 px-2.5 py-2">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-800 text-[12px] font-semibold text-amber-50">
+                {initials}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[13px] font-semibold text-slate-800">
+                  {fullName}
+                </p>
+                <p className="truncate text-[11px] text-slate-400">{role}</p>
+              </div>
+            </div>
+
+            <DropdownMenuSeparator className="bg-slate-100" />
+
+            <DropdownMenuItem
+              onClick={() => navigate(profilePath)}
+              className="cursor-pointer gap-2 rounded-lg text-[13px] text-slate-700 focus:bg-amber-50 focus:text-amber-800"
+            >
+              <UserCircle size={15} />
+              My Profile
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="bg-slate-100" />
+
+            <DropdownMenuItem
+              onClick={() => setLogoutOpen(true)}
+              className="cursor-pointer gap-2 rounded-lg text-[13px] text-red-500 focus:bg-red-50 focus:text-red-600"
+            >
+              <LogOut size={15} />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      <LogoutDialog
+        open={logoutOpen}
+        onOpenChange={setLogoutOpen}
+        onConfirm={handleLogout}
+      />
     </header>
   );
 }

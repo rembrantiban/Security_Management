@@ -8,7 +8,6 @@ import {
     MapPin,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -45,17 +44,17 @@ const MOCK_INCIDENTS: Incident[] = [
 ];
 
 const statusConfig = {
-    Pending: { className: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock },
-    "In Progress": { className: "bg-blue-50 text-blue-700 border-blue-200", icon: Loader2 },
-    Resolved: { className: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
-    Closed: { className: "bg-slate-100 text-slate-600 border-slate-200", icon: CheckCircle2 },
+    Pending: { className: "bg-amber-50 text-amber-800 ring-amber-100", icon: Clock },
+    "In Progress": { className: "bg-blue-50 text-blue-700 ring-blue-100", icon: Loader2 },
+    Resolved: { className: "bg-emerald-50 text-emerald-700 ring-emerald-100", icon: CheckCircle2 },
+    Closed: { className: "bg-slate-50 text-slate-500 ring-slate-200", icon: CheckCircle2 },
 };
 
 const severityConfig: Record<Incident["severity"], { badge: string; dot: string; icon: string }> = {
-    Critical: { badge: "bg-red-50 text-red-700 border-red-200", dot: "bg-red-500", icon: "bg-red-50 text-red-600" },
-    High: { badge: "bg-orange-50 text-orange-700 border-orange-200", dot: "bg-orange-500", icon: "bg-orange-50 text-orange-600" },
-    Medium: { badge: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-500", icon: "bg-yellow-50 text-yellow-600" },
-    Low: { badge: "bg-slate-100 text-slate-600 border-slate-200", dot: "bg-slate-400", icon: "bg-slate-100 text-slate-500" },
+    Critical: { badge: "bg-red-50 text-red-700 ring-red-100", dot: "bg-red-500", icon: "bg-red-50 text-red-600 ring-red-100" },
+    High: { badge: "bg-orange-50 text-orange-700 ring-orange-100", dot: "bg-orange-500", icon: "bg-orange-50 text-orange-600 ring-orange-100" },
+    Medium: { badge: "bg-yellow-50 text-yellow-700 ring-yellow-100", dot: "bg-yellow-500", icon: "bg-yellow-50 text-yellow-700 ring-yellow-100" },
+    Low: { badge: "bg-slate-50 text-slate-500 ring-slate-200", dot: "bg-slate-300", icon: "bg-slate-50 text-slate-400 ring-slate-200" },
 };
 
 function timeAgo(value: string) {
@@ -83,20 +82,30 @@ export default function IncidentSummaryDashboard() {
         <div className="space-y-5">
 
             {/* Recent incidents */}
-            <Card className="overflow-hidden rounded border-slate-200 shadow-sm">
+            <Card className="overflow-hidden rounded-2xl border-0 bg-white/50 shadow-sm ring-1 ring-slate-200">
 
                 <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-                    <div>
-                        <p className="text-sm font-semibold text-slate-900">Recent Incidents</p>
-                        <p className="text-xs text-slate-400">Latest reports across all locations</p>
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
+                            <Siren className="h-4 w-4 text-amber-800" />
+                        </div>
+                        <div>
+                            <p className="text-[13px] font-semibold tracking-tight text-slate-900">
+                                Recent Incidents
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-slate-400">
+                                Latest reports across all locations
+                            </p>
+                        </div>
                     </div>
+
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 gap-1 rounded-lg text-xs font-medium text-orange-700 hover:bg-orange-50 hover:text-orange-800"
+                        className="h-7 gap-1 rounded-lg px-2.5 text-[11px] font-medium text-amber-800 hover:bg-amber-50 hover:text-amber-900"
                     >
                         View all
-                        <ChevronRight className="h-3.5 w-3.5" />
+                        <ChevronRight className="h-3 w-3" />
                     </Button>
                 </div>
 
@@ -109,42 +118,61 @@ export default function IncidentSummaryDashboard() {
                             return (
                                 <div
                                     key={inc.incident_id}
-                                    className="group relative flex items-center gap-3.5 px-5 py-3.5 transition-colors hover:bg-slate-50/70"
+                                    className="group relative flex items-center gap-3.5 px-5 py-3 transition-colors duration-200 hover:bg-slate-50"
                                 >
                                     {/* Severity accent bar */}
-                                    <span className={`absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full ${sev.dot}`} />
+                                    <span
+                                        className={`absolute left-0 top-1/2 h-7 w-0.5 -translate-y-1/2 rounded-r-full opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${sev.dot}`}
+                                    />
 
-                                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${sev.icon}`}>
-                                        <Siren className="h-4.5 w-4.5" />
+                                    <div
+                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 ${sev.icon}`}
+                                    >
+                                        <Siren className="h-4 w-4" />
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-medium text-slate-900">
-                                            {inc.title}
-                                        </p>
-                                        <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-400">
+                                        <div className="flex items-center gap-2">
+                                            <p className="truncate text-[13px] font-medium leading-none text-slate-900">
+                                                {inc.title}
+                                            </p>
+                                            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${sev.dot}`} />
+                                        </div>
+
+                                        <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-slate-700">
+                                            <span className="font-mono tracking-tight text-slate-700">
+                                                {inc.incident_number}
+                                            </span>
+                                            <span className="text-slate-300">·</span>
                                             <MapPin className="h-3 w-3" />
                                             <span className="truncate">{inc.location}</span>
-                                            <span>·</span>
-                                            <span>{timeAgo(inc.created_at)}</span>
+                                            <span className="text-slate-300">·</span>
+                                            <span className="tabular-nums">{timeAgo(inc.created_at)}</span>
                                         </div>
                                     </div>
 
-                                    <Badge className={`hidden shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium sm:inline-flex ${sev.badge}`}>
+                                    <span
+                                        className={`hidden shrink-0 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 sm:inline-flex ${sev.badge}`}
+                                    >
                                         {inc.severity}
-                                    </Badge>
+                                    </span>
 
-                                    <Badge className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusConfig[inc.status].className}`}>
-                                        <StatusIcon className="mr-1 h-3 w-3" />
+                                    <span
+                                        className={`inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 ${statusConfig[inc.status].className}`}
+                                    >
+                                        <StatusIcon className="h-3 w-3" />
                                         {inc.status}
-                                    </Badge>
+                                    </span>
                                 </div>
                             );
                         })}
 
                         {recent.length === 0 && (
-                            <div className="px-5 py-10 text-center text-sm text-slate-400">
-                                No recent incidents.
+                            <div className="px-5 py-12 text-center">
+                                <p className="text-[13px] font-medium text-slate-600">No incidents yet</p>
+                                <p className="mt-1 text-[11px] text-slate-400">
+                                    New reports will appear here as they come in.
+                                </p>
                             </div>
                         )}
                     </div>

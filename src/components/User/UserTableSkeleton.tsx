@@ -1,63 +1,89 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Table,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 
+const headCell =
+  "h-10 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.1em] text-slate-400";
+
 export default function UserTableSkeleton() {
   return (
-    <TableBody>
-      {Array.from({ length: 4 }).map((_, index) => (
-        <TableRow key={index} className="hover:bg-gray-100 border  border-gray-300 shadow">
-          {/* User */}
-          <TableCell>
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-12 w-12 rounded-full" />
+    <div className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-slate-100 bg-slate-50/70 hover:bg-slate-50/70">
+              <TableHead className={`${headCell} w-65 px-5`}>User</TableHead>
+              <TableHead className={headCell}>Email</TableHead>
+              <TableHead className={headCell}>Role</TableHead>
+              <TableHead className={headCell}>Status</TableHead>
+              <TableHead className={headCell}>Approval</TableHead>
+              <TableHead className={headCell}>Created</TableHead>
+              <TableHead className={headCell}>Last Login</TableHead>
+              <TableHead className={`${headCell} px-5 text-right`}>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
 
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-36" />
-                <Skeleton className="h-3 w-20" />
-              </div>
-            </div>
-          </TableCell>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={index} className="border-slate-100 hover:bg-transparent">
 
-          {/* Username */}
-          <TableCell>
-            <Skeleton className="h-4 w-24" />
-          </TableCell>
+                {/* User */}
+                <TableCell className="px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-3 w-32" />
+                      <Skeleton className="h-2.5 w-20" />
+                    </div>
+                  </div>
+                </TableCell>
 
-          {/* Email */}
-          <TableCell>
-            <Skeleton className="h-4 w-52" />
-          </TableCell>
+                {/* Email */}
+                <TableCell className="py-3">
+                  <Skeleton className="h-3 w-44" />
+                </TableCell>
 
-          {/* Role */}
-          <TableCell>
-            <Skeleton className="h-7 w-32 rounded-full" />
-          </TableCell>
+                {/* Role */}
+                <TableCell className="py-3">
+                  <Skeleton className="h-5 w-28 rounded-md" />
+                </TableCell>
 
-          {/* Status */}
-          <TableCell>
-            <Skeleton className="h-7 w-24 rounded-full" />
-          </TableCell>
+                {/* Status */}
+                <TableCell className="py-3">
+                  <Skeleton className="h-5 w-20 rounded-md" />
+                </TableCell>
 
-          {/* Created */}
-          <TableCell>
-            <Skeleton className="h-4 w-36" />
-          </TableCell>
+                {/* Approval */}
+                <TableCell className="py-3">
+                  <Skeleton className="h-5 w-24 rounded-md" />
+                </TableCell>
 
-          {/* Last Login */}
-          <TableCell>
-            <Skeleton className="h-4 w-36" />
-          </TableCell>
+                {/* Created */}
+                <TableCell className="py-3">
+                  <Skeleton className="h-3 w-32" />
+                </TableCell>
 
-          {/* Actions */}
-          <TableCell className="text-right">
-            <Skeleton className="ml-auto h-9 w-9 rounded-xl" />
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
+                {/* Last Login */}
+                <TableCell className="py-3">
+                  <Skeleton className="h-3 w-32" />
+                </TableCell>
+
+                {/* Actions */}
+                <TableCell className="px-5 py-3 text-right">
+                  <Skeleton className="ml-auto h-7 w-7 rounded-lg" />
+                </TableCell>
+
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 }

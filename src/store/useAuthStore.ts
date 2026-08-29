@@ -70,6 +70,11 @@ export type ChangePasswordData = {
     confirm_password: string;
 };
 
+export type ResetUserPasswordData = {
+    new_password: string;
+    confirm_password: string;
+};
+
 
 interface AuthState {
     user: Users | null;
@@ -97,6 +102,7 @@ interface AuthState {
     getSecurityPersonnel: () => Promise<void>;
     createUserByAdmin: (data: RegisterData) => Promise<boolean>;
     updateUser: (user_id: number, data: UpdateUserData) => Promise<{ success: boolean; message: string }>;
+    resetUserPassword: (user_id: number, data: ResetUserPasswordData) => Promise<{ success: boolean; message: string }>;
     getUserById: (user_id: number) => Promise<boolean>;
     deleteUser: (user_id: number) => Promise<boolean>;
     updateUserStatus: (user_id: number, status: boolean) => Promise<boolean>;
@@ -447,6 +453,47 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             };
         }
     },
+
+    resetUserPassword: async (user_id, data) => {
+        try {
+            set({
+                isLoading: true,
+                error: null,
+            });
+
+            const { data: response } = await AxiosInstance.put(
+                `/auth/reset-user-password/${user_id}`,
+                data
+            );
+
+            set({
+                isLoading: false,
+                error: null,
+            });
+
+            return {
+                success: true,
+                message: response.message,
+            };
+        } catch (error) {
+            const err = error as AxiosError<{ message: string }>;
+
+            const message =
+                err.response?.data?.message ??
+                "Failed to reset password.";
+
+            set({
+                isLoading: false,
+                error: message,
+            });
+
+            return {
+                success: false,
+                message,
+            };
+        }
+    },
+
     createUserByAdmin: async (data: RegisterData) => {
     try {
         set({

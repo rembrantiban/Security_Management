@@ -63,7 +63,7 @@ const paginatedUsers = filteredUsers.slice(
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen ">
       <div className="mx-auto max-w-7xl space-y-2 ">
         <UserHeader />
 

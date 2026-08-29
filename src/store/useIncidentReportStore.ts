@@ -65,12 +65,17 @@ interface IncidentStore {
     error: string | null;
     incidents: Incident[];
     myIncidents: Incident[];
+    mySubmittedIncidents: Incident[];
+    isFetchingSubmitted: boolean;
     getMyAssignedIncidents: Incident[];
+    archivedIncidents: Incident[];
+    isFetchingArchived: boolean;
     stats: IncidentStats | null;
     personnelStats: PersonnelDashboardStats | null;
 
     getIncidentStatistics: () => Promise<void>;
     getMyIncidentReports: () => Promise<void>;
+    getMySubmittedIncidents: () => Promise<void>;
     getAllIncidents: () => Promise<void>;
     createIncident: (data: CreateIncidentData) => Promise<boolean>;
     assignIncident: (incidentId: number, assignedTo: number, note: string) => Promise<boolean>;
@@ -80,6 +85,9 @@ interface IncidentStore {
     fetchMyAssignedIncidents: () => Promise<void>;
     fetchPersonnelDashboardStats: () => Promise<void>;
     updateIncident: (incident_id: number, data: UpdateIncidentData) => Promise<boolean>;
+    getArchivedIncidents: () => Promise<void>;
+    archiveIncident: (incident_id: number) => Promise<boolean>;
+    restoreIncident: (incident_id: number) => Promise<boolean>;
 
 }
 
@@ -88,7 +96,11 @@ export const useIncidentStore = create<IncidentStore>((set, get) => ({
     error: null,
     incidents: [],
     myIncidents: [],
+    mySubmittedIncidents: [],
+    isFetchingSubmitted: false,
     getMyAssignedIncidents: [],
+    archivedIncidents: [],
+    isFetchingArchived: false,
     stats: null,
     personnelStats: null,
 
@@ -207,10 +219,17 @@ export const useIncidentStore = create<IncidentStore>((set, get) => ({
                 `/incidents/resolve/${incident_id}`
             );
 
+            const markResolved = (incident: Incident): Incident =>
+                incident.incident_id === incident_id
+                    ? { ...incident, status: "Resolved" }
+                    : incident;
+
             set((state) => ({
                 getMyAssignedIncidents: state.getMyAssignedIncidents.filter(
                     (incident) => incident.incident_id !== incident_id
                 ),
+                myIncidents: state.myIncidents.map(markResolved),
+                incidents: state.incidents.map(markResolved),
                 isLoading: false,
             }));
 
@@ -338,6 +357,35 @@ export const useIncidentStore = create<IncidentStore>((set, get) => ({
             });
         }
     },
+    getMySubmittedIncidents: async () => {
+        try {
+            set({
+                isFetchingSubmitted: true,
+                error: null,
+            });
+
+            const res = await AxiosInstance.get(
+                "/incidents/my-submitted-incidents"
+            );
+
+            set({
+                mySubmittedIncidents: res.data.incidents,
+                isFetchingSubmitted: false,
+            });
+        } catch (error) {
+            const err = error as AxiosError<{
+                message: string;
+            }>;
+
+            set({
+                isFetchingSubmitted: false,
+                error:
+                    err.response?.data.message ??
+                    "Failed to fetch your submitted incident reports.",
+            });
+        }
+    },
+
     getAllIncidents: async () => {
         try {
             set({
@@ -397,12 +445,12 @@ export const useIncidentStore = create<IncidentStore>((set, get) => ({
                     res.data.incident,
                     ...state.myIncidents,
                 ],
+                mySubmittedIncidents: [
+                    res.data.incident,
+                    ...state.mySubmittedIncidents,
+                ],
                 isLoading: false,
             }));
-
-            set({
-                isLoading: false,
-            });
 
             return true;
         } catch (error) {
@@ -488,5 +536,106 @@ export const useIncidentStore = create<IncidentStore>((set, get) => ({
     }
 },
 
+    getArchivedIncidents: async () => {
+        try {
+            set({
+                isFetchingArchived: true,
+                error: null,
+            });
+
+            const res = await AxiosInstance.get("/incidents/archived");
+
+            set({
+                archivedIncidents: res.data.incidents,
+                isFetchingArchived: false,
+            });
+        } catch (error) {
+            const err = error as AxiosError<{
+                message: string;
+            }>;
+
+            set({
+                isFetchingArchived: false,
+                error:
+                    err.response?.data.message ??
+                    "Failed to fetch archived incidents.",
+            });
+        }
+    },
+
+    archiveIncident: async (incident_id) => {
+        try {
+            set({
+                isLoading: true,
+                error: null,
+            });
+
+            await AxiosInstance.put(
+                `/incidents/archive/${incident_id}`
+            );
+
+            set((state) => ({
+                incidents: state.incidents.filter(
+                    (incident) => incident.incident_id !== incident_id
+                ),
+                isLoading: false,
+            }));
+
+            await get().getIncidentStatistics();
+
+            return true;
+        } catch (error) {
+            const err = error as AxiosError<{
+                message: string;
+            }>;
+
+            set({
+                isLoading: false,
+                error:
+                    err.response?.data.message ??
+                    "Failed to archive incident.",
+            });
+
+            return false;
+        }
+    },
+
+    restoreIncident: async (incident_id) => {
+        try {
+            set({
+                isLoading: true,
+                error: null,
+            });
+
+            await AxiosInstance.put(
+                `/incidents/restore/${incident_id}`
+            );
+
+            set((state) => ({
+                archivedIncidents: state.archivedIncidents.filter(
+                    (incident) => incident.incident_id !== incident_id
+                ),
+                isLoading: false,
+            }));
+
+            await get().getAllIncidents();
+            await get().getIncidentStatistics();
+
+            return true;
+        } catch (error) {
+            const err = error as AxiosError<{
+                message: string;
+            }>;
+
+            set({
+                isLoading: false,
+                error:
+                    err.response?.data.message ??
+                    "Failed to restore incident.",
+            });
+
+            return false;
+        }
+    },
 
 }));

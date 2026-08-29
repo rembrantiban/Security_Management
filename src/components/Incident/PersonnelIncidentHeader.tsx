@@ -9,44 +9,36 @@ export default function PersonnelIncidentHeader({
   onCreateIncident,
 }: IncidentHeaderProps) {
   return (
-    <div className="relative overflow-hidden rounded border border-orange-100 bg-white shadow-sm">
+    <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
 
-      {/* Background */}
-      <div className="absolute inset-0 bg-linear-to-r from-orange-50 via-white to-orange-100" />
+      {/* Ambient wash */}
+      <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
 
-      {/* Decorative blur */}
-      <div className="absolute -top-10 right-0 h-44 w-44 rounded-full bg-orange-200/30 blur-3xl" />
+      <div className="relative flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
 
-      <div className="relative flex flex-col gap-6 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-
-        {/* Left */}
-        <div>
-
-          <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700">
-            <TriangleAlert className="h-3.5 w-3.5" />
+        <div className="min-w-0">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
+            <TriangleAlert className="h-3 w-3" />
             Incident Management
           </span>
 
-          <h1 className="mt-2 text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="mt-3 text-[18px] font-semibold tracking-tight text-white">
             My Incident Reports
           </h1>
 
-          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
-            View all incidents you've reported, monitor their progress,
-            check assignment status, and follow updates until each incident
-            has been resolved.
+          <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
+            Track everything you've reported — progress, assignment, and updates
+            through to resolution.
           </p>
-
         </div>
 
-        {/* Right */}
         <Button
-          size="lg"
           onClick={onCreateIncident}
-          className="rounded-xl text-xs bg-orange-700 px-6 shadow-md hover:bg-orange-800"
+          className="h-9 shrink-0 gap-2 rounded-xl bg-white px-4 text-[12.5px] font-medium text-amber-900 shadow-sm hover:bg-amber-50"
         >
-          <Plus className="mr-2 h-4 w-4" />
-          Report Incident
+          <Plus className="h-3.5 w-3.5" />
+          Report incident
         </Button>
 
       </div>

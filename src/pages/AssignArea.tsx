@@ -6,6 +6,7 @@ import {
     ShieldCheck,
     Play,
     MapPinned,
+    ClipboardCheck,
 } from "lucide-react";
 import {
     Avatar,
@@ -19,6 +20,7 @@ import { useEffect, useState } from "react";
 import AssignAreaSkeleton from "@/components/AssignArea/AssignAreSkeleton";
 import type { MonitoringSchedule } from "@/store/useMonitoringStore"
 import StartPatrolModal from "@/components/AssignArea/StartPatrol";
+import CompletePatrolModal from "@/components/AssignArea/CompletePatrol";
 import { usePatrol } from "@/hooks/usePatrol"
 import { useToast } from "@/hooks/useToast"
 
@@ -51,8 +53,9 @@ const dotColor = (status: string) => {
 export default function AssignArea() {
     const { getMyMonitoringSchedules, mySchedules, loading } = useMonitoring();
     const [startOpen, setStartOpen] = useState(false);
+    const [completeOpen, setCompleteOpen] = useState(false);
     const [selectedSchedule, setSelectedSchedule] = useState<MonitoringSchedule | null>(null);
-    const { startPatrol, getMyPatrols, isloading } = usePatrol();
+    const { startPatrol, completePatrol, getMyPatrols, isloading } = usePatrol();
     const { showToast } = useToast();
 
 
@@ -67,7 +70,7 @@ export default function AssignArea() {
 
             showToast(
                 "success",
-                "Patrol Started",
+                "Patrol Recorded",
                 result.message
             );
 
@@ -83,7 +86,42 @@ export default function AssignArea() {
 
             showToast(
                 "error",
-                "Unable to Start Patrol",
+                "Unable to Record Patrol",
+                result.message
+            );
+
+        }
+    };
+
+    const handleCompletePatrol = async (observations: string) => {
+        if (!selectedSchedule) return;
+
+        const result = await completePatrol(
+            selectedSchedule.schedule_id,
+            observations
+        );
+
+        if (result.success) {
+
+            showToast(
+                "success",
+                "Patrol Completed",
+                result.message
+            );
+
+            await Promise.all([
+                getMyMonitoringSchedules(),
+                getMyPatrols(),
+            ]);
+
+            setCompleteOpen(false);
+            setSelectedSchedule(null);
+
+        } else {
+
+            showToast(
+                "error",
+                "Unable to Complete Patrol",
                 result.message
             );
 
@@ -251,7 +289,22 @@ export default function AssignArea() {
 
                                                 <Play className="mr-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
 
-                                                Start Patrol
+                                                Record Patrol
+                                            </Button>
+                                        )}
+
+                                        {item.status === "Ongoing" && (
+                                            <Button
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedSchedule(item);
+                                                    setCompleteOpen(true);
+                                                }}
+                                                className="group rounded-lg bg-emerald-700 hover:bg-emerald-800"
+                                            >
+                                                <ClipboardCheck className="mr-2 h-4 w-4" />
+
+                                                Complete Patrol
                                             </Button>
                                         )}
                                     </div>
@@ -268,6 +321,14 @@ export default function AssignArea() {
                 schedule={selectedSchedule}
                 loading={isloading}
                 onStart={handleStartPatrol}
+            />
+
+            <CompletePatrolModal
+                open={completeOpen}
+                onClose={() => setCompleteOpen(false)}
+                schedule={selectedSchedule}
+                loading={isloading}
+                onComplete={handleCompletePatrol}
             />
         </div>
     );

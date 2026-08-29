@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useIncidentReport } from "@/hooks/useIncidentsReport"
+import { useToast } from "@/hooks/useToast";
 
 type Severity = "Low" | "Medium" | "High" | "Critical";
 type Category =
@@ -70,7 +71,8 @@ export default function ReportIncidentModal({
     const [evidence, setEvidence] = useState<EvidenceFile[]>([]);
     const [dragActive, setDragActive] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { createIncident, isLoading } = useIncidentReport();
+    const { createIncident, isLoading, error } = useIncidentReport();
+    const { showToast } = useToast();
 
     const isValid =
         title.trim().length > 0 &&
@@ -132,7 +134,18 @@ export default function ReportIncidentModal({
         });
 
         if (success) {
+            showToast(
+                "success",
+                "Incident Reported",
+                "Your incident report has been submitted successfully."
+            );
             handleClose();
+        } else {
+            showToast(
+                "error",
+                "Submission Failed",
+                error || "Something went wrong while submitting your report."
+            );
         }
     };
 

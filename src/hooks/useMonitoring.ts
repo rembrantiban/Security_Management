@@ -12,11 +12,14 @@ export const useMonitoring = () => {
              updateMonitoringSchedule,
              deleteMonitoringSchedule,
              updateMonitoringScheduleStatus,
+             statistics,
+             isFetchingStatistics,
+             getMonitoringStatistics,
         } = useMonitoringStore();
 
      return { mySchedules,
              getMyMonitoringSchedules,
-             schedules, 
+             schedules,
              selectedSchedule,
              loading,
              createMonitoringSchedule,
@@ -26,5 +29,8 @@ export const useMonitoring = () => {
              updateMonitoringSchedule,
              deleteMonitoringSchedule,
              updateMonitoringScheduleStatus,
+             statistics,
+             isFetchingStatistics,
+             getMonitoringStatistics,
              };
 }

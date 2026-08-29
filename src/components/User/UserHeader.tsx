@@ -4,39 +4,42 @@ import { useState } from "react";
 import AddUserDialog from "./AddUserDialog";
 
 export default function UserHeader() {
+  const [open, setOpen] = useState(false);
 
-  const [ open, setOpen ] = useState(false);
   return (
-    <div className="flex flex-col gap-6 rounded border  border-gray-300 bg-linear-to-r from-orange-50 via-white to-orange-100 opacity-70 p-4 shadow-sm md:flex-row md:items-center md:justify-between">
-      {/* Left */}
-      <div>
-        <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-br from-orange-900 to-amber-600 text-orange-50 shadow-lg">
-            <ShieldCheck className="h-6 w-6" />
+    <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
+
+      {/* Ambient wash */}
+      <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
+
+      <div className="relative flex flex-col gap-5 p-5 md:flex-row md:items-center md:justify-between">
+
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
+            <ShieldCheck className="h-5 w-5 text-amber-100" />
           </div>
 
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <div className="min-w-0">
+            <h1 className="text-[18px] font-semibold tracking-tight text-white">
               Users Management
             </h1>
-
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 max-w-md text-[12.5px] leading-relaxed text-amber-100/70">
               Manage administrators and authorized staff of the Security
               Management System.
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Right */}
-      <Button
-       onClick={() => setOpen(true)} 
-        size="lg"
-        className="rounded-xl bg-linear-to-r from-orange-900 to-orange-600 px-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
-      >
-        <Plus className="mr-2 h-5 w-5" />
-        Add User
-      </Button>
+        <Button
+          onClick={() => setOpen(true)}
+          className="h-9 shrink-0 gap-2 rounded-xl bg-white px-4 text-[12.5px] font-medium text-amber-900 shadow-sm hover:bg-amber-50"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add user
+        </Button>
+
+      </div>
 
       <AddUserDialog open={open} onOpenChange={setOpen} />
     </div>

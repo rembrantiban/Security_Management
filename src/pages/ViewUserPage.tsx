@@ -160,14 +160,14 @@ export default function ViewUserPage() {
     }
   };
   return (
-    <div className="max-w-6xl mx-auto bg-white/10 px-4 sm:px-6 py-4 space-y-5">
+    <div className="max-w-6xl mx-auto  px-4 sm:px-6 py-4 space-y-5">
 
       {/* Back nav */}
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-sm text-gray-500 hover:text-orange-700 transition group"
       >
-        <span className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-orange-100 group-hover:text-orange-700 transition">
+        <span className="p-1.5 rounded-lg bg-gray-100/50 group-hover:bg-orange-100 group-hover:text-orange-700 transition">
           <ArrowLeft size={14} />
         </span>
         <span>Back to Users</span>
@@ -273,7 +273,7 @@ export default function ViewUserPage() {
       </div>
 
       {/* Activity summary strip */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
+      <div className="bg-white/50 rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
         <div className="flex items-center gap-2 mb-4">
           <Activity size={15} className="text-orange-600" />
           <h2 className="text-sm font-semibold text-gray-700">Account Summary</h2>
@@ -322,10 +322,10 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-start gap-3">
+    <div className="bg-white/50 rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-start gap-3">
       <div className="mt-0.5 p-2 rounded-xl bg-orange-50 shrink-0">{icon}</div>
       <div className="min-w-0">
-        <p className="text-xs text-gray-400 mb-0.5">{label}</p>
+        <p className="text-xs text-gray-700 mb-0.5">{label}</p>
         <p className="text-sm font-medium text-gray-800 truncate">{value}</p>
       </div>
     </div>
@@ -343,7 +343,7 @@ function Stat({
 }) {
   return (
     <div>
-      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
+      <p className="text-xs text-gray-700 mb-0.5">{label}</p>
       <p className={`text-sm font-semibold ${valueClass}`}>{value}</p>
     </div>
   );

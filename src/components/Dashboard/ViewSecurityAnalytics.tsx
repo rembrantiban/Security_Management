@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ChevronDown, TrendingUp } from "lucide-react";
+import { ChevronDown, TrendingUp, ChartSpline } from "lucide-react";
 import {
     ResponsiveContainer,
     AreaChart,
@@ -53,168 +53,147 @@ export default function ViewSecurityAnalytics() {
             current.incidents > prev.incidents ? current : prev
         ) || weeklyTrend[0];
 
+    const dailyAverage = Math.round((totalIncidents / 7) * 10) / 10;
+
     return (
-        <section className="rounded border border-slate-200 bg-white p-4 shadow-sm">
+        <section className="flex h-full flex-col overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
 
             {/* Header */}
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
 
-                <div>
-                    <h2 className="text-lg font-semibold text-slate-900">
-                        Security Incident Trend
-                    </h2>
+                <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
+                        <ChartSpline className="h-4 w-4 text-amber-800" />
+                    </div>
 
-                    <p className="mt-1 text-xs text-slate-500">
-                        Showing incident reports recorded during the last 7 days.
-                    </p>
+                    <div className="min-w-0">
+                        <p className="text-[13px] font-semibold tracking-tight text-slate-900">
+                            Security Incident Trend
+                        </p>
+                        <p className="mt-0.5 truncate text-[11px] text-slate-700">
+                            Reports recorded over the last 7 days
+                        </p>
+                    </div>
                 </div>
 
-                <button className="flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 transition hover:bg-amber-100">
+                <button className="flex h-7 shrink-0 items-center gap-1 rounded-lg px-2.5 text-[11px] font-medium text-amber-800 ring-1 ring-amber-100 transition hover:bg-amber-50">
                     This Week
-                    <ChevronDown className="h-3.5 w-3.5" />
+                    <ChevronDown className="h-3 w-3" />
                 </button>
 
             </div>
 
             {/* Chart */}
-            <div className="mt-5 h-56">
+            <div className="flex-1 px-2 pt-5">
+                <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                            data={weeklyTrend}
+                            margin={{ top: 6, right: 12, left: -22, bottom: 0 }}
+                        >
+                            <defs>
+                                <linearGradient id="incidentGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#92400e" stopOpacity={0.18} />
+                                    <stop offset="95%" stopColor="#92400e" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
 
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                        data={weeklyTrend}
-                        margin={{
-                            top: 10,
-                            right: 10,
-                            left: -20,
-                            bottom: 0,
-                        }}
-                    >
-                        <defs>
-                            <linearGradient
-                                id="incidentGradient"
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                            >
-                                <stop
-                                    offset="5%"
-                                    stopColor="#d97706"
-                                    stopOpacity={0.30}
-                                />
+                            <CartesianGrid
+                                vertical={false}
+                                stroke="#f1f5f9"
+                                strokeDasharray="0"
+                            />
 
-                                <stop
-                                    offset="95%"
-                                    stopColor="#d97706"
-                                    stopOpacity={0}
-                                />
-                            </linearGradient>
-                        </defs>
+                            <XAxis
+                                dataKey="day"
+                                axisLine={false}
+                                tickLine={false}
+                                dy={6}
+                                tick={{ fill: "#94a3b8", fontSize: 10 }}
+                            />
 
-                        <CartesianGrid
-                            vertical={false}
-                            stroke="#fde68a"
-                            strokeDasharray="3 3"
-                        />
+                            <YAxis
+                                allowDecimals={false}
+                                axisLine={false}
+                                tickLine={false}
+                                width={40}
+                                tick={{ fill: "#cbd5e1", fontSize: 10 }}
+                            />
 
-                        <XAxis
-                            dataKey="day"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{
-                                fill: "#92400e",
-                                fontSize: 10,
-                            }}
-                        />
+                            <Tooltip
+                                cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
+                                contentStyle={{
+                                    borderRadius: 12,
+                                    border: "1px solid #e2e8f0",
+                                    background: "#fff",
+                                    padding: "8px 12px",
+                                    fontSize: 12,
+                                    boxShadow: "0 8px 24px rgba(15,23,42,.08)",
+                                }}
+                                labelStyle={{
+                                    color: "#0f172a",
+                                    fontWeight: 600,
+                                    fontSize: 12,
+                                    marginBottom: 2,
+                                }}
+                                itemStyle={{ color: "#92400e", fontSize: 12 }}
+                            />
 
-                        <YAxis
-                            allowDecimals={false}
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{
-                                fill: "#92400e",
-                                fontSize: 10,
-                            }}
-                        />
-
-                        <Tooltip
-                            cursor={{
-                                stroke: "#f59e0b",
-                                strokeWidth: 1.5,
-                            }}
-                            contentStyle={{
-                                borderRadius: 10,
-                                border: "1px solid #fcd34d",
-                                background: "#fff",
-                                boxShadow:
-                                    "0 8px 20px rgba(0,0,0,.08)",
-                            }}
-                            labelStyle={{
-                                color: "#b45309",
-                                fontWeight: 600,
-                            }}
-                        />
-
-                        <Area
-                            type="monotone"
-                            dataKey="incidents"
-                            stroke="#d97706"
-                            strokeWidth={2.5}
-                            fill="url(#incidentGradient)"
-                            dot={{
-                                r: 0,
-                                fill: "#fff",
-                                stroke: "#d97706",
-                                strokeWidth: 2,
-                            }}
-                            activeDot={{
-                                r: 1,
-                                fill: "#fff",
-                                stroke: "#b45309",
-                                strokeWidth: 2,
-                            }}
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
-
+                            <Area
+                                type="monotone"
+                                dataKey="incidents"
+                                stroke="#92400e"
+                                strokeWidth={2}
+                                fill="url(#incidentGradient)"
+                                dot={false}
+                                activeDot={{
+                                    r: 4,
+                                    fill: "#fff",
+                                    stroke: "#92400e",
+                                    strokeWidth: 2,
+                                }}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
 
             {/* Footer */}
-            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-slate-200 pt-4">
+            <div className="mt-4 grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100">
 
-                <div className="flex items-center gap-2">
-
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100">
-                        <TrendingUp className="h-4 w-4 text-amber-700" />
-                    </div>
-
-                    <div>
-                        <p className="text-[10px] uppercase tracking-wide text-slate-500">
-                            Total Incidents
-                        </p>
-
-                        <h4 className="text-lg font-bold text-slate-900">
+                <div className="px-5 py-3.5">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-400">
+                        Total
+                    </p>
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                        <p className="text-[18px] font-semibold leading-none tabular-nums tracking-tight text-slate-900">
                             {totalIncidents}
-                        </h4>
+                        </p>
+                        <TrendingUp className="h-3.5 w-3.5 text-amber-700" />
                     </div>
-
                 </div>
 
-                <div className="flex flex-col justify-center">
-
-                    <p className="text-[10px] uppercase tracking-wide text-slate-500">
-                        Highest Day
+                <div className="px-5 py-3.5">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-400">
+                        Daily avg
                     </p>
-
-                    <h4 className="text-base font-semibold text-slate-900">
-                        {highestDay.day}
-                    </h4>
-
-                    <p className="text-xs text-amber-700">
-                        {highestDay.incidents} incident
-                        {highestDay.incidents !== 1 && "s"}
+                    <p className="mt-1.5 text-[18px] font-semibold leading-none tabular-nums tracking-tight text-slate-900">
+                        {dailyAverage}
                     </p>
+                </div>
 
+                <div className="px-5 py-3.5">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-400">
+                        Peak day
+                    </p>
+                    <div className="mt-1.5 flex items-baseline gap-1.5">
+                        <p className="text-[18px] font-semibold leading-none tracking-tight text-slate-900">
+                            {highestDay.day}
+                        </p>
+                        <p className="text-[11px] tabular-nums text-amber-700">
+                            {highestDay.incidents}
+                        </p>
+                    </div>
                 </div>
 
             </div>

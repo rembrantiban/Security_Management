@@ -4,7 +4,7 @@ import ViewAssignedPatrol from "@/components/PersonnelDashboard/ViewAssignedPatr
 
 export default function PersonnelDashboardPage() {
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             <PersonnelDashboardHeader />
             <AssignedDashboard />
              <ViewAssignedPatrol />

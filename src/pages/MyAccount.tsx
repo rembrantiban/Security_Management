@@ -145,7 +145,7 @@ export default function MyAccount() {
         password.next === password.confirm;
 
     return (
-        <div className="min-h-full bg-gray-50/60 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="min-h-full px-4 py-6 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-4xl">
                 {/* Page heading */}
                 <div className="mb-6">
@@ -155,7 +155,7 @@ export default function MyAccount() {
                     </p>
                 </div>
                 {/* Profile header card */}
-                <div className="rounded-2xl border border-gray-300 bg-white p-5 sm:p-6 mb-5 shadow-sm">
+                <div className="rounded-2xl border border-gray-300 bg-white/50 p-5 sm:p-6 mb-5 shadow-sm">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-5">
                         <div className="relative shrink-0 mx-auto sm:mx-0">
                             <div className="w-20 h-20 rounded-full bg-linear-to-br from-orange-700 to-amber-500 flex items-center justify-center text-white text-2xl font-semibold shadow-sm shadow-orange-900/20">
@@ -272,11 +272,11 @@ export default function MyAccount() {
                 </div>
 
                 {/* Change password card */}
-                <div className="rounded-2xl border border-gray-300 bg-white p-5 sm:p-6 shadow-sm">
-                    <p className="text-xs tracking-widest text-gray-500 uppercase mb-1">
+                <div className="rounded-2xl border border-gray-300 bg-white/50 p-5 sm:p-6 shadow-sm">
+                    <p className="text-xs tracking-widest text-gray-900 uppercase mb-1">
                         Change Password
                     </p>
-                    <p className="text-sm text-gray-400 mb-4">
+                    <p className="text-sm text-gray-700 mb-4">
                         Use at least 8 characters, with a mix of letters, numbers, and symbols.
                     </p>
 

@@ -5,6 +5,7 @@ import {
     RadialBar,
     PolarAngleAxis,
 } from "recharts";
+import { Activity } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -26,9 +27,9 @@ const MOCK_COMPONENTS: SystemComponent[] = [
 ];
 
 const statusConfig = {
-    Operational: { dot: "bg-emerald-500", stroke: "#16a34a" },
-    Degraded: { dot: "bg-amber-500", stroke: "#d97706" },
-    Offline: { dot: "bg-red-500", stroke: "#dc2626" },
+    Operational: { dot: "bg-emerald-500", stroke: "#16a34a", chip: "bg-emerald-50 text-emerald-700 ring-emerald-100", bar: "bg-emerald-500" },
+    Degraded: { dot: "bg-amber-500", stroke: "#d97706", chip: "bg-amber-50 text-amber-800 ring-amber-100", bar: "bg-amber-500" },
+    Offline: { dot: "bg-red-500", stroke: "#dc2626", chip: "bg-red-50 text-red-700 ring-red-100", bar: "bg-red-500" },
 };
 
 function timeAgo(value: string) {
@@ -59,111 +60,125 @@ export default function SystemStatus() {
         : components.some((c) => c.status === "Degraded")
             ? "Degraded"
             : "Operational";
+
     return (
-        <div className="space-y-5">
+        <Card className="flex h-full flex-col overflow-hidden rounded-2xl border-0 bg-white/50 shadow-sm ring-1 ring-slate-200">
 
             {/* Header */}
-            {/* Overall status banner */}
-            <Card className="overflow-hidden rounded border-slate-200 shadow-sm">
-                <div className="sm:px-6 ">
-                    <h1 className="text-sm font-bold text-slate-900 sm:text-xl">
+            <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
+                    <Activity className="h-4 w-4 text-amber-800" />
+                </div>
+                <div>
+                    <p className="text-[13px] font-semibold tracking-tight text-slate-900">
                         System Status
-                    </h1>
-                    <p className="text-sm text-slate-500">
-                        Live health of every system connected to the platform.
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-slate-900">
+                        Live health of every connected system
                     </p>
                 </div>
-                <CardContent className="p-6">
+            </div>
 
-                    {/* Filter Tabs */}
+            <CardContent className="flex flex-1 flex-col p-5">
 
-                    <div className="mb-6 flex flex-wrap justify-center gap-2">
-                        ...
-                    </div>
+                {/* Overall gauge */}
+                <div className="flex items-center gap-5">
 
-                    {/* Radial */}
+                    <div className="relative h-24 w-24 shrink-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <RadialBarChart
+                                innerRadius="78%"
+                                outerRadius="100%"
+                                data={[
+                                    {
+                                        value: overallUptime,
+                                        fill: statusConfig[overallStatus].stroke,
+                                    },
+                                ]}
+                                startAngle={90}
+                                endAngle={-270}
+                            >
+                                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
 
-                    <div className="flex flex-col items-center">
-
-                        <div className="relative h-32 w-32">
-
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RadialBarChart
-                                    innerRadius="75%"
-                                    outerRadius="100%"
-                                    data={[
-                                        {
-                                            value: overallUptime,
-                                            fill: statusConfig[overallStatus].stroke,
-                                        },
-                                    ]}
-                                    startAngle={90}
-                                    endAngle={-270}
-                                >
-                                    <PolarAngleAxis
-                                        type="number"
-                                        domain={[0, 100]}
-                                        tick={false}
-                                    />
-
-                                    <RadialBar
-                                        dataKey="value"
-                                        cornerRadius={10}
-                                        background={{
-                                            fill: "#f1f5f9",
-                                        }}
-                                    />
-                                </RadialBarChart>
-                            </ResponsiveContainer>
-
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-
-                                <p className="text-2xl font-bold">
-                                    {overallUptime}%
-                                </p>
-
-                                <p className="text-xs text-slate-400">
-                                    Avg Uptime
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                        <div className="mt-5 text-center">
-
-                            <div className="flex items-center justify-center gap-2">
-
-                                <span
-                                    className={`h-2.5 w-2.5 rounded-full ${statusConfig[overallStatus].dot}`}
+                                <RadialBar
+                                    dataKey="value"
+                                    cornerRadius={10}
+                                    background={{ fill: "#f1f5f9" }}
                                 />
+                            </RadialBarChart>
+                        </ResponsiveContainer>
 
-                                <p className="font-semibold">
-
-                                    {overallStatus === "Operational"
-                                        ? "All Systems Operational"
-                                        : `${degradedCount} System${degradedCount > 1 ? "s" : ""
-                                        } Need Attention`}
-
-                                </p>
-
-                            </div>
-
-                            <p className="mt-1 text-sm text-slate-500">
-                                {components.length} systems monitored • Last checked{" "}
-                                {timeAgo(
-                                    components[0]?.last_checked ??
-                                    new Date().toISOString()
-                                )}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <p className="text-[18px] font-semibold tabular-nums tracking-tight text-slate-900">
+                                {overallUptime}
+                                <span className="text-[11px] font-normal text-slate-700">%</span>
                             </p>
-
+                            <p className="mt-0.5 text-[9px] uppercase tracking-[0.12em] text-slate-700">
+                                Uptime
+                            </p>
                         </div>
-
                     </div>
 
-                </CardContent>
-            </Card>
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                            <span
+                                className={`h-2 w-2 shrink-0 rounded-full ${statusConfig[overallStatus].dot}`}
+                            />
+                            <p className="text-[13px] font-medium text-slate-900">
+                                {overallStatus === "Operational"
+                                    ? "All systems operational"
+                                    : `${degradedCount} system${degradedCount > 1 ? "s" : ""} need attention`}
+                            </p>
+                        </div>
 
-        </div>
+                        <p className="mt-1.5 text-[11px] leading-relaxed text-slate-700">
+                            {components.length} systems monitored · Last checked{" "}
+                            {timeAgo(components[0]?.last_checked ?? new Date().toISOString())}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Component list */}
+                <div className="mt-5 flex-1 border-t border-slate-100 pt-1">
+                    <div className="divide-y divide-slate-100">
+                        {components.map((component) => {
+                            const config = statusConfig[component.status];
+
+                            return (
+                                <div
+                                    key={component.id}
+                                    className="group flex items-center gap-3 py-2.5 transition-colors duration-200"
+                                >
+                                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${config.dot}`} />
+
+                                    <p className="min-w-0 flex-1 truncate text-[12.5px] text-slate-700">
+                                        {component.name}
+                                    </p>
+
+                                    {/* Uptime bar */}
+                                    <div className="hidden h-1 w-16 shrink-0 overflow-hidden rounded-full bg-slate-100 sm:block">
+                                        <div
+                                            className={`h-full rounded-full ${config.bar}`}
+                                            style={{ width: `${component.uptime}%` }}
+                                        />
+                                    </div>
+
+                                    <span className="w-11 shrink-0 text-right text-[11px] tabular-nums text-slate-400">
+                                        {component.uptime}%
+                                    </span>
+
+                                    <span
+                                        className={`hidden shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 md:inline-flex ${config.chip}`}
+                                    >
+                                        {component.status}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+            </CardContent>
+        </Card>
     );
 }

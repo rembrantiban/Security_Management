@@ -6,17 +6,17 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import { LogOut, ShieldAlert } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 type LogoutDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 };
-
 
 export default function LogoutDialog({
   open,
@@ -25,52 +25,23 @@ export default function LogoutDialog({
 }: LogoutDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md rounded-2xl  border-0 p-0 overflow-hidden">
-        {/* Header */}
-        <div className="bg-linear-to-r from-orange-600 to-orange-800 px-6 py-8 text-white">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/15 backdrop-blur">
-            <LogOut className="h-8 w-8" />
-          </div>
+      <AlertDialogContent size="sm">
+        <AlertDialogHeader>
+          <AlertDialogMedia className="bg-muted text-foreground">
+            <LogOut />
+          </AlertDialogMedia>
+          <AlertDialogTitle>Sign Out</AlertDialogTitle>
+          <AlertDialogDescription>
+            You'll be signed out and returned to the login page.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
 
-          <div className="mt-5 text-center">
-            <h2 className="text-2xl font-bold">
-              Sign Out
-            </h2>
-
-            <p className="mt-2 text-sm text-orange-100">
-              End your current session securely.
-            </p>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 py-6">
-          <AlertDialogHeader className="space-y-3">
-            <AlertDialogTitle className="flex items-center gap-2 text-lg">
-              <ShieldAlert className="h-5 w-5 text-orange-600" />
-              Are you sure you want to logout?
-            </AlertDialogTitle>
-
-            <AlertDialogDescription className="text-sm leading-6 text-slate-600">
-              You will be signed out of your account and redirected to the
-              login page. Any unsaved changes may be lost.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <AlertDialogFooter className="mt-8">
-            <AlertDialogCancel className="h-11 rounded-xl border-slate-300">
-              Cancel
-            </AlertDialogCancel>
-
-            <AlertDialogAction
-              onClick={onConfirm}
-              className="h-11 rounded-xl bg-orange-600 hover:bg-orange-700"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction className="bg-red-600 hover:bg-red-600" onClick={onConfirm}>
+            Log Out
+          </AlertDialogAction>
+        </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );

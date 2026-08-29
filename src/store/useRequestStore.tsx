@@ -24,6 +24,7 @@ export interface RequestAccess {
     approved_by_name: string | null;
 
     approved_at: string | null;
+    checked_out_at: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -40,6 +41,7 @@ type CreateRequestData = {
 interface RequestStore {
     requests: RequestAccess[];
     myRequests: RequestAccess[];
+    pendingRequests: RequestAccess[];
 
     isLoading: boolean;
     error: string | null;
@@ -52,11 +54,17 @@ interface RequestStore {
 
     getMyRequests: () => Promise<void>;
 
+    getPendingRequests: () => Promise<void>;
+
     approveRequest: (
         requestId: number
     ) => Promise<boolean>;
 
     rejectRequest: (
+        requestId: number
+    ) => Promise<boolean>;
+
+    checkOutVisitor: (
         requestId: number
     ) => Promise<boolean>;
 }
@@ -65,6 +73,7 @@ export const useRequestStore = create<RequestStore>(
     (set, get) => ({
         requests: [],
         myRequests: [],
+        pendingRequests: [],
 
         isLoading: false,
         error: null,
@@ -176,6 +185,35 @@ export const useRequestStore = create<RequestStore>(
             }
         },
 
+        getPendingRequests: async () => {
+            try {
+                set({
+                    isLoading: true,
+                    error: null,
+                });
+
+                const res = await AxiosInstance.get(
+                    "/access-request/get-all-pending"
+                );
+
+                set({
+                    pendingRequests: res.data.requests,
+                    isLoading: false,
+                });
+            } catch (error) {
+                const err = error as AxiosError<{
+                    message: string;
+                }>;
+
+                set({
+                    isLoading: false,
+                    error:
+                        err.response?.data.message ??
+                        "Failed to fetch pending requests.",
+                });
+            }
+        },
+
         approveRequest: async (requestId) => {
             try {
                 set({
@@ -187,7 +225,11 @@ export const useRequestStore = create<RequestStore>(
                     `/access-request/approve/${requestId}`
                 );
 
-                await get().getAllRequests();
+                await Promise.all([
+                    get().getAllRequests(),
+                    get().getMyRequests(),
+                    get().getPendingRequests(),
+                ]);
 
                 set({
                     isLoading: false,
@@ -221,7 +263,11 @@ export const useRequestStore = create<RequestStore>(
                     `/access-request/reject/${requestId}`
                 );
 
-                await get().getAllRequests();
+                await Promise.all([
+                    get().getAllRequests(),
+                    get().getMyRequests(),
+                    get().getPendingRequests(),
+                ]);
 
                 set({
                     isLoading: false,
@@ -238,6 +284,44 @@ export const useRequestStore = create<RequestStore>(
                     error:
                         err.response?.data.message ??
                         "Failed to reject request.",
+                });
+
+                return false;
+            }
+        },
+
+        checkOutVisitor: async (requestId) => {
+            try {
+                set({
+                    isLoading: true,
+                    error: null,
+                });
+
+                await AxiosInstance.put(
+                    `/access-request/checkout/${requestId}`
+                );
+
+                await Promise.all([
+                    get().getAllRequests(),
+                    get().getMyRequests(),
+                    get().getPendingRequests(),
+                ]);
+
+                set({
+                    isLoading: false,
+                });
+
+                return true;
+            } catch (error) {
+                const err = error as AxiosError<{
+                    message: string;
+                }>;
+
+                set({
+                    isLoading: false,
+                    error:
+                        err.response?.data.message ??
+                        "Failed to record visitor exit.",
                 });
 
                 return false;

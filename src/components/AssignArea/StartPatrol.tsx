@@ -52,7 +52,7 @@ export default function StartPatrolModal({
                             <Shield className="h-8 w-8 text-orange-700" />
                         </div>
                             <AlertDialogTitle className="text-xl">
-                                Start Patrol
+                                Record Patrol
                             </AlertDialogTitle>
 
                             <AlertDialogDescription className="text-center">
@@ -74,7 +74,7 @@ export default function StartPatrolModal({
                         <div className="space-y-1 text-sm text-slate-700">
 
                             <p className="font-medium">
-                                Once you start patrol:
+                                Once you record patrol:
                             </p>
 
                             <ul className="space-y-1 text-slate-600">
@@ -104,8 +104,8 @@ export default function StartPatrolModal({
                             <Play className="mr-2 h-4 w-4" />
 
                             {loading
-                                ? "Starting..."
-                                : "Start Patrol"}
+                                ? "Recording..."
+                                : "Record Patrol"}
                         </Button>
 
                     </AlertDialogAction>

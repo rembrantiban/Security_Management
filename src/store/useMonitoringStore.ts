@@ -59,12 +59,22 @@ type ResponseData = {
     message: string;
 };
 
+export interface MonitoringStatistics {
+    total_schedules: number;
+    pending_schedules: number;
+    ongoing_schedules: number;
+    completed_schedules: number;
+}
+
 type MonitoringStore = {
     schedules: MonitoringSchedule[];
     selectedSchedule: MonitoringSchedule | null;
-    loading: boolean;   
+    loading: boolean;
 
     mySchedules: MonitoringSchedule[];
+
+    statistics: MonitoringStatistics | null;
+    isFetchingStatistics: boolean;
 
     getMyMonitoringSchedules: () => Promise<void>;
 
@@ -79,14 +89,19 @@ type MonitoringStore = {
     deleteMonitoringSchedule: (schedule_id: number) => Promise<ResponseData>;
 
     updateMonitoringScheduleStatus: (schedule_id: number, status: string) => Promise<ResponseData>;
+
+    getMonitoringStatistics: () => Promise<void>;
 };
 
 export const useMonitoringStore = create<MonitoringStore>((set, get) => ({
     schedules: [],
     selectedSchedule: null,
-    loading: false, 
+    loading: false,
 
     mySchedules: [],
+
+    statistics: null,
+    isFetchingStatistics: false,
 
 
 
@@ -244,5 +259,19 @@ export const useMonitoringStore = create<MonitoringStore>((set, get) => ({
         } finally{
             set({ loading: false });
            }
+    },
+
+    getMonitoringStatistics: async () => {
+        set({ isFetchingStatistics: true });
+
+        try {
+            const res = await AxiosInstance.get("/monitoring/statistics");
+
+            set({
+                statistics: res.data.stats,
+            });
+        } finally {
+            set({ isFetchingStatistics: false });
+        }
     },
 }));

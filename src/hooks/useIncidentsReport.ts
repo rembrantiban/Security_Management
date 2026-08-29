@@ -7,6 +7,7 @@ export const useIncidentReport = () => {
             getAllIncidents,
             createIncident,
             isLoading,
+            error,
             incidents,
             myIncidents,
             assignIncident,
@@ -19,7 +20,12 @@ export const useIncidentReport = () => {
             fetchPersonnelDashboardStats,
             personnelStats,
             resolvedIncident,
-            updateIncident
+            updateIncident,
+            archivedIncidents,
+            isFetchingArchived,
+            getArchivedIncidents,
+            archiveIncident,
+            restoreIncident
      } = useIncidentStore();
 
      useEffect(() => {
@@ -35,6 +41,7 @@ export const useIncidentReport = () => {
              getAllIncidents,
              createIncident,
              isLoading,
+             error,
              incidents,
              myIncidents,
              assignIncident,
@@ -44,6 +51,11 @@ export const useIncidentReport = () => {
              getMyAssignedIncidents,
              personnelStats,
              resolvedIncident,
-             updateIncident
+             updateIncident,
+             archivedIncidents,
+             isFetchingArchived,
+             getArchivedIncidents,
+             archiveIncident,
+             restoreIncident
      };
 };

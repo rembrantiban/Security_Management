@@ -22,9 +22,17 @@ import Loginpage from "./pages/Loginpage"
 import RequestPage from "./pages/RequestPage"
 import AdminVisitorRequestsPage from "./pages/Adminvisitorrequestspage";
 import MyPatrolReportsPage from "./pages/MyPatrolReportsPage";
+import PersonnelPatrolsPage from "./pages/PersonnelPatrolsPage";
 import Permissions from "./pages/Permissions";
 import RolePermission from "@/pages/RolePermissions"
 import { useAuthStore } from "./store/useAuthStore";
+import Report from "@/pages/Report"
+import SessionExpiredModal from "@/components/Modal/SessionExpiredModal"
+import StaffDashboard from "@/pages/StaffDashboard"
+import StaffIncidentsPage from "@/pages/StaffIncidentsPage"
+import VisitorHistoryPage from "@/pages/VisitorHistoryPage"
+import VisitorBlacklistPage from "@/pages/VisitorBlacklistPage"
+import NotificationsPage from "@/pages/NotificationsPage"
 
 
 function App() {
@@ -62,19 +70,28 @@ function App() {
           <Route path="/incidents" element={<Incident />} />
           <Route path="/users/view/:user_id" element={<ViewUserPage />} />
           <Route path="/personnel/dashboard" element={<PersonnelDashboard />} />
+          <Route path="/staff/dashboard" element={<StaffDashboard />} />
+          <Route path="/staff/incidents" element={<StaffIncidentsPage />} />
           <Route path="/my-account" element={<MyAccount />} />
           <Route path="/other-role-account" element={<OtherRoleAccount />} />
           <Route path="/personnel/incidents" element={<PersonnelIncidentsPage />} />
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/personnel/surveillance" element={<AssignAreas />} />
+          <Route path="/personnel/patrols" element={<PersonnelPatrolsPage />} />
           <Route path="/personnel/visitors" element={<RequestPage />} />
           <Route path="/access" element={<AdminVisitorRequestsPage />} />
+          <Route path="/visitor-history" element={<VisitorHistoryPage />} />
+          <Route path="/blacklist" element={<VisitorBlacklistPage />} />
           <Route path="/personnel/reports" element={<MyPatrolReportsPage />} />
           <Route path="/it-system-administrator/permissions" element={<Permissions />} />
           <Route path="/it-system-administrator/role-access" element={<RolePermission />} />
+          <Route path="/reports" element={<Report />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/personnel/notifications" element={<NotificationsPage />} />
         </Route>
       </Routes>
       <StatusToast />
+      <SessionExpiredModal />
     </>
   )
 }

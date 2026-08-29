@@ -17,6 +17,7 @@ export const useAuth = () => {
     const getMeLoading = useAuthStore((state) => state.getMeLoading);
     const createUserByAdmin = useAuthStore((state) => state.createUserByAdmin);
     const updateUser = useAuthStore((state) => state.updateUser);
+    const resetUserPassword = useAuthStore((state) => state.resetUserPassword);
     const deleteUser = useAuthStore((state) => state.deleteUser);
     const updateUserStatus = useAuthStore((state) => state.updateUserStatus);
     const getSecurityPersonnel = useAuthStore((state) => state.getSecurityPersonnel);
@@ -66,6 +67,7 @@ export const useAuth = () => {
         createUserByAdmin,
         isFetchingUsers,
         updateUser,
+        resetUserPassword,
         deleteUser,
         updateUserStatus,
         getSecurityPersonnel,
