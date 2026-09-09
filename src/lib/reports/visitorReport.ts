@@ -9,9 +9,9 @@ import {
  * Visitor Access Report — data + spreadsheet export.
  *
  * Mirrors the Closed Incident Report: `buildVisitorReport` shapes the set of
- * processed access requests (Approved or Rejected) within the period; the
- * document itself is a React component (`VisitorReportDocument`) printed with
- * `window.print()`.
+ * completed visits — access requests with a recorded exit — within the period;
+ * the document itself is a React component (`VisitorReportDocument`) printed
+ * with `window.print()`.
  */
 
 export type { ReportMeta };
@@ -32,9 +32,6 @@ export type VisitorReportModel = {
         avgDecisionHours: number | null; // approved_at - created_at
     };
 };
-
-/** Only requests in these statuses are included (Pending ones stay in the queue). */
-const PROCESSED = new Set(["Approved", "Rejected"]);
 
 export const STATUS_ORDER = ["Approved", "Rejected", "Pending"] as const;
 export const ID_TYPE_FALLBACK = "Not specified";
@@ -58,18 +55,20 @@ export function buildVisitorReport(
     const from = meta.dateFrom ? new Date(`${meta.dateFrom}T00:00:00`) : null;
     const to = meta.dateTo ? new Date(`${meta.dateTo}T23:59:59.999`) : null;
 
+    // Completed visits only: a visitor whose exit has been recorded.
     const rows = requests
-        .filter((r) => PROCESSED.has(r.status))
+        .filter((r) => !!r.checked_out_at)
         .filter((r) => {
-            const t = new Date(r.created_at).getTime();
+            const t = new Date(r.checked_out_at as string).getTime();
+            if (Number.isNaN(t)) return false;
             if (from && t < from.getTime()) return false;
             if (to && t > to.getTime()) return false;
             return true;
         })
         .sort(
             (a, b) =>
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime()
+                new Date(b.checked_out_at as string).getTime() -
+                new Date(a.checked_out_at as string).getTime()
         );
 
     const byStatus: Record<string, number> = {};
@@ -224,7 +223,7 @@ export function downloadVisitorReportExcel(model: VisitorReportModel): void {
                     .join("")}</tr>`;
             })
             .join("") ||
-        `<tr><td colspan="${headers.length}" style="border:1px solid #999;padding:8px;text-align:center">No processed visitor requests within the selected period.</td></tr>`;
+        `<tr><td colspan="${headers.length}" style="border:1px solid #999;padding:8px;text-align:center">No visitor exits recorded within the selected period.</td></tr>`;
 
     const doc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
 <head>

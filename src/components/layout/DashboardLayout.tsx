@@ -21,15 +21,16 @@ export default function DashboardLayout() {
         {/* Readability wash */}
         <div className="pointer-events-none absolute inset-0 bg-slate-100/40 dark:bg-slate-900/85" />
 
-        {/* Topbar must sit in a higher stacking context than <main>, otherwise
-            page content (cards, tables, charts) paints over the notification /
-            profile dropdowns since they share the same z-index and <main> comes
-            later in the DOM. */}
-        <div className="relative z-30">
+        {/* Topbar sits above page content via z-30. <main> is `relative` (so it
+            paints above the blurred background layers) but has NO z-index, so it
+            does NOT create a stacking context — modals rendered inside a page
+            (fixed, z-50) can therefore rise above this topbar instead of being
+            trapped beneath it. */}
+        <div className="relative z-30 shrink-0">
           <Topbar onMenuClick={() => setSidebarOpen(true)} />
         </div>
 
-        <main className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="relative flex-1 min-h-0 overflow-y-auto p-4 sm:p-6">
           <Outlet />
         </main>
       </div>

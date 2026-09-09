@@ -11,10 +11,20 @@ import {
     IdCard,
     User,
     Building2,
+    UserX,
+    MoreHorizontal,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import AddBlacklistModal from "@/components/Blacklist/AddBlacklistModal";
 import {
     Table,
     TableBody,
@@ -68,6 +78,7 @@ export default function VisitorHistoryPage() {
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState<HistoryFilter>("All");
     const [selected, setSelected] = useState<RequestAccess | null>(null);
+    const [blacklistTarget, setBlacklistTarget] = useState<RequestAccess | null>(null);
     const { requests } = useRequest();
 
     const onCampusCount = useMemo(
@@ -296,15 +307,38 @@ export default function VisitorHistoryPage() {
                                         </TableCell>
 
                                         <TableCell className="px-5 py-3 text-right">
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="h-7 gap-1.5 rounded-lg px-2.5 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"
-                                                onClick={() => setSelected(r)}
-                                            >
-                                                <Eye className="h-3.5 w-3.5" />
-                                                View
-                                            </Button>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger>
+                                                    <button
+                                                        type="button"
+                                                        aria-label="Row actions"
+                                                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-900"
+                                                    >
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+
+                                                <DropdownMenuContent align="end" className="w-44">
+                                                    <DropdownMenuItem
+                                                        onClick={() => setSelected(r)}
+                                                        className="gap-2.5 text-[13px] text-slate-700"
+                                                    >
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                        View details
+                                                    </DropdownMenuItem>
+
+                                                    <DropdownMenuSeparator />
+
+                                                    <DropdownMenuItem
+                                                        variant="destructive"
+                                                        onClick={() => setBlacklistTarget(r)}
+                                                        className="gap-2.5 text-[13px]"
+                                                    >
+                                                        <UserX className="h-3.5 w-3.5" />
+                                                        Blacklist visitor
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 );
@@ -454,9 +488,42 @@ export default function VisitorHistoryPage() {
                             </div>
 
                         </div>
+
+                        <div className="flex shrink-0 items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-3.5">
+                            <Button
+                                variant="ghost"
+                                className="h-8 rounded-lg px-3 text-[12px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                                onClick={() => setSelected(null)}
+                            >
+                                Close
+                            </Button>
+                            <Button
+                                className="h-8 gap-1.5 rounded-lg bg-red-600 px-3 text-[12px] font-medium text-white shadow-sm hover:bg-red-700"
+                                onClick={() => setBlacklistTarget(selected)}
+                            >
+                                <UserX className="h-3.5 w-3.5" />
+                                Blacklist visitor
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )}
+
+            <AddBlacklistModal
+                open={!!blacklistTarget}
+                onOpenChange={(open) => {
+                    if (!open) setBlacklistTarget(null);
+                }}
+                initialName={
+                    blacklistTarget
+                        ? {
+                              first_name: blacklistTarget.first_name,
+                              middle_name: blacklistTarget.middle_name,
+                              last_name: blacklistTarget.last_name,
+                          }
+                        : undefined
+                }
+            />
         </div>
     );
 }

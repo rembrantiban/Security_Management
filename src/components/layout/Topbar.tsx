@@ -60,7 +60,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   };
 
   return (
-    <header className="flex h-15 w-full items-center justify-between gap-4 border-b border-slate-200/80 bg-white px-4 py-3 shadow-sm">
+    <header className="sticky top-0 z-10 flex h-15 w-full shrink-0 items-center justify-between gap-4 border-b border-slate-200/80 bg-white px-4 py-3 shadow-sm">
 
       {/* LEFT: menu + title */}
       <div className="flex min-w-0 items-center gap-3">
@@ -100,10 +100,10 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
               </span>
 
               <span className="hidden min-w-0 text-left sm:block">
-                <span className="block max-w-[160px] truncate text-[12.5px] font-medium leading-none text-slate-800">
+                <span className="block max-w-40 truncate text-[12.5px] font-medium leading-none text-slate-800">
                   {fullName}
                 </span>
-                <span className="mt-1 block max-w-[160px] truncate text-[11px] text-slate-400">
+                <span className="mt-1 block max-w-40 truncate text-[11px] text-slate-400">
                   {role}
                 </span>
               </span>

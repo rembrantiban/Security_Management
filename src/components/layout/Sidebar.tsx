@@ -109,7 +109,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       path: "/visitor-history",
     },
     hasModulePermission("Visitor and Access Control Module", "Administrator View Register") && {
-      name: "Blacklist History",
+      name: "Blacklist Visitors",
       icon: <UserX size={15} />,
       path: "/blacklist",
     },
@@ -420,7 +420,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <NavGroup label="Main" items={personelDashboard} />
           <NavGroup label="Account" items={personnelAccount} />
           <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
-          <NavGroup label="Patrols" items={personnelPatrols} />
+          <NavGroup label="Security" items={personnelPatrols} />
           <NavGroup label="Visitors" items={personnelVisitors} />
           <NavGroup label="Reports" items={personnelReports} />
           <NavGroup label="Record" items={personnelRecord} />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { UserX, User, MessageSquareWarning, Loader2 } from "lucide-react";
+import { UserX, ShieldAlert, Loader2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -21,6 +21,8 @@ type AddBlacklistModalProps = {
     };
 };
 
+const emptyForm = { first_name: "", middle_name: "", last_name: "", reason: "" };
+
 export default function AddBlacklistModal({
     open,
     onOpenChange,
@@ -30,20 +32,22 @@ export default function AddBlacklistModal({
     const { showToast } = useToast();
 
     const [formData, setFormData] = useState({
+        ...emptyForm,
         first_name: initialName?.first_name ?? "",
         middle_name: initialName?.middle_name ?? "",
         last_name: initialName?.last_name ?? "",
-        reason: "",
     });
+
+    const prefilled = Boolean(initialName?.first_name || initialName?.last_name);
 
     useEffect(() => {
         if (!open) return;
 
         setFormData({
+            ...emptyForm,
             first_name: initialName?.first_name ?? "",
             middle_name: initialName?.middle_name ?? "",
             last_name: initialName?.last_name ?? "",
-            reason: "",
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, initialName?.first_name, initialName?.middle_name, initialName?.last_name]);
@@ -55,10 +59,10 @@ export default function AddBlacklistModal({
 
     function resetForm() {
         setFormData({
+            ...emptyForm,
             first_name: initialName?.first_name ?? "",
             middle_name: initialName?.middle_name ?? "",
             last_name: initialName?.last_name ?? "",
-            reason: "",
         });
     }
 
@@ -95,80 +99,104 @@ export default function AddBlacklistModal({
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-md rounded p-0 gap-0 overflow-hidden border border-gray-200">
-                <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-300">
-                    <div className="flex items-center gap-3">
-                        <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-red-50 border border-red-200 text-red-700 shrink-0">
-                            <UserX size={18} />
+            <DialogContent className="gap-0 overflow-hidden rounded-2xl border-0 p-0 shadow-2xl ring-1 ring-slate-200 sm:max-w-lg">
+
+                {/* Header */}
+                <DialogHeader className="gap-0 border-b border-slate-100 px-6 py-5">
+                    <div className="flex items-start gap-3.5">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 ring-1 ring-red-100">
+                            <UserX className="h-[18px] w-[18px]" />
                         </span>
-                        <div>
-                            <DialogTitle className="text-base font-semibold text-gray-800">
-                                Blacklist Visitor
+                        <div className="min-w-0">
+                            <DialogTitle className="text-[15px] font-semibold tracking-tight text-slate-900">
+                                Blacklist visitor
                             </DialogTitle>
-                            <p className="text-xs text-gray-400 mt-0.5">
-                                Prevent this individual from registering for future visits.
+                            <p className="mt-1 text-[12.5px] leading-relaxed text-slate-500">
+                                This person will be blocked from registering for any
+                                future campus visit.
                             </p>
                         </div>
                     </div>
                 </DialogHeader>
 
-                <div className="px-6 py-5 space-y-4">
-                    <div className="grid gap-3 sm:grid-cols-3">
-                        <FieldShell label="First Name" icon={<User size={15} />}>
-                            <input
-                                value={formData.first_name}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, first_name: e.target.value })
-                                }
-                                placeholder="First name"
-                                className="w-full bg-transparent text-sm text-gray-800 outline-none placeholder:text-gray-400"
-                            />
-                        </FieldShell>
-                        <FieldShell label="Middle Name">
-                            <input
-                                value={formData.middle_name}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, middle_name: e.target.value })
-                                }
-                                placeholder="Optional"
-                                className="w-full bg-transparent text-sm text-gray-800 outline-none placeholder:text-gray-400"
-                            />
-                        </FieldShell>
-                        <FieldShell label="Last Name">
-                            <input
-                                value={formData.last_name}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, last_name: e.target.value })
-                                }
-                                placeholder="Last name"
-                                className="w-full bg-transparent text-sm text-gray-800 outline-none placeholder:text-gray-400"
-                            />
-                        </FieldShell>
+                {/* Body */}
+                <div className="space-y-5 px-6 py-5">
+
+                    <div>
+                        <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-slate-400">
+                            Visitor name
+                        </p>
+
+                        {prefilled ? (
+                            <div className="rounded-xl bg-slate-50 px-3.5 py-3 ring-1 ring-slate-200">
+                                <p className="text-[13.5px] font-medium text-slate-900">
+                                    {[formData.first_name, formData.middle_name, formData.last_name]
+                                        .filter(Boolean)
+                                        .join(" ")}
+                                </p>
+                                <p className="mt-0.5 text-[11px] text-slate-400">
+                                    Pulled from the visitor record
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid gap-2.5 sm:grid-cols-3">
+                                <Field
+                                    label="First name"
+                                    value={formData.first_name}
+                                    onChange={(v) => setFormData({ ...formData, first_name: v })}
+                                    placeholder="First"
+                                />
+                                <Field
+                                    label="Middle name"
+                                    value={formData.middle_name}
+                                    onChange={(v) => setFormData({ ...formData, middle_name: v })}
+                                    placeholder="Optional"
+                                />
+                                <Field
+                                    label="Last name"
+                                    value={formData.last_name}
+                                    onChange={(v) => setFormData({ ...formData, last_name: v })}
+                                    placeholder="Last"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div>
-                        <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1.5">
-                            <MessageSquareWarning size={13} />
-                            Reason for Blacklisting
+                        <label
+                            htmlFor="blacklist-reason"
+                            className="mb-2 block text-[10px] font-medium uppercase tracking-widest text-slate-400"
+                        >
+                            Reason for blacklisting
                         </label>
                         <textarea
+                            id="blacklist-reason"
                             rows={3}
                             value={formData.reason}
                             onChange={(e) =>
                                 setFormData({ ...formData, reason: e.target.value })
                             }
-                            placeholder="e.g. Attempted unauthorized access, falsified ID, repeated policy violations..."
-                            className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-3 text-sm text-gray-800 outline-none resize-none placeholder:text-gray-400 focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-colors"
+                            placeholder="e.g. Attempted unauthorized access, falsified ID, repeated policy violations…"
+                            className="w-full resize-none rounded-xl bg-white px-3.5 py-3 text-[13px] text-slate-800 outline-none ring-1 ring-slate-200 transition placeholder:text-slate-400 focus:ring-2 focus:ring-red-200"
                         />
+                    </div>
+
+                    <div className="flex items-start gap-2.5 rounded-xl bg-amber-50 px-3.5 py-3 ring-1 ring-amber-100">
+                        <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+                        <p className="text-[11.5px] leading-relaxed text-amber-800">
+                            You can restore access at any time from the Visitor Blacklist
+                            page.
+                        </p>
                     </div>
                 </div>
 
-                <DialogFooter className="px-6 py-4 border-t border-gray-300 bg-gray-50/60 flex sm:justify-end gap-2.5">
+                {/* Footer */}
+                <DialogFooter className="gap-2.5 border-t border-slate-100 bg-slate-50/70 px-6 py-4 sm:justify-end">
                     <Button
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         onClick={handleClose}
-                        className="rounded-xl border-gray-300 text-gray-600 hover:bg-gray-50"
+                        className="h-9 rounded-xl px-4 text-[12.5px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                     >
                         Cancel
                     </Button>
@@ -176,17 +204,17 @@ export default function AddBlacklistModal({
                         type="button"
                         onClick={handleSubmit}
                         disabled={!isValid || isLoading}
-                        className="rounded-xl bg-red-600 text-white shadow-sm shadow-red-900/20 hover:bg-red-700 disabled:opacity-40 gap-2"
+                        className="h-9 gap-2 rounded-xl bg-red-600 px-4 text-[12.5px] font-medium text-white shadow-sm hover:bg-red-700 disabled:opacity-40"
                     >
                         {isLoading ? (
                             <>
-                                <Loader2 size={15} className="animate-spin" />
-                                Blacklisting...
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                Blacklisting…
                             </>
                         ) : (
                             <>
-                                <UserX size={15} />
-                                Blacklist Visitor
+                                <UserX className="h-3.5 w-3.5" />
+                                Blacklist visitor
                             </>
                         )}
                     </Button>
@@ -196,22 +224,28 @@ export default function AddBlacklistModal({
     );
 }
 
-function FieldShell({
+function Field({
     label,
-    icon,
-    children,
+    value,
+    onChange,
+    placeholder,
 }: {
     label: string;
-    icon?: React.ReactNode;
-    children: React.ReactNode;
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
 }) {
     return (
-        <div>
-            <label className="text-xs font-medium text-gray-500 mb-1.5 block">{label}</label>
-            <div className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-3 py-2.5 focus-within:border-red-400 focus-within:ring-2 focus-within:ring-red-100 transition-colors">
-                {icon && <span className="text-gray-400 shrink-0">{icon}</span>}
-                {children}
-            </div>
-        </div>
+        <label className="block">
+            <span className="mb-1 block text-[11px] font-medium text-slate-500">
+                {label}
+            </span>
+            <input
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                className="w-full rounded-xl bg-white px-3 py-2.5 text-[13px] text-slate-800 outline-none ring-1 ring-slate-200 transition placeholder:text-slate-400 focus:ring-2 focus:ring-red-200"
+            />
+        </label>
     );
 }

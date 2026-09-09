@@ -24,7 +24,7 @@ function Sheet({ model }: { model: VisitorReportModel }) {
 
             <div className="ir-title">Visitor Access Report</div>
             <div className="ir-sub">
-                Official record of processed visitor access requests
+                Official record of completed visits — visitors whose exit has been recorded
             </div>
 
             <table className="ir-info">
@@ -54,7 +54,7 @@ function Sheet({ model }: { model: VisitorReportModel }) {
             <table className="ir-kv">
                 <tbody>
                     <tr>
-                        <td className="k">Total processed requests</td>
+                        <td className="k">Total completed visits</td>
                         <td className="v">{summary.total}</td>
                     </tr>
                     <tr>
@@ -107,7 +107,7 @@ function Sheet({ model }: { model: VisitorReportModel }) {
                     {rows.length === 0 ? (
                         <tr>
                             <td colSpan={9} className="ir-empty-cell">
-                                No processed visitor requests within the selected period.
+                                No visitor exits recorded within the selected period.
                             </td>
                         </tr>
                     ) : (

@@ -268,7 +268,7 @@ export default function UserTable({ users }: Props) {
                                                     }}
                                                 >
                                                     <KeyRound className="h-3.5 w-3.5" />
-                                                    Reset password
+                                                    Change password
                                                 </DropdownMenuItem>
 
                                                 {user.approval_status === "Pending" && (

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-    AlertTriangle,
     CheckCircle2,
     Clock3,
     MapPin,
@@ -10,25 +9,13 @@ import {
     Siren,
 } from "lucide-react";
 import { useIncidentReport } from "@/hooks/useIncidentsReport";
+import { useNotificationStore } from "@/store/useNotificationStore";
 import { Button } from "@/components/ui/button";
+import PersonnelActiveAlerts from "./PersonnelActiveAlerts";
 import ResolveIncidentDialog from "./ResolveIncidentDialog";
 import type { Incident } from "@/store/useIncidentReportStore";
 
 type IncidentStatus = "Pending" | "In Progress" | "Resolved" | "Closed";
-
-type SecurityAlert = {
-    id: string;
-    title: string;
-    area: string;
-    level: "Critical" | "Warning" | "Info";
-    time: string;
-};
-
-const securityAlerts: SecurityAlert[] = [
-    { id: "ALT-118", title: "Camera offline", area: "North Hallway", level: "Critical", time: "2 min ago" },
-    { id: "ALT-119", title: "Door left open", area: "Records Room", level: "Warning", time: "12 min ago" },
-    { id: "ALT-120", title: "Shift handover reminder", area: "Security Office", level: "Info", time: "25 min ago" },
-];
 
 const chip =
     "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 whitespace-nowrap";
@@ -63,14 +50,9 @@ const severityStyles: Record<Incident["severity"], { chip: string; tile: string;
     },
 };
 
-const alertStyles: Record<SecurityAlert["level"], { tile: string; dot: string }> = {
-    Critical: { tile: "bg-red-50 text-red-600 ring-red-100", dot: "bg-red-500" },
-    Warning: { tile: "bg-amber-50 text-amber-700 ring-amber-100", dot: "bg-amber-500" },
-    Info: { tile: "bg-blue-50 text-blue-600 ring-blue-100", dot: "bg-blue-500" },
-};
-
 export default function AssignedDashboard() {
     const { getMyAssignedIncidents, personnelStats } = useIncidentReport();
+    const { unacknowledgedCount } = useNotificationStore();
     const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
     const [openResolveDialog, setOpenResolveDialog] = useState(false);
 
@@ -109,8 +91,8 @@ export default function AssignedDashboard() {
                 />
                 <SummaryCard
                     icon={ShieldAlert}
-                    label="Security alerts"
-                    value={securityAlerts.length}
+                    label="Active alerts"
+                    value={unacknowledgedCount}
                     tone="red"
                 />
                 <SummaryCard
@@ -236,62 +218,7 @@ export default function AssignedDashboard() {
                 {/* Sidebar */}
                 <aside className="space-y-2">
 
-                    <div className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
-                        <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
-                                <Radio className="h-4 w-4 text-amber-800" />
-                            </div>
-
-                            <div>
-                                <p className="text-[13px] font-semibold tracking-tight text-slate-900">
-                                    Security alerts
-                                </p>
-                                <p className="mt-0.5 text-[11px] text-slate-600">
-                                    Live feed from campus systems
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="divide-y divide-slate-100">
-                            {securityAlerts.map((alert) => {
-                                const style = alertStyles[alert.level];
-
-                                return (
-                                    <div
-                                        key={alert.id}
-                                        className="flex items-start gap-3 px-5 py-3 transition-colors duration-200 hover:bg-slate-50"
-                                    >
-                                        <div
-                                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ring-1 ${style.tile}`}
-                                        >
-                                            {alert.level === "Critical" ? (
-                                                <Siren className="h-3.5 w-3.5" />
-                                            ) : (
-                                                <AlertTriangle className="h-3.5 w-3.5" />
-                                            )}
-                                        </div>
-
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <p className="truncate text-[12.5px] font-medium leading-none text-slate-900">
-                                                    {alert.title}
-                                                </p>
-                                                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${style.dot}`} />
-                                            </div>
-
-                                            <p className="mt-1.5 truncate text-[11px] text-slate-700">
-                                                <span className="font-mono tracking-tight">{alert.id}</span>
-                                                <span className="text-slate-300"> · </span>
-                                                {alert.area}
-                                                <span className="text-slate-300"> · </span>
-                                                {alert.time}
-                                            </p>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                    <PersonnelActiveAlerts />
 
                     <div className="relative overflow-hidden rounded-2xl bg-amber-800 p-5 shadow-sm">
                         <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-amber-600/30 blur-3xl" />

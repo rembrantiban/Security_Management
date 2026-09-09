@@ -32,10 +32,79 @@ function getInitials(name: string) {
 function formatDate(value: string) {
     return new Date(value).toLocaleDateString("en-US", {
         month: "short",
-        day: "numeric",
+        day: "2-digit",
         year: "numeric",
     });
 }
+
+/** Deterministic bar pattern so the same pass always renders the same "barcode". */
+function barPattern(seed: string) {
+    const bars: number[] = [];
+    for (let i = 0; i < 48; i++) {
+        const c = seed.charCodeAt(i % seed.length) + i * 13;
+        bars.push((c % 3) + 1);
+    }
+    return bars;
+}
+
+const SIZES = {
+    sm: {
+        band: "w-6",
+        bandText: "text-[9px] tracking-[0.25em]",
+        content: "pl-6",
+        headPad: "px-4 py-2.5",
+        logo: "h-9 w-9",
+        school: "text-[12px]",
+        sub: "text-[8px] tracking-[0.16em]",
+        official: "text-[8px]",
+        passLabel: "text-[15px]",
+        bodyPad: "px-4 py-3.5",
+        photo: "h-24 w-[74px]",
+        photoText: "text-lg",
+        nameLabel: "text-[8px] tracking-[0.18em]",
+        name: "text-[15px]",
+        grid: "gap-x-3 gap-y-1.5 text-[10px]",
+        fieldLabel: "text-[7.5px] tracking-[0.16em]",
+        verified: "text-[9px]",
+        verifiedIcon: "h-3 w-3",
+        footPad: "px-4 py-2.5",
+        barcode: "h-7",
+        barUnit: 1,
+        barCode: "text-[8px] tracking-[0.2em]",
+        sig: "h-7 w-28",
+        sigLabel: "text-[7.5px] tracking-[0.16em]",
+        strip: "px-4 py-1 text-[7px] tracking-[0.18em]",
+        watermark: "h-24 w-24",
+    },
+    lg: {
+        band: "w-10",
+        bandText: "text-sm tracking-[0.4em]",
+        content: "pl-10",
+        headPad: "px-8 py-5",
+        logo: "h-16 w-16",
+        school: "text-xl",
+        sub: "text-[11px] tracking-[0.22em]",
+        official: "text-[11px]",
+        passLabel: "text-[26px]",
+        bodyPad: "px-8 py-6",
+        photo: "h-44 w-36",
+        photoText: "text-4xl",
+        nameLabel: "text-[11px] tracking-[0.22em]",
+        name: "text-[32px]",
+        grid: "gap-x-8 gap-y-3 text-[15px]",
+        fieldLabel: "text-[10px] tracking-[0.2em]",
+        verified: "text-sm",
+        verifiedIcon: "h-4 w-4",
+        footPad: "px-8 py-5",
+        barcode: "h-14",
+        barUnit: 2,
+        barCode: "text-[11px] tracking-[0.3em]",
+        sig: "h-12 w-60",
+        sigLabel: "text-[10px] tracking-[0.2em]",
+        strip: "px-8 py-2 text-[10px] tracking-[0.22em]",
+        watermark: "h-52 w-52",
+    },
+} as const;
 
 function PassCard({
     request,
@@ -44,93 +113,161 @@ function PassCard({
     request: RequestAccess;
     size?: "sm" | "lg";
 }) {
-    const isLarge = size === "lg";
+    const s = SIZES[size];
+    const name = fullName(request);
+    const issued = formatDate(request.approved_at ?? request.created_at);
+    const bars = barPattern(request.request_number);
+    const isApproved = request.status === "Approved";
+    const approverName = request.approved_by_name ?? "Admin";
 
     return (
-        <div
-            className={`overflow-hidden border border-orange-200 bg-white shadow-sm ${
-                isLarge ? "rounded-3xl" : "rounded-2xl"
-            }`}
-        >
-            {/* Pass header */}
-            <div
-                className={`flex items-center bg-linear-to-r from-orange-700 to-amber-700 text-white ${
-                    isLarge ? "gap-4 px-8 py-6" : "gap-2.5 px-4 py-3"
-                }`}
-            >
-                <img
-                    src="/sfc.png"
-                    alt="Logo"
-                    className={isLarge ? "h-12 w-12 object-contain" : "h-7 w-7 object-contain"}
-                />
-                <div>
-                    <p
-                        className={`font-semibold uppercase tracking-widest text-orange-100 ${
-                            isLarge ? "text-sm" : "text-[11px]"
-                        }`}
-                    >
-                        St Francis College
-                    </p>
-                    <p className={`font-bold leading-none ${isLarge ? "text-2xl" : "text-sm"}`}>
-                        Visitor Pass
-                    </p>
-                </div>
+        <div className="relative overflow-hidden rounded-sm border border-slate-300 bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08),0_8px_24px_-12px_rgba(15,23,42,0.25)] print:shadow-none">
+
+            {/* Security side band */}
+            <div className={`absolute inset-y-0 left-0 ${s.band} flex items-center justify-center bg-red-700`}>
+                <span
+                    className={`font-bold uppercase text-white [writing-mode:vertical-rl] rotate-180 ${s.bandText}`}
+                >
+                    Visitor Pass
+                </span>
             </div>
 
-            <div
-                className={`flex flex-col items-center text-center ${
-                    isLarge ? "px-10 py-10" : "px-5 py-5"
-                }`}
-            >
-                <div
-                    className={`flex items-center justify-center rounded-full bg-orange-100 font-bold text-orange-700 ${
-                        isLarge ? "h-28 w-28 text-4xl" : "h-16 w-16 text-lg"
-                    }`}
-                >
-                    {getInitials(fullName(request))}
-                </div>
+            {/* Watermark */}
+            <ShieldCheck
+                className={`pointer-events-none absolute -bottom-4 right-1 ${s.watermark} text-slate-900/4`}
+                strokeWidth={1.25}
+            />
 
-                <p className={`mt-4 font-semibold text-slate-900 ${isLarge ? "text-3xl" : "text-base"}`}>
-                    {fullName(request)}
-                </p>
-                <p className={`mt-1 text-slate-400 ${isLarge ? "text-base" : "text-xs"}`}>
-                    {request.request_number}
-                </p>
+            <div className={`relative ${s.content}`}>
 
-                <div
-                    className={`mt-6 w-full space-y-3 rounded-xl bg-slate-50/80 text-left ${
-                        isLarge ? "p-6 text-base" : "p-3 text-xs"
-                    }`}
-                >
-                    <Row label="Purpose" value={request.purpose} />
-                    <Row label="ID Presented" value={request.id_type ?? "—"} />
-                    <Row
-                        label="Approved By"
-                        value={request.approved_by_name ?? "—"}
+                {/* Header */}
+                <div className={`flex items-center gap-3 border-b-2 border-slate-900 ${s.headPad}`}>
+                    <img
+                        src="/sfc.png"
+                        alt="St. Francis College"
+                        className={`${s.logo} shrink-0 object-contain`}
                     />
-                    <Row
-                        label="Date Issued"
-                        value={formatDate(request.approved_at ?? request.created_at)}
-                    />
+
+                    <div className="min-w-0 flex-1">
+                        <p className={`font-bold uppercase leading-tight text-slate-900 ${s.school}`}>
+                            St. Francis College
+                        </p>
+                        <p className={`font-medium uppercase text-slate-500 ${s.sub}`}>
+                            Guihulngan City &middot; Security Office
+                        </p>
+                    </div>
+
+                    <div className="shrink-0 text-right">
+                        <p className={`font-semibold uppercase text-red-700 ${s.official}`}>
+                            Official
+                        </p>
+                        <p className={`font-extrabold uppercase leading-none tracking-tight text-slate-900 ${s.passLabel}`}>
+                            Gate Pass
+                        </p>
+                    </div>
                 </div>
 
-                <div
-                    className={`mt-6 flex items-center gap-2 font-medium text-emerald-600 ${
-                        isLarge ? "text-base" : "text-[11px]"
-                    }`}
-                >
-                    <ShieldCheck className={isLarge ? "h-5 w-5" : "h-3.5 w-3.5"} />
-                    Identity Verified &amp; Approved
+                {/* Body */}
+                <div className={`flex gap-4 ${s.bodyPad}`}>
+
+                    {/* Photo */}
+                    <div className={`${s.photo} shrink-0 overflow-hidden rounded-sm border border-slate-300 bg-slate-100`}>
+                        {request.id_image ? (
+                            <img
+                                src={request.id_image}
+                                alt="Visitor"
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <div className={`flex h-full w-full items-center justify-center font-bold text-slate-400 ${s.photoText}`}>
+                                {getInitials(name)}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Details */}
+                    <div className="min-w-0 flex-1">
+                        <p className={`font-semibold uppercase text-slate-400 ${s.nameLabel}`}>
+                            Visitor Name
+                        </p>
+                        <p className={`truncate font-bold leading-tight text-slate-900 ${s.name}`}>
+                            {name}
+                        </p>
+
+                        <div className={`mt-3 grid grid-cols-2 ${s.grid}`}>
+                            <Field
+                                sizeCls={s.fieldLabel}
+                                label="Pass No."
+                                value={request.request_number}
+                                mono
+                            />
+                            <Field
+                                sizeCls={s.fieldLabel}
+                                label="Date Issued"
+                                value={issued}
+                            />
+                            <Field
+                                sizeCls={s.fieldLabel}
+                                label="Purpose"
+                                value={request.purpose}
+                                span2
+                            />
+                            <Field
+                                sizeCls={s.fieldLabel}
+                                label="ID Presented"
+                                value={request.id_type ?? "—"}
+                            />
+                            <Field
+                                sizeCls={s.fieldLabel}
+                                label="Validity"
+                                value="Single-entry, day pass"
+                            />
+                        </div>
+
+                        <div className={`mt-3 flex items-center gap-1.5 font-semibold text-emerald-600 ${s.verified}`}>
+                            <ShieldCheck className={s.verifiedIcon} />
+                            Identity verified &amp; approved
+                        </div>
+                    </div>
                 </div>
 
-                <p
-                    className={`mt-4 leading-relaxed text-slate-400 ${
-                        isLarge ? "text-sm" : "text-[10px]"
-                    }`}
-                >
-                    Please wear this pass visibly and present it at all
-                    checkpoints. Return it to the guard house upon exit.
-                </p>
+                {/* Footer — barcode + signature */}
+                <div className={`flex items-end justify-between gap-6 border-t border-dashed border-slate-300 ${s.footPad}`}>
+                    <div className="min-w-0">
+                        <div className={`flex items-end gap-px ${s.barcode}`}>
+                            {bars.map((w, i) => (
+                                <div
+                                    key={i}
+                                    style={{ width: `${w * s.barUnit}px` }}
+                                    className={`h-full ${i % 2 === 0 ? "bg-slate-900" : "bg-transparent"}`}
+                                />
+                            ))}
+                        </div>
+                        <p className={`mt-1 font-mono uppercase text-slate-500 ${s.barCode}`}>
+                            {request.request_number}
+                        </p>
+                    </div>
+
+                    <div className="shrink-0 text-right">
+                        <div className={`${s.sig} ml-auto border-b border-slate-400`} />
+                        <p className={`mt-1 font-medium uppercase text-slate-400 ${s.sigLabel}`}>
+                            {request.approved_by_name ?? "Authorized signature"}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Bottom security strip */}
+                <div className={`bg-slate-900 text-center ${s.strip}`}>
+                    {isApproved && (
+                        <p className="mb-1 flex items-center justify-center gap-1.5 font-bold uppercase text-emerald-400">
+                            <ShieldCheck className={s.verifiedIcon} />
+                            Approved &middot; {approverName}
+                        </p>
+                    )}
+                    <p className="font-medium uppercase text-slate-300">
+                        Wear visibly &middot; Non-transferable &middot; Surrender at guard house on exit
+                    </p>
+                </div>
             </div>
         </div>
     );
@@ -145,30 +282,30 @@ export default function VisitorPassModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-sm rounded-2xl p-0 gap-0 overflow-hidden border border-gray-200">
-                <DialogHeader className="px-5 pt-5 pb-2">
-                    <DialogTitle className="text-sm font-semibold text-gray-800">
-                        Visitor Pass
+            <DialogContent className="sm:max-w-xl rounded-lg p-0 gap-0 overflow-hidden border border-slate-200">
+                <DialogHeader className="px-5 pt-5 pb-3 border-b border-slate-100">
+                    <DialogTitle className="text-sm font-semibold text-slate-800">
+                        Visitor Gate Pass
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="px-5 pb-5">
+                <div className="bg-slate-50 px-5 py-6">
                     <PassCard request={request} />
                 </div>
 
-                <DialogFooter className="px-5 py-4 border-t border-gray-100 bg-gray-50/60 flex sm:justify-end gap-2.5">
+                <DialogFooter className="px-5 py-4 border-t border-slate-100 bg-white flex sm:justify-end gap-2.5">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={() => onOpenChange(false)}
-                        className="rounded-xl border-gray-300 text-gray-600 hover:bg-gray-50"
+                        className="rounded-md border-slate-300 text-slate-600 hover:bg-slate-50"
                     >
                         Close
                     </Button>
                     <Button
                         type="button"
                         onClick={() => window.print()}
-                        className="rounded-xl bg-linear-to-r from-orange-700 to-amber-700 text-white shadow-sm shadow-orange-900/30 hover:brightness-105 gap-2"
+                        className="rounded-md bg-slate-900 text-white shadow-sm hover:bg-slate-800 gap-2"
                     >
                         <Printer size={15} />
                         Print Pass
@@ -196,12 +333,13 @@ export default function VisitorPassModal({
                                 #visitor-pass-print-root {
                                     display: flex !important;
                                     justify-content: center;
-                                    padding: 24px;
+                                    align-items: flex-start;
+                                    padding: 32px;
                                 }
                             }
                         `}</style>
                         <div id="visitor-pass-print-root">
-                            <div className="w-full max-w-xl">
+                            <div className="w-full max-w-2xl">
                                 <PassCard request={request} size="lg" />
                             </div>
                         </div>
@@ -212,11 +350,31 @@ export default function VisitorPassModal({
     );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Field({
+    label,
+    value,
+    mono,
+    span2,
+    sizeCls,
+}: {
+    label: string;
+    value: string;
+    mono?: boolean;
+    span2?: boolean;
+    sizeCls: string;
+}) {
     return (
-        <div className="flex items-start justify-between gap-3">
-            <span className="shrink-0 font-medium text-slate-400">{label}</span>
-            <span className="text-right text-slate-700">{value}</span>
+        <div className={span2 ? "col-span-2" : ""}>
+            <p className={`font-semibold uppercase text-slate-400 ${sizeCls}`}>
+                {label}
+            </p>
+            <p
+                className={`mt-0.5 font-medium text-slate-800 ${
+                    mono ? "font-mono tracking-tight" : ""
+                } ${span2 ? "truncate" : ""}`}
+            >
+                {value}
+            </p>
         </div>
     );
 }

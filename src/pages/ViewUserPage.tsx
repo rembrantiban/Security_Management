@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import ViewEditUserDialog from "@/components/User/ViewEditUserDialog";
+import AccountActivityLogs from "@/components/User/AccountActivityLogs";
 import { useAuth } from "@/hooks/useAuth";
 import type { Users } from "@/store/useAuthStore";
 import { useToast } from "@/hooks/useToast"
@@ -160,7 +161,7 @@ export default function ViewUserPage() {
     }
   };
   return (
-    <div className="max-w-6xl mx-auto  px-4 sm:px-6 py-4 space-y-5">
+    <div className="max-w-7xl mx-auto  px-4 sm:px-6 py-4 space-y-5">
 
       {/* Back nav */}
       <button
@@ -172,6 +173,11 @@ export default function ViewUserPage() {
         </span>
         <span>Back to Users</span>
       </button>
+
+      <div className="grid gap-5 lg:grid-cols-3 lg:items-start">
+
+        {/* Profile column */}
+        <div className="lg:col-span-2 space-y-5">
 
       {/* Profile hero card */}
       <div className="relative bg-white  rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -293,6 +299,16 @@ export default function ViewUserPage() {
           />
         </div>
       </div>
+
+        </div>
+
+        {/* Account activity logs — right of the profile */}
+        <div className="lg:col-span-1 lg:sticky lg:top-6">
+          <AccountActivityLogs userId={user.user_id} />
+        </div>
+
+      </div>
+
       <ViewEditUserDialog
         open={open}
         onOpenChange={setOpen}

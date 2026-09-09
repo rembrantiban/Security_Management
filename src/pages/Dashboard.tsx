@@ -1,21 +1,54 @@
+import { useEffect, useMemo } from "react";
 import {
-  Shield,
   Users,
   AlertTriangle,
+  Clock,
   FileText,
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useIncidentReport } from "@/hooks/useIncidentsReport";
+import { useActivityStore } from "@/store/useActivityStore";
 import IncidentSummaryDashboard from "@/components/Dashboard/IncidentSummaryDashboard";
 import ActivityTimeline from "@/components/Dashboard/ActivityTimeline";
+import ActiveAlertsNotifications from "@/components/Dashboard/ActiveAlertsNotifications";
 import PendingRequestsTable from "@/components/Dashboard/PendingRequestsTable";
 import SystemStatus from "@/components/Dashboard/SystemStatus";
 //import ViewIncidentStatistics from "@/components/Dashboard/ViewIncidentStatistics";
 import ViewSecurityAnalytics from "@/components/Dashboard/ViewSecurityAnalytics";
 
+/** Staff roles excluded from the "Total Users" count on the dashboard. */
+const EXCLUDED_USER_ROLES = ["Administrator", "IT System Administrator"];
+
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, users, getAllUsers } = useAuth();
+  const { incidents } = useIncidentReport();
+  const { logs, getActivityLogs } = useActivityStore();
+
+  useEffect(() => {
+    getAllUsers();
+    getActivityLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const totalUsers = useMemo(
+    () =>
+      users.filter((u) => !EXCLUDED_USER_ROLES.includes(u.role)).length,
+    [users]
+  );
+
+  const activeIncidents = useMemo(
+    () => incidents.filter((i) => i.status === "In Progress").length,
+    [incidents]
+  );
+
+  const pendingIncidents = useMemo(
+    () => incidents.filter((i) => i.status === "Pending").length,
+    [incidents]
+  );
+
+  const logsCount = logs.length;
 
   return (
     <div className="space-y-2">
@@ -57,25 +90,25 @@ export default function Dashboard() {
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Users"
-          value="1,245"
+          value={totalUsers.toLocaleString()}
           icon={<Users className="h-4 w-4" />}
           accent="bg-blue-50 text-blue-600 ring-blue-100"
         />
         <StatCard
-          title="Active Guards"
-          value="32"
-          icon={<Shield className="h-4 w-4" />}
-          accent="bg-emerald-50 text-emerald-600 ring-emerald-100"
+          title="Active Incidents"
+          value={activeIncidents.toLocaleString()}
+          icon={<AlertTriangle className="h-4 w-4" />}
+          accent="bg-orange-50 text-orange-600 ring-orange-100"
         />
         <StatCard
-          title="Incidents"
-          value="8"
-          icon={<AlertTriangle className="h-4 w-4" />}
+          title="Pending Incidents"
+          value={pendingIncidents.toLocaleString()}
+          icon={<Clock className="h-4 w-4" />}
           accent="bg-red-50 text-red-600 ring-red-100"
         />
         <StatCard
-          title="Logs Today"
-          value="356"
+          title="Activity Logs"
+          value={logsCount.toLocaleString()}
           icon={<FileText className="h-4 w-4" />}
           accent="bg-amber-50 text-amber-700 ring-amber-100"
         />
@@ -91,7 +124,11 @@ export default function Dashboard() {
         <ActivityTimeline />
       </div>
 
-      <PendingRequestsTable />
+      {/* 3.5 — Active alerts & notifications, and pending requests */}
+      <div className="grid items-start gap-2 lg:grid-cols-2">
+        <ActiveAlertsNotifications />
+        <PendingRequestsTable />
+      </div>
 
     </div>
   );

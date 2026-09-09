@@ -66,7 +66,7 @@ const AUDIENCES: NotificationAudience[] = [
 ];
 
 /** Rows per page in the admin notification-history table. */
-const HISTORY_PAGE_SIZE = 8;
+const HISTORY_PAGE_SIZE = 5;
 
 function fmtDateTime(value: string | null) {
     if (!value) return "—";
