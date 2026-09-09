@@ -12,11 +12,12 @@ import {
   ClipboardList,
   Layers,
   HatGlasses,
-  Key,
   ShieldAlert,
   History,
   UserX,
   DoorOpen,
+  LayoutGrid,
+  Lock,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -197,14 +198,28 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
   //IT SYSTEM ADMINISTRATOR
 
-  const itSystemAdministrator: ItemType[] = [
+  // Access Control — RBAC policy configuration (spec 2.28 / 2.29)
+  const itAccessControl: ItemType[] = [
     {
-      name: "Permissions",
+      name: "RBAC Policies",
       icon: <ShieldCheck size={16} />,
-      path: "/it-system-administrator/permissions",
+      path: "/it-system-administrator/rbac-policies",
     },
-    { name: "Role Access", icon: <Key size={16} />, path: "/it-system-administrator/role-access" },
-  ].filter(Boolean) as ItemType[];
+    {
+      name: "Permission Matrix",
+      icon: <LayoutGrid size={16} />,
+      path: "/it-system-administrator/permission-matrix",
+    },
+  ];
+
+  // Authentication — account security settings (spec 2.30)
+  const itAuthentication: ItemType[] = [
+    {
+      name: "Security Settings",
+      icon: <Lock size={16} />,
+      path: "/it-system-administrator/security-settings",
+    },
+  ];
 
   //AUTHORIZED STAFF
 
@@ -430,7 +445,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
       {user?.role === "IT System Administrator" && (
         <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-          <NavGroup label="RBAC" items={itSystemAdministrator} />
+          <NavGroup label="Access Control" items={itAccessControl} />
+          <NavGroup label="Authentication" items={itAuthentication} />
         </nav>
       )}
 

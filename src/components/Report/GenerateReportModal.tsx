@@ -33,7 +33,6 @@ type GenerateReportModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     target: GenerateReportTarget | null;
-    rangeLabel: string;
     format: ExportFormat;
     onFormatChange: (format: ExportFormat) => void;
     recordCount: number | null;
@@ -51,7 +50,6 @@ export default function GenerateReportModal({
     open,
     onOpenChange,
     target,
-    rangeLabel,
     format,
     onFormatChange,
     recordCount,
@@ -64,7 +62,7 @@ export default function GenerateReportModal({
     const Icon = target.icon;
     const recordsLabel =
         recordCount !== null
-            ? `${recordCount} record${recordCount === 1 ? "" : "s"} in range`
+            ? `${recordCount} record${recordCount === 1 ? "" : "s"}`
             : "No connected data source";
 
     return (
@@ -118,10 +116,10 @@ export default function GenerateReportModal({
                         <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-3.5 py-2.5">
                             <dt className="flex items-center gap-1.5 text-[11.5px] font-medium text-slate-500">
                                 <CalendarRange className="h-3.5 w-3.5 text-slate-400" />
-                                Date range
+                                Coverage
                             </dt>
-                            <dd className="text-[12px] font-medium tabular-nums text-slate-700">
-                                {rangeLabel}
+                            <dd className="text-[12px] font-medium text-slate-700">
+                                All records
                             </dd>
                         </div>
 

@@ -3,7 +3,11 @@ import {
     ScrollText,
     LogIn,
     LogOut,
+    UserPlus,
     ShieldCheck,
+    IdCard,
+    CalendarClock,
+    Route,
     TriangleAlert,
     Activity,
     Clock3,
@@ -49,6 +53,22 @@ const tones: Record<string, Tone> = {
         icon: "bg-blue-50 text-blue-600 ring-blue-100",
         badge: "bg-blue-50 text-blue-700 ring-blue-100",
     },
+    sky: {
+        icon: "bg-sky-50 text-sky-600 ring-sky-100",
+        badge: "bg-sky-50 text-sky-700 ring-sky-100",
+    },
+    violet: {
+        icon: "bg-violet-50 text-violet-600 ring-violet-100",
+        badge: "bg-violet-50 text-violet-700 ring-violet-100",
+    },
+    indigo: {
+        icon: "bg-indigo-50 text-indigo-600 ring-indigo-100",
+        badge: "bg-indigo-50 text-indigo-700 ring-indigo-100",
+    },
+    teal: {
+        icon: "bg-teal-50 text-teal-600 ring-teal-100",
+        badge: "bg-teal-50 text-teal-700 ring-teal-100",
+    },
 };
 
 const actionConfig: Record<
@@ -57,8 +77,12 @@ const actionConfig: Record<
 > = {
     Login: { icon: LogIn, tone: "emerald", label: "Login" },
     Logout: { icon: LogOut, tone: "slate", label: "Logout" },
-    "Visitor Request": { icon: ShieldCheck, tone: "amber", label: "Visitor Request" },
+    Register: { icon: UserPlus, tone: "sky", label: "Register" },
     "Incident Report": { icon: TriangleAlert, tone: "red", label: "Incident Report" },
+    "Visitor Request": { icon: IdCard, tone: "amber", label: "Visitor Request" },
+    "Access Request": { icon: ShieldCheck, tone: "violet", label: "Access Request" },
+    Monitoring: { icon: CalendarClock, tone: "indigo", label: "Monitoring" },
+    Patrol: { icon: Route, tone: "teal", label: "Patrol" },
     default: { icon: Activity, tone: "blue", label: "Activity" },
 };
 

@@ -153,7 +153,7 @@ export function downloadVisitorReportExcel(model: VisitorReportModel): void {
     const metaRows = `
       <tr><td colspan="2" style="font-size:15px;font-weight:bold">VISITOR ACCESS REPORT</td></tr>
       <tr><td style="font-weight:bold;width:150px">Report No.</td><td>${esc(reference)}</td></tr>
-      <tr><td style="font-weight:bold">Period Covered</td><td>${esc(
+      <tr><td style="font-weight:bold">Coverage</td><td>${esc(
           rangeLabel(meta)
       )}</td></tr>
       <tr><td style="font-weight:bold">Date Generated</td><td>${esc(

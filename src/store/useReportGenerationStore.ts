@@ -35,7 +35,7 @@ interface ReportGenerationStore {
     isFetching: boolean;
     error: string | null;
 
-    getReportGenerations: () => Promise<void>;
+    getReportGenerations: (limit?: number) => Promise<void>;
     logReportGeneration: (input: LogReportGenerationInput) => Promise<void>;
 }
 
@@ -44,11 +44,13 @@ export const useReportGenerationStore = create<ReportGenerationStore>((set) => (
     isFetching: false,
     error: null,
 
-    getReportGenerations: async () => {
+    getReportGenerations: async (limit) => {
         try {
             set({ isFetching: true, error: null });
 
-            const res = await AxiosInstance.get("/reports/generations");
+            const res = await AxiosInstance.get("/reports/generations", {
+                params: limit ? { limit } : undefined,
+            });
 
             set({
                 history: res.data.data ?? [],

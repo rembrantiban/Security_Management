@@ -54,7 +54,7 @@ export type UserActivitySources = {
 };
 
 /** Resolves an actor's role by user id, falling back to a full-name match. */
-function makeRoleResolver(users: DirectoryUser[]) {
+export function makeRoleResolver(users: DirectoryUser[]) {
     const byId = new Map<number, string>();
     const byName = new Map<string, string>();
 
@@ -115,7 +115,10 @@ export const ACTIVITY_KIND_ORDER: readonly ActivityKind[] = [
  * resolve to a role is treated as out of scope too; this set is a second guard
  * in case that ever changes.
  */
-const EXCLUDED_ROLES = new Set(["Administrator", "IT System Administrator"]);
+export const EXCLUDED_ROLES = new Set([
+    "Administrator",
+    "IT System Administrator",
+]);
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -317,7 +320,7 @@ export function downloadUserActivityReportExcel(
     const metaRows = `
       <tr><td colspan="2" style="font-size:15px;font-weight:bold">USER ACTIVITY REPORT</td></tr>
       <tr><td style="font-weight:bold;width:150px">Report No.</td><td>${esc(reference)}</td></tr>
-      <tr><td style="font-weight:bold">Period Covered</td><td>${esc(
+      <tr><td style="font-weight:bold">Coverage</td><td>${esc(
           rangeLabel(meta)
       )}</td></tr>
       <tr><td style="font-weight:bold">Date Generated</td><td>${esc(

@@ -2,7 +2,7 @@ import { TextDots } from "@/components/loading-ui/text-dots";
 import { TextBlink } from "@/components/loading-ui/text-blink";
 
 import { useEffect } from "react"
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import './App.css'
 import Dashboard from "./pages/Dashboard"
 import DashboardLayout from "@/components/layout/DashboardLayout"
@@ -23,8 +23,9 @@ import RequestPage from "./pages/RequestPage"
 import AdminVisitorRequestsPage from "./pages/Adminvisitorrequestspage";
 import MyPatrolReportsPage from "./pages/MyPatrolReportsPage";
 import PersonnelPatrolsPage from "./pages/PersonnelPatrolsPage";
-import Permissions from "./pages/Permissions";
-import RolePermission from "@/pages/RolePermissions"
+import RbacPolicies from "@/pages/RbacPolicies"
+import PermissionMatrixPage from "@/pages/PermissionMatrixPage"
+import SecuritySettings from "@/pages/SecuritySettings"
 import { useAuthStore } from "./store/useAuthStore";
 import Report from "@/pages/Report"
 import SessionExpiredModal from "@/components/Modal/SessionExpiredModal"
@@ -84,8 +85,19 @@ function App() {
           <Route path="/visitor-history" element={<VisitorHistoryPage />} />
           <Route path="/blacklist" element={<VisitorBlacklistPage />} />
           <Route path="/personnel/reports" element={<MyPatrolReportsPage />} />
-          <Route path="/it-system-administrator/permissions" element={<Permissions />} />
-          <Route path="/it-system-administrator/role-access" element={<RolePermission />} />
+          {/* IT / System Administrator — RBAC & Authentication (spec 2.28–2.30) */}
+          <Route path="/it-system-administrator/rbac-policies" element={<RbacPolicies />} />
+          <Route path="/it-system-administrator/permission-matrix" element={<PermissionMatrixPage />} />
+          <Route path="/it-system-administrator/security-settings" element={<SecuritySettings />} />
+          {/* Legacy path redirects */}
+          <Route
+            path="/it-system-administrator/permissions"
+            element={<Navigate to="/it-system-administrator/permission-matrix" replace />}
+          />
+          <Route
+            path="/it-system-administrator/role-access"
+            element={<Navigate to="/it-system-administrator/rbac-policies" replace />}
+          />
           <Route path="/reports" element={<Report />} />
           <Route path="/record" element={<RecordPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />

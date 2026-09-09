@@ -70,16 +70,6 @@ const formats: { value: ExportFormat; label: string; icon: typeof FileText }[] =
     { value: "Excel", label: "Excel", icon: FileSpreadsheet },
 ];
 
-function today() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-function monthAgo() {
-    const d = new Date();
-    d.setMonth(d.getMonth() - 1);
-    return d.toISOString().slice(0, 10);
-}
-
 function fmtDate(value: string) {
     return new Date(value).toLocaleDateString("en-US", {
         month: "short",
@@ -99,8 +89,6 @@ export default function MyPatrolReportsPage() {
     const [search, setSearch] = useState("");
     const [selected, setSelected] = useState<Incident | null>(null);
 
-    const [dateFrom, setDateFrom] = useState(monthAgo());
-    const [dateTo, setDateTo] = useState(today());
     const [format, setFormat] = useState<ExportFormat>("PDF");
     const [generating, setGenerating] = useState(false);
 
@@ -114,20 +102,18 @@ export default function MyPatrolReportsPage() {
         ? `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
         : undefined;
 
-    const rangeInvalid =
-        dateFrom !== "" && dateTo !== "" && dateFrom > dateTo;
-
+    // The report always covers every completed patrol — no date-range filter.
     const meta = (): ReportMeta => ({
         title: "Patrol Activity Report",
-        dateFrom,
-        dateTo,
+        dateFrom: "",
+        dateTo: "",
         generatedBy: userName,
     });
 
     const patrolModel: PatrolReportModel = useMemo(
         () => buildPatrolReport(completedPatrols, meta()),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [completedPatrols, dateFrom, dateTo, userName]
+        [completedPatrols, userName]
     );
 
     // 7.9 — reports the personnel created that have been resolved or closed.
@@ -152,8 +138,6 @@ export default function MyPatrolReportsPage() {
     }, [resolvedReports, search]);
 
     const runPatrolExport = (fmt: ExportFormat) => {
-        if (rangeInvalid) return;
-
         if (fmt === "Excel") {
             downloadPatrolReportExcel(patrolModel);
             showToast(
@@ -203,7 +187,7 @@ export default function MyPatrolReportsPage() {
                     {tab === "patrol" && (
                         <Button
                             onClick={handleGenerate}
-                            disabled={rangeInvalid || generating}
+                            disabled={generating}
                             className="h-9 shrink-0 gap-2 rounded-xl bg-white px-4 text-[12.5px] font-medium text-amber-900 shadow-sm hover:bg-amber-50 disabled:opacity-60"
                         >
                             {generating ? (
@@ -420,32 +404,9 @@ export default function MyPatrolReportsPage() {
                         </p>
 
                         <div className="mt-4 space-y-4">
-                            <div>
-                                <label className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600">
-                                    <CalendarRange className="h-3.5 w-3.5 text-slate-400" />
-                                    Date range
-                                </label>
-                                <div className="mt-1.5 grid grid-cols-2 gap-2 lg:max-w-sm">
-                                    <Input
-                                        type="date"
-                                        value={dateFrom}
-                                        max={dateTo || undefined}
-                                        onChange={(e) => setDateFrom(e.target.value)}
-                                        className="h-9 rounded-xl border-0 bg-slate-50 text-[12.5px] ring-1 ring-slate-200 focus-visible:bg-white focus-visible:ring-amber-300"
-                                    />
-                                    <Input
-                                        type="date"
-                                        value={dateTo}
-                                        min={dateFrom || undefined}
-                                        onChange={(e) => setDateTo(e.target.value)}
-                                        className="h-9 rounded-xl border-0 bg-slate-50 text-[12.5px] ring-1 ring-slate-200 focus-visible:bg-white focus-visible:ring-amber-300"
-                                    />
-                                </div>
-                                {rangeInvalid && (
-                                    <p className="mt-1.5 text-[11px] text-red-600">
-                                        The start date must be on or before the end date.
-                                    </p>
-                                )}
+                            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                                <CalendarRange className="h-3.5 w-3.5 text-slate-400" />
+                                Covers all your completed patrols
                             </div>
 
                             <div>
@@ -478,7 +439,7 @@ export default function MyPatrolReportsPage() {
                             <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
                                 <Button
                                     onClick={handleGenerate}
-                                    disabled={rangeInvalid || generating}
+                                    disabled={generating}
                                     className="h-9 gap-2 rounded-xl bg-amber-800 px-4 text-[12.5px] font-medium text-white hover:bg-amber-900 disabled:bg-slate-100 disabled:text-slate-400"
                                 >
                                     {generating ? (

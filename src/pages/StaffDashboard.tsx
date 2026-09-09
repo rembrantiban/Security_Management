@@ -1,121 +1,94 @@
+import { useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Megaphone,
     BellRing,
     ShieldCheck,
     Siren,
-    AlertTriangle,
+    TriangleAlert,
     Info,
-    Pin,
+    Check,
     Clock3,
-    MapPin,
+    ChevronRight,
+    Inbox,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-
-type Announcement = {
-    id: string;
-    title: string;
-    message: string;
-    priority: "Important" | "Normal";
-    postedBy: string;
-    postedAt: string;
-    pinned?: boolean;
-};
-
-type AlertItem = {
-    id: string;
-    title: string;
-    description: string;
-    area: string;
-    level: "Critical" | "Warning" | "Info";
-    time: string;
-    unread?: boolean;
-};
-
-const announcements: Announcement[] = [
-    {
-        id: "ANN-104",
-        title: "Campus-wide fire drill this Friday",
-        message:
-            "A scheduled fire drill will be conducted at 2:00 PM. All staff must proceed to designated assembly points and remain until the all-clear signal.",
-        priority: "Important",
-        postedBy: "Administrator",
-        postedAt: "Today, 9:12 AM",
-        pinned: true,
-    },
-    {
-        id: "ANN-103",
-        title: "Visitor registration counter relocated",
-        message:
-            "The visitor registration desk has moved to the East Lobby effective immediately to accommodate ongoing renovations at the Main Gate.",
-        priority: "Normal",
-        postedBy: "Administrator",
-        postedAt: "Yesterday, 4:45 PM",
-    },
-    {
-        id: "ANN-102",
-        title: "Updated ID verification procedure",
-        message:
-            "All personnel are reminded to present a valid ID before entering restricted areas. Security personnel have been briefed on the updated checklist.",
-        priority: "Normal",
-        postedBy: "IT System Administrator",
-        postedAt: "Mon, 8:03 AM",
-    },
-];
-
-const alerts: AlertItem[] = [
-    {
-        id: "ALT-221",
-        title: "Unauthorized access attempt",
-        description: "Badge scanner denied entry three times at the same door.",
-        area: "Server Room B",
-        level: "Critical",
-        time: "6 min ago",
-        unread: true,
-    },
-    {
-        id: "ALT-220",
-        title: "Perimeter camera offline",
-        description: "North perimeter camera feed has been unresponsive.",
-        area: "North Fence Line",
-        level: "Warning",
-        time: "34 min ago",
-        unread: true,
-    },
-    {
-        id: "ALT-219",
-        title: "Shift handover completed",
-        description: "Evening patrol shift has been handed over successfully.",
-        area: "Security Office",
-        level: "Info",
-        time: "1 hr ago",
-    },
-];
+import { Button } from "@/components/ui/button";
+import {
+    useNotificationStore,
+    type MyNotification,
+    type NotificationType,
+} from "@/store/useNotificationStore";
 
 const chip =
     "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 whitespace-nowrap";
 
-const priorityStyles: Record<Announcement["priority"], string> = {
-    Important: "bg-amber-50 text-amber-800 ring-amber-100",
-    Normal: "bg-slate-50 text-slate-500 ring-slate-200",
+const alertTile: Record<Exclude<NotificationType, "Info">, string> = {
+    Emergency: "bg-red-50 text-red-600 ring-red-100",
+    Alert: "bg-amber-50 text-amber-700 ring-amber-100",
 };
 
-const alertStyles: Record<AlertItem["level"], string> = {
-    Critical: "bg-red-50 text-red-600 ring-red-100",
-    Warning: "bg-amber-50 text-amber-700 ring-amber-100",
-    Info: "bg-blue-50 text-blue-600 ring-blue-100",
+const alertChip: Record<Exclude<NotificationType, "Info">, string> = {
+    Emergency: "bg-red-50 text-red-700 ring-red-100",
+    Alert: "bg-amber-50 text-amber-800 ring-amber-100",
 };
 
-const alertIcon: Record<AlertItem["level"], typeof Siren> = {
-    Critical: Siren,
-    Warning: AlertTriangle,
-    Info: Info,
+const alertIcon: Record<Exclude<NotificationType, "Info">, typeof Siren> = {
+    Emergency: Siren,
+    Alert: TriangleAlert,
 };
+
+function relativeTime(value: string | null) {
+    if (!value) return "—";
+    const then = new Date(value).getTime();
+    if (Number.isNaN(then)) return "—";
+    const diff = Date.now() - then;
+    const min = Math.round(diff / 60000);
+    if (min < 1) return "just now";
+    if (min < 60) return `${min}m ago`;
+    const hr = Math.round(min / 60);
+    if (hr < 24) return `${hr}h ago`;
+    return `${Math.round(hr / 24)}d ago`;
+}
 
 export default function StaffDashboard() {
     const { user } = useAuth();
+    const navigate = useNavigate();
+    const { myNotifications, getMyNotifications } = useNotificationStore();
 
-    const unreadAlerts = alerts.filter((alert) => alert.unread).length;
+    useEffect(() => {
+        getMyNotifications();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const firstName = user?.first_name || "there";
+
+    const bySentDesc = (a: MyNotification, b: MyNotification) =>
+        new Date(b.sent_at ?? 0).getTime() - new Date(a.sent_at ?? 0).getTime();
+
+    const announcements = useMemo(
+        () =>
+            myNotifications
+                .filter((n) => n.type === "Info")
+                .sort(bySentDesc),
+        [myNotifications]
+    );
+
+    const alerts = useMemo(
+        () =>
+            myNotifications
+                .filter((n) => n.type !== "Info")
+                .sort((a, b) => {
+                    // Unread first, then most recent.
+                    const aRead = a.read_at ? 1 : 0;
+                    const bRead = b.read_at ? 1 : 0;
+                    if (aRead !== bRead) return aRead - bRead;
+                    return bySentDesc(a, b);
+                }),
+        [myNotifications]
+    );
+
+    const unreadAlerts = alerts.filter((n) => !n.read_at).length;
 
     return (
         <div className="space-y-2">
@@ -183,9 +156,15 @@ export default function StaffDashboard() {
                                 </p>
                             </div>
                         </div>
-                        <span className={`${chip} bg-slate-50 text-slate-500 ring-slate-200`}>
-                            3.11
-                        </span>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate("/notifications")}
+                            className="h-7 gap-1 rounded-lg px-2.5 text-[11px] font-medium text-amber-800 hover:bg-amber-50 hover:text-amber-900"
+                        >
+                            View all
+                            <ChevronRight className="h-3 w-3" />
+                        </Button>
                     </div>
 
                     <div className="divide-y divide-slate-100">
@@ -198,21 +177,17 @@ export default function StaffDashboard() {
                         ) : (
                             announcements.map((item) => (
                                 <article
-                                    key={item.id}
+                                    key={item.notification_id}
                                     className="px-5 py-4 transition-colors duration-200 hover:bg-slate-50"
                                 >
                                     <div className="flex flex-wrap items-center gap-2">
-                                        {item.pinned && (
-                                            <Pin className="h-3.5 w-3.5 shrink-0 text-amber-600" />
-                                        )}
+                                        <Info className="h-3.5 w-3.5 shrink-0 text-blue-500" />
                                         <h3 className="text-[13px] font-semibold text-slate-900">
                                             {item.title}
                                         </h3>
-                                        <span
-                                            className={`${chip} ${priorityStyles[item.priority]}`}
-                                        >
-                                            {item.priority}
-                                        </span>
+                                        {!item.read_at && (
+                                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                        )}
                                     </div>
 
                                     <p className="mt-2 text-[12.5px] leading-relaxed text-slate-600">
@@ -220,11 +195,11 @@ export default function StaffDashboard() {
                                     </p>
 
                                     <div className="mt-3 flex flex-wrap items-center gap-2.5 text-[11px] text-slate-400">
-                                        <span>{item.postedBy}</span>
+                                        <span>{item.sent_by_name}</span>
                                         <span className="h-1 w-1 rounded-full bg-slate-300" />
                                         <span className="inline-flex items-center gap-1">
                                             <Clock3 className="h-3 w-3" />
-                                            {item.postedAt}
+                                            {relativeTime(item.sent_at)}
                                         </span>
                                     </div>
                                 </article>
@@ -249,53 +224,83 @@ export default function StaffDashboard() {
                                 </p>
                             </div>
                         </div>
-                        <span className={`${chip} bg-slate-50 text-slate-500 ring-slate-200`}>
-                            3.12
-                        </span>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate("/notifications")}
+                            className="h-7 gap-1 rounded-lg px-2.5 text-[11px] font-medium text-amber-800 hover:bg-amber-50 hover:text-amber-900"
+                        >
+                            View all
+                            <ChevronRight className="h-3 w-3" />
+                        </Button>
                     </div>
 
                     <div className="space-y-2 p-3">
                         {alerts.length === 0 ? (
                             <EmptyState
-                                icon={ShieldCheck}
+                                icon={Inbox}
                                 title="No alerts right now"
                                 description="Security alerts and system notifications will show up here."
                             />
                         ) : (
                             alerts.map((alert) => {
-                                const Icon = alertIcon[alert.level];
+                                const level = alert.type as Exclude<
+                                    NotificationType,
+                                    "Info"
+                                >;
+                                const Icon = alertIcon[level];
 
                                 return (
                                     <div
-                                        key={alert.id}
+                                        key={alert.notification_id}
                                         className="rounded-xl bg-white/70 p-3.5 ring-1 ring-slate-200 transition-colors duration-200 hover:bg-slate-50"
                                     >
                                         <div className="flex items-start gap-3">
                                             <div
-                                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ${alertStyles[alert.level]}`}
+                                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ${alertTile[level]}`}
                                             >
                                                 <Icon className="h-4 w-4" />
                                             </div>
 
                                             <div className="min-w-0 flex-1">
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex flex-wrap items-center gap-1.5">
                                                     <h3 className="text-[12.5px] font-semibold text-slate-900">
                                                         {alert.title}
                                                     </h3>
-                                                    {alert.unread && (
+                                                    <span
+                                                        className={`${chip} ${alertChip[level]}`}
+                                                    >
+                                                        {alert.type}
+                                                    </span>
+                                                    {!alert.read_at && (
                                                         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
                                                     )}
                                                 </div>
-                                                <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500">
-                                                    {alert.description}
+
+                                                <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-slate-500">
+                                                    {alert.message}
                                                 </p>
+
                                                 <div className="mt-2 flex flex-wrap items-center gap-2.5 text-[11px] text-slate-400">
-                                                    <span className="inline-flex items-center gap-1">
-                                                        <MapPin className="h-3 w-3" />
-                                                        {alert.area}
-                                                    </span>
+                                                    <span>{alert.sent_by_name}</span>
                                                     <span className="h-1 w-1 rounded-full bg-slate-300" />
-                                                    <span>{alert.time}</span>
+                                                    <span className="tabular-nums">
+                                                        {relativeTime(alert.sent_at)}
+                                                    </span>
+                                                </div>
+
+                                                <div className="mt-2">
+                                                    {alert.acknowledged_at ? (
+                                                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
+                                                            <Check className="h-3.5 w-3.5" />
+                                                            Acknowledged
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-600">
+                                                            <Clock3 className="h-3.5 w-3.5" />
+                                                            Awaiting acknowledgement
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

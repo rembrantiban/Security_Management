@@ -107,7 +107,7 @@ export default function LoginPage() {
             break;
 
           case "IT System Administrator":
-            navigate("/it-system-administrator/permissions");
+            navigate("/it-system-administrator/rbac-policies");
             break;
 
           default:

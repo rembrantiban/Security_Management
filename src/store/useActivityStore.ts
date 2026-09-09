@@ -5,8 +5,15 @@ import { AxiosError } from "axios";
 export type ActivityAction =
     | "Login"
     | "Logout"
+    | "Register"
+    | "Incident Report"
     | "Visitor Request"
-    | "Incident Report";
+    | "Access Request"
+    | "Monitoring"
+    | "Patrol";
+
+/** Roles whose activity is hidden from the dashboard activity logs. */
+export const HIDDEN_ACTIVITY_ROLES: readonly string[] = ["Administrator"];
 
 export interface ActivityLog {
     activity_id: number;
@@ -45,7 +52,12 @@ export const useActivityStore = create<ActivityStore>((set) => ({
 
             const res = await AxiosInstance.get("/activity/logs", { params });
 
-            set({ logs: res.data.logs, isLoading: false });
+            const logs: ActivityLog[] = (res.data.logs ?? []).filter(
+                (log: ActivityLog) =>
+                    !HIDDEN_ACTIVITY_ROLES.includes(log.role ?? "")
+            );
+
+            set({ logs, isLoading: false });
         } catch (error) {
             const err = error as AxiosError<{ message: string }>;
 

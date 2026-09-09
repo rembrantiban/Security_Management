@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/useToast";
 import { useAuth } from "@/hooks/useAuth";
 import { useIncidentStore } from "@/store/useIncidentReportStore";
@@ -53,6 +52,11 @@ import {
     type AuditEvent,
     type AuditTrailReportModel,
 } from "@/lib/reports/auditTrailReport";
+import {
+    buildSecurityPerformanceReport,
+    downloadSecurityPerformanceReportExcel,
+    type SecurityPerformanceReportModel,
+} from "@/lib/reports/securityPerformanceReport";
 import IncidentReportDocument, {
     IncidentReportPrintMount,
 } from "@/components/Report/IncidentReportDocument";
@@ -68,7 +72,11 @@ import PatrolReportDocument, {
 import AuditTrailReportDocument, {
     AuditTrailReportPrintMount,
 } from "@/components/Report/AuditTrailReportDocument";
+import SecurityPerformanceReportDocument, {
+    SecurityPerformanceReportPrintMount,
+} from "@/components/Report/SecurityPerformanceReportDocument";
 import GenerateReportModal from "@/components/Report/GenerateReportModal";
+import AllReportsModal from "@/components/Report/AllReportsModal";
 
 type ReportKey =
     | "incident"
@@ -137,6 +145,7 @@ const reportTypes: ReportType[] = [
         description: "Response times, resolution rates, and personnel effectiveness.",
         icon: Gauge,
         accent: "bg-violet-50 text-violet-600 ring-violet-100",
+        live: true,
     },
     {
         key: "audit-trail",
@@ -164,16 +173,6 @@ const SECTION_LABEL =
 const EMPTY_STATE =
     "flex flex-col items-center justify-center rounded-xl bg-slate-50/80 py-12 text-center ring-1 ring-slate-200/70";
 
-function today() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-function monthAgo() {
-    const d = new Date();
-    d.setMonth(d.getMonth() - 1);
-    return d.toISOString().slice(0, 10);
-}
-
 type HistoryEntry = {
     id: number;
     title: string;
@@ -198,11 +197,10 @@ export default function Report() {
     } = useReportGenerationStore();
 
     const [selected, setSelected] = useState<ReportKey | null>(null);
-    const [dateFrom, setDateFrom] = useState(monthAgo());
-    const [dateTo, setDateTo] = useState(today());
     const [format, setFormat] = useState<ExportFormat>("PDF");
     const [generating, setGenerating] = useState(false);
     const [generateOpen, setGenerateOpen] = useState(false);
+    const [allReportsOpen, setAllReportsOpen] = useState(false);
 
     useEffect(() => {
         getAllIncidents();
@@ -240,17 +238,17 @@ export default function Report() {
         [selected]
     );
 
-    const rangeInvalid = dateFrom !== "" && dateTo !== "" && dateFrom > dateTo;
-    const canGenerate = !!selectedType && !rangeInvalid && !generating;
+    const canGenerate = !!selectedType && !generating;
 
     const userName = user
         ? `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
         : undefined;
 
+    // Reports always cover every available record — no date-range filtering.
     const meta = (): ReportMeta => ({
         title: selectedType?.title ?? "Report",
-        dateFrom,
-        dateTo,
+        dateFrom: "",
+        dateTo: "",
         generatedBy: userName,
     });
 
@@ -259,13 +257,13 @@ export default function Report() {
         if (selected !== "incident") return null;
         return buildIncidentReport(incidents, meta());
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selected, incidents, dateFrom, dateTo, userName]);
+    }, [selected, incidents, userName]);
 
     const visitorModel: VisitorReportModel | null = useMemo(() => {
         if (selected !== "visitor") return null;
         return buildVisitorReport(requests, meta());
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selected, requests, dateFrom, dateTo, userName]);
+    }, [selected, requests, userName]);
 
     const userActivityModel: UserActivityReportModel | null = useMemo(() => {
         if (selected !== "user-activity") return null;
@@ -274,22 +272,27 @@ export default function Report() {
             meta()
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        selected,
-        requests,
-        allPatrolLogs,
-        incidents,
-        users,
-        dateFrom,
-        dateTo,
-        userName,
-    ]);
+    }, [selected, requests, allPatrolLogs, incidents, users, userName]);
 
     const patrolModel: PatrolReportModel | null = useMemo(() => {
         if (selected !== "patrol") return null;
         return buildPatrolReport(allPatrolLogs, meta());
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selected, allPatrolLogs, dateFrom, dateTo, userName]);
+    }, [selected, allPatrolLogs, userName]);
+
+    const performanceModel: SecurityPerformanceReportModel | null = useMemo(() => {
+        if (selected !== "security-performance") return null;
+        return buildSecurityPerformanceReport(
+            {
+                incidents,
+                patrolLogs: allPatrolLogs,
+                requests,
+                users,
+            },
+            meta()
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selected, incidents, allPatrolLogs, requests, users, userName]);
 
     const auditModel: AuditTrailReportModel | null = useMemo(() => {
         if (selected !== "audit-trail") return null;
@@ -308,13 +311,14 @@ export default function Report() {
 
         return buildAuditTrailReport(events, meta());
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selected, history, dateFrom, dateTo, userName]);
+    }, [selected, history, userName]);
 
     const liveCount =
         incidentModel?.summary.total ??
         visitorModel?.summary.total ??
         userActivityModel?.summary.total ??
         patrolModel?.summary.total ??
+        performanceModel?.summary.total ??
         auditModel?.summary.total ??
         null;
     const isLiveReport = !!(
@@ -322,6 +326,7 @@ export default function Report() {
         visitorModel ||
         userActivityModel ||
         patrolModel ||
+        performanceModel ||
         auditModel
     );
 
@@ -336,8 +341,8 @@ export default function Report() {
             report_ref: selectedType.ref,
             title: selectedType.title,
             export_format: format,
-            date_from: dateFrom || null,
-            date_to: dateTo || null,
+            date_from: null,
+            date_to: null,
             range_label: rangeLabel(meta()),
             record_count: count ?? null,
         });
@@ -359,6 +364,10 @@ export default function Report() {
         if (patrolModel) {
             downloadPatrolReportExcel(patrolModel);
             return patrolModel.summary.total;
+        }
+        if (performanceModel) {
+            downloadSecurityPerformanceReportExcel(performanceModel);
+            return performanceModel.summary.total;
         }
         if (auditModel) {
             downloadAuditTrailReportExcel(auditModel);
@@ -386,7 +395,7 @@ export default function Report() {
     };
 
     const handleGenerate = async () => {
-        if (!selectedType || rangeInvalid) return;
+        if (!selectedType) return;
 
         if (isLiveReport) {
             setGenerating(true);
@@ -408,7 +417,7 @@ export default function Report() {
     };
 
     const confirmGenerate = async () => {
-        if (!selectedType || rangeInvalid) return;
+        if (!selectedType) return;
 
         // Close the modal and let its exit animation finish before the browser
         // print dialog fires, so only the report document prints — the print
@@ -557,35 +566,10 @@ export default function Report() {
                     ) : (
                         <div className="mt-4 divide-y divide-slate-100">
 
-                            {/* Date range */}
-                            <div className="pb-4">
-                                <label className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600">
-                                    <CalendarRange className="h-3.5 w-3.5 text-slate-400" />
-                                    Date range
-                                </label>
-
-                                <div className="mt-2 grid grid-cols-2 gap-2">
-                                    <Input
-                                        type="date"
-                                        value={dateFrom}
-                                        max={dateTo || undefined}
-                                        onChange={(e) => setDateFrom(e.target.value)}
-                                        className="h-9 rounded-xl border-0 bg-slate-50 text-[12.5px] ring-1 ring-slate-200 focus-visible:bg-white focus-visible:ring-amber-300"
-                                    />
-                                    <Input
-                                        type="date"
-                                        value={dateTo}
-                                        min={dateFrom || undefined}
-                                        onChange={(e) => setDateTo(e.target.value)}
-                                        className="h-9 rounded-xl border-0 bg-slate-50 text-[12.5px] ring-1 ring-slate-200 focus-visible:bg-white focus-visible:ring-amber-300"
-                                    />
-                                </div>
-
-                                {rangeInvalid && (
-                                    <p className="mt-1.5 text-[11px] text-red-600">
-                                        The start date must be on or before the end date.
-                                    </p>
-                                )}
+                            {/* Coverage note */}
+                            <div className="flex items-center gap-1.5 pb-4 text-[11px] text-slate-500">
+                                <CalendarRange className="h-3.5 w-3.5 text-slate-400" />
+                                Covers all available records
                             </div>
 
                             {/* Format */}
@@ -657,7 +641,7 @@ export default function Report() {
                                     {liveCount !== null
                                         ? `${liveCount} record${
                                               liveCount === 1 ? "" : "s"
-                                          } in range`
+                                          }`
                                         : selectedType.title}
                                 </span>
                             </div>
@@ -668,7 +652,19 @@ export default function Report() {
 
                 {/* Recent reports */}
                 <div className={`${CARD} p-5`}>
-                    <p className={SECTION_LABEL}>Recent reports</p>
+                    <div className="flex items-center justify-between">
+                        <p className={SECTION_LABEL}>Recent reports</p>
+
+                        {history.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setAllReportsOpen(true)}
+                                className="text-[11px] font-medium text-amber-800 transition hover:underline"
+                            >
+                                View all ({history.length})
+                            </button>
+                        )}
+                    </div>
 
                     {history.length === 0 ? (
                         <div className={`mt-4 ${EMPTY_STATE}`}>
@@ -684,7 +680,7 @@ export default function Report() {
                         </div>
                     ) : (
                         <ul className="mt-3 space-y-2">
-                            {history.map((entry) => (
+                            {history.slice(0, 3).map((entry) => (
                                 <li
                                     key={entry.id}
                                     className="flex items-center gap-3 rounded-xl bg-white/80 p-3 ring-1 ring-slate-200/80"
@@ -725,6 +721,7 @@ export default function Report() {
                 visitorModel ||
                 userActivityModel ||
                 patrolModel ||
+                performanceModel ||
                 auditModel) && (
                 <div className={`${CARD} p-5`}>
                     <div className="mb-4 flex items-center justify-between">
@@ -735,6 +732,7 @@ export default function Report() {
                                 visitorModel ??
                                 userActivityModel ??
                                 patrolModel ??
+                                performanceModel ??
                                 auditModel
                             )?.reference}
                         </span>
@@ -761,6 +759,12 @@ export default function Report() {
                     {patrolModel && (
                         <PatrolReportDocument
                             model={patrolModel}
+                            maxHeight="70vh"
+                        />
+                    )}
+                    {performanceModel && (
+                        <SecurityPerformanceReportDocument
+                            model={performanceModel}
                             maxHeight="70vh"
                         />
                     )}
@@ -796,6 +800,9 @@ export default function Report() {
                 <UserActivityReportPrintMount model={userActivityModel} />
             )}
             {patrolModel && <PatrolReportPrintMount model={patrolModel} />}
+            {performanceModel && (
+                <SecurityPerformanceReportPrintMount model={performanceModel} />
+            )}
             {auditModel && <AuditTrailReportPrintMount model={auditModel} />}
 
             <GenerateReportModal
@@ -813,13 +820,17 @@ export default function Report() {
                           }
                         : null
                 }
-                rangeLabel={rangeLabel(meta())}
                 format={format}
                 onFormatChange={setFormat}
                 recordCount={liveCount}
                 isLiveReport={isLiveReport}
                 generating={generating}
                 onConfirm={confirmGenerate}
+            />
+
+            <AllReportsModal
+                open={allReportsOpen}
+                onOpenChange={setAllReportsOpen}
             />
         </div>
     );

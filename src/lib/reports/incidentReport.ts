@@ -55,7 +55,7 @@ export const fmtDateTime = (v: string | Date) =>
     });
 
 export function rangeLabel(meta: ReportMeta): string {
-    if (!meta.dateFrom && !meta.dateTo) return "All dates";
+    if (!meta.dateFrom && !meta.dateTo) return "All records";
     if (meta.dateFrom && !meta.dateTo) return `From ${fmtDate(meta.dateFrom)}`;
     if (!meta.dateFrom && meta.dateTo) return `Through ${fmtDate(meta.dateTo)}`;
     return `${fmtDate(meta.dateFrom)} to ${fmtDate(meta.dateTo)}`;
@@ -182,7 +182,7 @@ export function downloadIncidentReportExcel(model: IncidentReportModel): void {
     const metaRows = `
       <tr><td colspan="2" style="font-size:15px;font-weight:bold">CLOSED INCIDENT REPORT</td></tr>
       <tr><td style="font-weight:bold;width:150px">Report No.</td><td>${esc(reference)}</td></tr>
-      <tr><td style="font-weight:bold">Period Covered</td><td>${esc(
+      <tr><td style="font-weight:bold">Coverage</td><td>${esc(
           rangeLabel(meta)
       )}</td></tr>
       <tr><td style="font-weight:bold">Date Generated</td><td>${esc(

@@ -201,7 +201,7 @@ export default function MyAccount() {
                 </div>
 
                 {/* Profile details card */}
-                <div className="rounded-2xl border border-gray-300 bg-white p-5 sm:p-6 mb-5 shadow-sm">
+                <div className="rounded-2xl border border-gray-300 bg-white/50 p-5 sm:p-6 mb-5 shadow-sm">
                     <p className="text-xs tracking-widest text-gray-500 uppercase mb-4">
                         Profile Information
                     </p>

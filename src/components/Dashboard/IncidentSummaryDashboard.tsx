@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Siren,
     Clock,
@@ -10,71 +11,80 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useIncidentReport } from "@/hooks/useIncidentsReport";
+import type { Incident } from "@/store/useIncidentReportStore";
 
-export interface Incident {
-    incident_id: number;
-    incident_number: string;
-    title: string;
-    category: string;
-    severity: "Low" | "Medium" | "High" | "Critical";
-    location: string;
-    description: string;
-    incident_image: string | null;
-    status: "Pending" | "In Progress" | "Resolved" | "Closed";
-    reported_by: string;
-    reported_by_name: string;
-    assigned_to: string | null;
-    assigned_to_name: string | null;
-    created_at: string;
-    updated_at: string;
-}
+/** Newest incidents surfaced on the dashboard. */
+const PREVIEW_COUNT = 5;
 
-// TODO: replace with a real data hook, e.g. `const { incidents, isLoading } = useIncidentReport();`
-const MOCK_INCIDENTS: Incident[] = [
-    { incident_id: 1, incident_number: "INC-2026-0231", title: "Unauthorized entry at back gate", category: "Security Breach", severity: "Critical", location: "Back Gate", description: "", incident_image: null, status: "Pending", reported_by: "u4", reported_by_name: "Officer J. Ramos", assigned_to: null, assigned_to_name: null, created_at: "2026-07-04T07:20:00", updated_at: "2026-07-04T07:20:00" },
-    { incident_id: 2, incident_number: "INC-2026-0230", title: "Fire alarm triggered, Building B", category: "Fire & Safety", severity: "High", location: "Building B", description: "", incident_image: null, status: "In Progress", reported_by: "u3", reported_by_name: "Officer M. Bautista", assigned_to: "u2", assigned_to_name: "Officer L. Diaz", created_at: "2026-07-04T05:45:00", updated_at: "2026-07-04T06:10:00" },
-    { incident_id: 3, incident_number: "INC-2026-0229", title: "Vandalism on library wall", category: "Property Damage", severity: "Medium", location: "Library", description: "", incident_image: null, status: "In Progress", reported_by: "u4", reported_by_name: "Officer J. Ramos", assigned_to: "u2", assigned_to_name: "Officer L. Diaz", created_at: "2026-07-03T16:30:00", updated_at: "2026-07-03T17:00:00" },
-    { incident_id: 4, incident_number: "INC-2026-0228", title: "Suspicious vehicle near parking lot", category: "Security Breach", severity: "High", location: "Main Parking Lot", description: "", incident_image: null, status: "Resolved", reported_by: "u3", reported_by_name: "Officer M. Bautista", assigned_to: "u3", assigned_to_name: "Officer M. Bautista", created_at: "2026-07-03T09:12:00", updated_at: "2026-07-03T10:05:00" },
-    { incident_id: 5, incident_number: "INC-2026-0227", title: "Slippery floor reported, Cafeteria", category: "Safety Hazard", severity: "Low", location: "Cafeteria", description: "", incident_image: null, status: "Resolved", reported_by: "u4", reported_by_name: "Officer J. Ramos", assigned_to: "u4", assigned_to_name: "Officer J. Ramos", created_at: "2026-07-02T12:40:00", updated_at: "2026-07-02T13:00:00" },
-    { incident_id: 6, incident_number: "INC-2026-0226", title: "Lost student ID reported at gate", category: "Lost & Found", severity: "Low", location: "Main Gate", description: "", incident_image: null, status: "Closed", reported_by: "u2", reported_by_name: "Officer L. Diaz", assigned_to: "u2", assigned_to_name: "Officer L. Diaz", created_at: "2026-07-02T08:15:00", updated_at: "2026-07-02T08:30:00" },
-    { incident_id: 7, incident_number: "INC-2026-0225", title: "Altercation between students", category: "Disturbance", severity: "Medium", location: "Quadrangle", description: "", incident_image: null, status: "Resolved", reported_by: "u3", reported_by_name: "Officer M. Bautista", assigned_to: "u3", assigned_to_name: "Officer M. Bautista", created_at: "2026-07-01T14:20:00", updated_at: "2026-07-01T15:00:00" },
-    { incident_id: 8, incident_number: "INC-2026-0224", title: "Power outage in Gymnasium", category: "Facilities", severity: "Medium", location: "Gymnasium", description: "", incident_image: null, status: "Closed", reported_by: "u4", reported_by_name: "Officer J. Ramos", assigned_to: "u4", assigned_to_name: "Officer J. Ramos", created_at: "2026-06-30T18:00:00", updated_at: "2026-06-30T19:10:00" },
-    { incident_id: 9, incident_number: "INC-2026-0223", title: "Theft reported in dormitory", category: "Security Breach", severity: "Critical", location: "Dormitory Block C", description: "", incident_image: null, status: "Resolved", reported_by: "u2", reported_by_name: "Officer L. Diaz", assigned_to: "u2", assigned_to_name: "Officer L. Diaz", created_at: "2026-06-29T22:30:00", updated_at: "2026-06-30T08:00:00" },
-    { incident_id: 10, incident_number: "INC-2026-0222", title: "Unattended bag near admin office", category: "Safety Hazard", severity: "High", location: "Admin Building", description: "", incident_image: null, status: "Closed", reported_by: "u3", reported_by_name: "Officer M. Bautista", assigned_to: "u3", assigned_to_name: "Officer M. Bautista", created_at: "2026-06-28T11:05:00", updated_at: "2026-06-28T11:40:00" },
-];
-
-const statusConfig = {
+const statusConfig: Record<
+    Incident["status"],
+    { className: string; icon: typeof Clock }
+> = {
     Pending: { className: "bg-amber-50 text-amber-800 ring-amber-100", icon: Clock },
-    "In Progress": { className: "bg-blue-50 text-blue-700 ring-blue-100", icon: Loader2 },
-    Resolved: { className: "bg-emerald-50 text-emerald-700 ring-emerald-100", icon: CheckCircle2 },
-    Closed: { className: "bg-slate-50 text-slate-500 ring-slate-200", icon: CheckCircle2 },
+    "In Progress": {
+        className: "bg-blue-50 text-blue-700 ring-blue-100",
+        icon: Loader2,
+    },
+    Resolved: {
+        className: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+        icon: CheckCircle2,
+    },
+    Closed: {
+        className: "bg-slate-50 text-slate-500 ring-slate-200",
+        icon: CheckCircle2,
+    },
 };
 
-const severityConfig: Record<Incident["severity"], { badge: string; dot: string; icon: string }> = {
-    Critical: { badge: "bg-red-50 text-red-700 ring-red-100", dot: "bg-red-500", icon: "bg-red-50 text-red-600 ring-red-100" },
-    High: { badge: "bg-orange-50 text-orange-700 ring-orange-100", dot: "bg-orange-500", icon: "bg-orange-50 text-orange-600 ring-orange-100" },
-    Medium: { badge: "bg-yellow-50 text-yellow-700 ring-yellow-100", dot: "bg-yellow-500", icon: "bg-yellow-50 text-yellow-700 ring-yellow-100" },
-    Low: { badge: "bg-slate-50 text-slate-500 ring-slate-200", dot: "bg-slate-300", icon: "bg-slate-50 text-slate-400 ring-slate-200" },
+const severityConfig: Record<
+    Incident["severity"],
+    { badge: string; dot: string; icon: string }
+> = {
+    Critical: {
+        badge: "bg-red-50 text-red-700 ring-red-100",
+        dot: "bg-red-500",
+        icon: "bg-red-50 text-red-600 ring-red-100",
+    },
+    High: {
+        badge: "bg-orange-50 text-orange-700 ring-orange-100",
+        dot: "bg-orange-500",
+        icon: "bg-orange-50 text-orange-600 ring-orange-100",
+    },
+    Medium: {
+        badge: "bg-yellow-50 text-yellow-700 ring-yellow-100",
+        dot: "bg-yellow-500",
+        icon: "bg-yellow-50 text-yellow-700 ring-yellow-100",
+    },
+    Low: {
+        badge: "bg-slate-50 text-slate-500 ring-slate-200",
+        dot: "bg-slate-300",
+        icon: "bg-slate-50 text-slate-400 ring-slate-200",
+    },
 };
 
 function timeAgo(value: string) {
     const diffMs = Date.now() - new Date(value).getTime();
     const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 1) return "just now";
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
+    return `${Math.floor(hours / 24)}d ago`;
 }
 
 export default function IncidentSummaryDashboard() {
-    const [incidents] = useState<Incident[]>(MOCK_INCIDENTS);
+    const navigate = useNavigate();
+    const { incidents, isLoading } = useIncidentReport();
 
     const recent = useMemo(
         () =>
             [...incidents]
-                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                .slice(0, 5),
+                .sort(
+                    (a, b) =>
+                        new Date(b.created_at).getTime() -
+                        new Date(a.created_at).getTime()
+                )
+                .slice(0, PREVIEW_COUNT),
         [incidents]
     );
 
@@ -102,6 +112,7 @@ export default function IncidentSummaryDashboard() {
                     <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => navigate("/incidents")}
                         className="h-7 gap-1 rounded-lg px-2.5 text-[11px] font-medium text-amber-800 hover:bg-amber-50 hover:text-amber-900"
                     >
                         View all
@@ -110,72 +121,95 @@ export default function IncidentSummaryDashboard() {
                 </div>
 
                 <CardContent className="p-0">
-                    <div className="divide-y divide-slate-100">
-                        {recent.map((inc) => {
-                            const StatusIcon = statusConfig[inc.status].icon;
-                            const sev = severityConfig[inc.severity];
-
-                            return (
-                                <div
-                                    key={inc.incident_id}
-                                    className="group relative flex items-center gap-3.5 px-5 py-3 transition-colors duration-200 hover:bg-slate-50"
-                                >
-                                    {/* Severity accent bar */}
-                                    <span
-                                        className={`absolute left-0 top-1/2 h-7 w-0.5 -translate-y-1/2 rounded-r-full opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${sev.dot}`}
-                                    />
-
-                                    <div
-                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 ${sev.icon}`}
-                                    >
-                                        <Siren className="h-4 w-4" />
-                                    </div>
-
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <p className="truncate text-[13px] font-medium leading-none text-slate-900">
-                                                {inc.title}
-                                            </p>
-                                            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${sev.dot}`} />
-                                        </div>
-
-                                        <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-slate-700">
-                                            <span className="font-mono tracking-tight text-slate-700">
-                                                {inc.incident_number}
-                                            </span>
-                                            <span className="text-slate-300">·</span>
-                                            <MapPin className="h-3 w-3" />
-                                            <span className="truncate">{inc.location}</span>
-                                            <span className="text-slate-300">·</span>
-                                            <span className="tabular-nums">{timeAgo(inc.created_at)}</span>
-                                        </div>
-                                    </div>
-
-                                    <span
-                                        className={`hidden shrink-0 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 sm:inline-flex ${sev.badge}`}
-                                    >
-                                        {inc.severity}
-                                    </span>
-
-                                    <span
-                                        className={`inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 ${statusConfig[inc.status].className}`}
-                                    >
-                                        <StatusIcon className="h-3 w-3" />
-                                        {inc.status}
-                                    </span>
-                                </div>
-                            );
-                        })}
-
-                        {recent.length === 0 && (
-                            <div className="px-5 py-12 text-center">
-                                <p className="text-[13px] font-medium text-slate-600">No incidents yet</p>
-                                <p className="mt-1 text-[11px] text-slate-400">
-                                    New reports will appear here as they come in.
-                                </p>
+                    {isLoading && incidents.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-2 py-14">
+                            <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                            <p className="text-[12px] text-slate-500">
+                                Loading incidents…
+                            </p>
+                        </div>
+                    ) : recent.length === 0 ? (
+                        <div className="px-5 py-14 text-center">
+                            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
+                                <Siren className="h-5 w-5 text-amber-800" />
                             </div>
-                        )}
-                    </div>
+                            <p className="mt-3 text-[13px] font-medium text-slate-700">
+                                No incidents yet
+                            </p>
+                            <p className="mt-1 text-[11px] text-slate-400">
+                                New reports will appear here as they come in.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="divide-y divide-slate-100">
+                            {recent.map((inc) => {
+                                const status =
+                                    statusConfig[inc.status] ??
+                                    statusConfig.Pending;
+                                const StatusIcon = status.icon;
+                                const sev =
+                                    severityConfig[inc.severity] ??
+                                    severityConfig.Low;
+
+                                return (
+                                    <div
+                                        key={inc.incident_id}
+                                        className="group relative flex items-center gap-3.5 px-5 py-3 transition-colors duration-200 hover:bg-slate-50"
+                                    >
+                                        {/* Severity accent bar */}
+                                        <span
+                                            className={`absolute left-0 top-1/2 h-7 w-0.5 -translate-y-1/2 rounded-r-full opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${sev.dot}`}
+                                        />
+
+                                        <div
+                                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 ${sev.icon}`}
+                                        >
+                                            <Siren className="h-4 w-4" />
+                                        </div>
+
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <p className="truncate text-[13px] font-medium leading-none text-slate-900">
+                                                    {inc.title}
+                                                </p>
+                                                <span
+                                                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${sev.dot}`}
+                                                />
+                                            </div>
+
+                                            <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-slate-700">
+                                                <span className="font-mono tracking-tight text-slate-700">
+                                                    {inc.incident_number}
+                                                </span>
+                                                <span className="text-slate-300">·</span>
+                                                <MapPin className="h-3 w-3" />
+                                                <span className="truncate">
+                                                    {inc.location}
+                                                </span>
+                                                <span className="text-slate-300">·</span>
+                                                <span className="tabular-nums">
+                                                    {timeAgo(inc.created_at)}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <span
+                                            className={`hidden shrink-0 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 sm:inline-flex ${sev.badge}`}
+                                        >
+                                            {inc.severity}
+                                        </span>
+
+                                        <span
+                                            className={`inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 ${status.className}`}
+                                        >
+                                            <StatusIcon className="h-3 w-3" />
+                                            {inc.status}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

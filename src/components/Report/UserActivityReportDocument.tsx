@@ -38,7 +38,7 @@ function Sheet({ model }: { model: UserActivityReportModel }) {
                         <td>{fmtDateTime(generatedAt)}</td>
                     </tr>
                     <tr>
-                        <td className="k">Period Covered</td>
+                        <td className="k">Coverage</td>
                         <td>{rangeLabel(meta)}</td>
                         <td className="k">Prepared By</td>
                         <td>{preparedBy}</td>

@@ -139,7 +139,7 @@ export function downloadAuditTrailReportExcel(
     const metaRows = `
       <tr><td colspan="2" style="font-size:15px;font-weight:bold">AUDIT TRAIL REPORT</td></tr>
       <tr><td style="font-weight:bold;width:150px">Report No.</td><td>${esc(reference)}</td></tr>
-      <tr><td style="font-weight:bold">Period Covered</td><td>${esc(
+      <tr><td style="font-weight:bold">Coverage</td><td>${esc(
           rangeLabel(meta)
       )}</td></tr>
       <tr><td style="font-weight:bold">Date Generated</td><td>${esc(

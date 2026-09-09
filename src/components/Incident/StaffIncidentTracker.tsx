@@ -1,9 +1,12 @@
+import { useState } from "react";
 import {
     Calendar,
     CircleUser,
     ClipboardList,
     MapPin,
     Check,
+    ChevronDown,
+    ListChecks,
     SearchX,
 } from "lucide-react";
 import {
@@ -11,6 +14,7 @@ import {
     DialogContent,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import type { Incident } from "@/store/useIncidentReportStore";
 
 type StaffIncidentTrackerProps = {
@@ -29,12 +33,22 @@ const severityStyles: Record<string, string> = {
     Critical: "bg-red-50 text-red-700 ring-red-100",
 };
 
-const trackSteps = ["Pending", "In Progress", "Resolved"] as const;
+/** Full incident lifecycle, ending at the Closed state. */
+const TRACK_STEPS = ["Pending", "In Progress", "Resolved", "Closed"] as const;
 
 function getStepIndex(status: Incident["status"]) {
-    if (status === "Pending") return 0;
-    if (status === "In Progress") return 1;
-    return 2;
+    switch (status) {
+        case "Pending":
+            return 0;
+        case "In Progress":
+            return 1;
+        case "Resolved":
+            return 2;
+        case "Closed":
+            return 3;
+        default:
+            return 0;
+    }
 }
 
 function formatDate(date: string) {
@@ -46,41 +60,38 @@ function formatDate(date: string) {
 }
 
 function StatusTracker({ status }: { status: Incident["status"] }) {
-    const isClosed = status === "Closed";
     const activeIndex = getStepIndex(status);
-    const labels = isClosed
-        ? ["Pending", "In Progress", "Closed"]
-        : trackSteps;
 
     return (
         <div className="flex items-center">
-            {labels.map((label, index) => {
-                const isDone = index < activeIndex;
+            {TRACK_STEPS.map((label, index) => {
+                const isDone = index <= activeIndex;
                 const isCurrent = index === activeIndex;
-                const isFinal = index === labels.length - 1;
+                const isFinal = index === TRACK_STEPS.length - 1;
 
                 return (
-                    <div key={label} className="flex flex-1 items-center last:flex-none">
+                    <div
+                        key={label}
+                        className="flex flex-1 items-center last:flex-none"
+                    >
                         <div className="flex flex-col items-center gap-1.5">
                             <div
                                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-semibold transition-colors ${
-                                    isDone || (isCurrent && isFinal)
-                                        ? isFinal && isClosed
-                                            ? "border-slate-400 bg-slate-400 text-white"
-                                            : "border-emerald-500 bg-emerald-500 text-white"
+                                    isDone
+                                        ? "border-emerald-500 bg-emerald-500 text-white"
                                         : isCurrent
                                         ? "border-amber-800 bg-amber-800 text-white"
                                         : "border-slate-200 bg-white text-slate-300"
                                 }`}
                             >
-                                {isDone || (isCurrent && isFinal) ? (
+                                {isDone ? (
                                     <Check className="h-3.5 w-3.5" />
                                 ) : (
                                     index + 1
                                 )}
                             </div>
                             <span
-                                className={`text-[11px] font-medium whitespace-nowrap ${
+                                className={`whitespace-nowrap text-[11px] font-medium ${
                                     isDone || isCurrent
                                         ? "text-slate-700"
                                         : "text-slate-300"
@@ -111,6 +122,16 @@ export default function StaffIncidentTracker({
     isLoading,
     hasFilters = false,
 }: StaffIncidentTrackerProps) {
+    const [openTracks, setOpenTracks] = useState<Set<number>>(new Set());
+
+    const toggleTrack = (id: number) => {
+        setOpenTracks((prev) => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
     if (!isLoading && incidents.length === 0) {
         return (
             <div className="rounded-2xl bg-white/50 py-16 text-center shadow-sm ring-1 ring-slate-200">
@@ -139,6 +160,7 @@ export default function StaffIncidentTracker({
         <div className="space-y-2">
             {incidents.map((incident) => {
                 const isClosed = incident.status === "Closed";
+                const trackOpen = openTracks.has(incident.incident_id);
 
                 return (
                     <article
@@ -216,7 +238,26 @@ export default function StaffIncidentTracker({
                         </div>
 
                         <div className="mt-5 border-t border-slate-100 pt-4">
-                            <StatusTracker status={incident.status} />
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => toggleTrack(incident.incident_id)}
+                                className="h-8 gap-1.5 rounded-lg border-slate-300 text-[12px] text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                            >
+                                <ListChecks className="h-3.5 w-3.5" />
+                                {trackOpen ? "Hide track status" : "Show track status"}
+                                <ChevronDown
+                                    className={`h-3.5 w-3.5 transition-transform ${
+                                        trackOpen ? "rotate-180" : ""
+                                    }`}
+                                />
+                            </Button>
+
+                            {trackOpen && (
+                                <div className="mt-4 max-w-xl">
+                                    <StatusTracker status={incident.status} />
+                                </div>
+                            )}
                         </div>
                     </article>
                 );
