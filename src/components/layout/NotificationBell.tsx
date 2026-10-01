@@ -225,7 +225,7 @@ export default function NotificationBell() {
             </button>
 
             {open && (
-                <div className="absolute right-0 z-50 mt-2 w-[340px] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
+                <div className="absolute right-0 z-50 mt-2 w-85 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
                     <div className="flex items-start justify-between border-b border-slate-100 px-4 py-3">
                         <div>
                             <p className="text-[13px] font-semibold tracking-tight text-slate-900">
@@ -256,7 +256,7 @@ export default function NotificationBell() {
                         </div>
                     </div>
 
-                    <div className="max-h-[380px] overflow-y-auto">
+                    <div className="max-h-95 overflow-y-auto">
                         {myNotifications.length === 0 ? (
                             <div className="px-4 py-12 text-center">
                                 <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">

@@ -394,7 +394,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   }
 
   const SidebarContent = () => (
-    <aside className="flex h-full w-64 flex-col bg-amber-800">
+    <aside className="flex h-full w-64 flex-col bg-amber-900">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5">
         <div className="flex items-center gap-2.5">
