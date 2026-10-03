@@ -1,10 +1,4 @@
-import {
-    User,
-    Mail,
-    Lock,
-    UserCog,
-    UserPen,
-} from "lucide-react";
+import { User, UserCog, UserPen } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -27,6 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+
 import { useEffect, useState } from "react";
 
 type ViewEditUserDialogProps = {
@@ -171,77 +166,6 @@ export default function ViewEditUserDialog({
                                     })
                                 }
                             />
-                        </div>
-
-                        {/* Username */}
-
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                Username
-                            </label>
-
-                            <Input
-                                className="rounded"
-                                placeholder="juancruz"
-                                disabled={true}
-                                value={formData.username}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        username: e.target.value,
-                                    })
-                                }
-                            />
-                        </div>
-
-                        {/* Email */}
-
-                        <div className="col-span-2 space-y-2">
-                            <label className="text-sm font-medium">
-                                Email Address
-                            </label>
-
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-
-                                <Input
-                                    type="email"
-                                    placeholder="example@email.com"
-                                    className="pl-10 rounded"
-                                    value={formData.email}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            email: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password */}
-
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                Password
-                            </label>
-
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-
-                                <Input
-                                    type="password"
-                                    placeholder="••••••••"
-                                    className="pl-10 rounded"
-                                    value={formData.password}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            password: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
                         </div>
 
                         {/* Role */}

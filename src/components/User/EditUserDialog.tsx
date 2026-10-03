@@ -1,10 +1,4 @@
-import {
-    User,
-    Mail,
-    Lock,
-    UserCog,
-    UserPen,
-} from "lucide-react";
+import { User, UserCog, UserPen } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -27,6 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+
 import StatusDialog from "./StatusDailog";
 import { useEffect, useState } from "react";
 
@@ -121,7 +116,7 @@ export default function EditUserDialog({
                 open={open}
                 onOpenChange={onOpenChange}
             >
-                <DialogContent className="sm:max-w-2xl rounded">
+                <DialogContent className="sm:max-w-2xl rounded-lg">
 
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 text-xl">
@@ -150,7 +145,7 @@ export default function EditUserDialog({
 
                                 <Input
                                     placeholder="Juan"
-                                    className="pl-10 rounded"
+                                    className="pl-10 rounded-lg"
                                     value={formData.first_name}
                                     onChange={(e) =>
                                         setFormData({
@@ -171,7 +166,7 @@ export default function EditUserDialog({
 
                             <Input
                                 placeholder="Dela"
-                                className="rounded"
+                                className="rounded-lg"
                                 value={formData.middle_name}
                                 onChange={(e) =>
                                     setFormData({
@@ -190,7 +185,7 @@ export default function EditUserDialog({
                             </label>
 
                             <Input
-                                className="rounded"
+                                className="rounded-lg"
                                 placeholder="Cruz"
                                 value={formData.last_name}
                                 onChange={(e) =>
@@ -200,77 +195,6 @@ export default function EditUserDialog({
                                     })
                                 }
                             />
-                        </div>
-
-                        {/* Username */}
-
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                Username
-                            </label>
-
-                            <Input
-                                className="rounded"
-                                placeholder="juancruz"
-                                disabled={true}
-                                value={formData.username}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        username: e.target.value,
-                                    })
-                                }
-                            />
-                        </div>
-
-                        {/* Email */}
-
-                        <div className="col-span-2 space-y-2">
-                            <label className="text-sm font-medium">
-                                Email Address
-                            </label>
-
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-
-                                <Input
-                                    type="email"
-                                    placeholder="example@email.com"
-                                    className="pl-10 rounded"
-                                    value={formData.email}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            email: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password */}
-
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                Password
-                            </label>
-
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-
-                                <Input
-                                    type="password"
-                                    placeholder="••••••••"
-                                    className="pl-10 rounded"
-                                    value={formData.password}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            password: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
                         </div>
 
                         {/* Role */}
@@ -289,7 +213,7 @@ export default function EditUserDialog({
                                     })
                                 }
                             >
-                                <SelectTrigger className="rounded w-full ">
+                                <SelectTrigger className="rounded-lg w-full ">
                                     <UserCog className="mr-2 h-4 w-4 text-gray-400" />
 
                                     <SelectValue placeholder="Select role" />

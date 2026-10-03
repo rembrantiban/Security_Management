@@ -160,7 +160,7 @@ export default function MyAccount() {
                 <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 mb-5 ring-0">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-5">
                         <div className="relative shrink-0 mx-auto sm:mx-0">
-                            <div className="w-20 h-20 rounded-full bg-linear-to-br from-orange-700 to-amber-500 flex items-center justify-center text-white text-2xl font-semibold shadow-sm shadow-orange-900/20">
+                            <div className="w-20 h-20 rounded-full bg-linear-to-br from-orange-700 to-amber-900 flex items-center justify-center text-white text-2xl font-semibold shadow-sm shadow-orange-900/20">
                                 {initials}
                             </div>
 

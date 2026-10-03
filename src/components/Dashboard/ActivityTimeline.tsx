@@ -105,7 +105,7 @@ export default function ActivityTimeline() {
                     <ScrollArea className="max-h-72">
                         <div className="relative px-5 py-4">
                             {/* Timeline rail */}
-                            <div className="absolute bottom-6 left-[38px] top-7 w-px bg-slate-200" />
+                            <div className="absolute bottom-6 left-9.5 top-7 w-px bg-slate-200" />
 
                             <div className="space-y-1">
                                 {recent.map((log) => {

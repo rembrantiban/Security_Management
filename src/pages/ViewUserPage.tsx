@@ -182,13 +182,13 @@ export default function ViewUserPage() {
       {/* Profile hero card */}
       <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden ring-0">
         {/* Gradient banner */}
-        <div className="h-28 bg-linear-to-r from-orange-700 via-amber-700 to-orange-600" />
+        <div className="h-28 bg-linear-to-r from-orange-950 via-amber-800 to-orange-800" />
 
         <div className="px-6 pb-6">
           {/* Avatar row */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-5">
             <div className="flex items-end gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-orange-800 to-amber-600 text-white text-2xl font-bold flex items-center justify-center ring-4 ring-white shadow-lg shadow-orange-900/20 shrink-0">
+              <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-orange-800 to-amber-900 text-white text-2xl font-bold flex items-center justify-center ring-4 ring-white shadow-lg shadow-orange-900/20 shrink-0">
                 {initials}
               </div>
 

@@ -37,6 +37,7 @@ import {
   BACKGROUND_VIDEO_SRC,
   useBackgroundVideo,
 } from "@/hooks/useBackgroundVideo";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 type ItemType = {
   name: string;
@@ -62,6 +63,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Only one sidebar copy is ever on screen: the persistent one on desktop,
+  // or the drawer on smaller screens while it is open.
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const unreadCount = useNotificationStore((s) => s.unreadCount);
   const getMyNotifications = useNotificationStore((s) => s.getMyNotifications);
@@ -399,7 +404,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   }
 
   const SidebarContent = () => (
-    <aside className="relative flex h-full w-64 flex-col border-r border-white/5 bg-white/5">
+    <aside className="relative flex h-full w-64 flex-col border-r border-white/5 bg-amber-950/70">
       {/* Header */}
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5">
         <div className="flex items-center gap-2.5">
@@ -538,13 +543,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <SidebarBackgroundVideo />
+        <SidebarBackgroundVideo active={!isDesktop && open} />
         <SidebarContent />
       </div>
 
       {/* Desktop persistent sidebar */}
       <div className="relative hidden h-screen overflow-hidden bg-stone-950 lg:flex">
-        <SidebarBackgroundVideo />
+        <SidebarBackgroundVideo active={isDesktop} />
         <SidebarContent />
       </div>
     </>
@@ -554,10 +559,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 /**
  * Campus video behind the sidebar, dimmed heavily so navigation stays legible.
  * Declared at module level so it is not remounted (and restarted) whenever the
- * sidebar re-renders.
+ * sidebar re-renders. Plays only while `active`, so the hidden copy stays paused.
  */
-function SidebarBackgroundVideo() {
-  const { videoRef } = useBackgroundVideo();
+function SidebarBackgroundVideo({ active }: { active: boolean }) {
+  const { videoRef } = useBackgroundVideo(active);
 
   return (
     <>
