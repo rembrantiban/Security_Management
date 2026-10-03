@@ -35,6 +35,7 @@ import {
     type NotificationAudience,
 } from "@/store/useNotificationStore";
 
+import PageHeader from "@/components/layout/PageHeader";
 const headCell =
     "h-10 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.1em] text-slate-400";
 const chip =
@@ -163,28 +164,16 @@ function AdminConsole() {
         <div className="space-y-2">
 
             {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
-                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
-                <div className="relative flex flex-col gap-1 p-5">
-                    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-                        <BellRing className="h-3 w-3" />
-                        Notification Management
-                    </span>
-                    <h1 className="mt-3 text-[18px] font-semibold tracking-tight text-white">
-                        Send &amp; Broadcast Notifications
-                    </h1>
-                    <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
-                        Push system alerts, broadcast emergencies, and schedule notices for
-                        Security Personnel and Authorized Staff.
-                    </p>
-                </div>
-            </div>
+            <PageHeader
+                eyebrow="Notification management"
+                title="Send & Broadcast Notifications"
+                description="Push system alerts, broadcast emergencies, and schedule notices for Security Personnel and Authorized Staff."
+            />
 
             <div className="grid gap-2 lg:grid-cols-5">
 
                 {/* Compose */}
-                <div className="rounded-2xl bg-white/50 p-4 shadow-sm ring-1 ring-slate-200 lg:col-span-2">
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 lg:col-span-2 ring-0">
                     <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">
                         Compose
                     </p>
@@ -311,7 +300,7 @@ function AdminConsole() {
                 </div>
 
                 {/* History — 9.4 */}
-                <div className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200 lg:col-span-3">
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white lg:col-span-3 ring-0">
                     <div className="border-b border-slate-100 px-5 py-3.5">
                         <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">
                             Notification history
@@ -522,26 +511,14 @@ function RecipientInbox() {
     return (
         <div className="space-y-2">
 
-            <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
-                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
-                <div className="relative flex flex-col gap-1 p-5">
-                    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-                        <BellRing className="h-3 w-3" />
-                        Notifications
-                    </span>
-                    <h1 className="mt-3 text-[18px] font-semibold tracking-tight text-white">
-                        My Notifications
-                    </h1>
-                    <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
-                        Alerts and notices from the administrator. Acknowledge each one so
-                        the team knows you have seen it.
-                    </p>
-                </div>
-            </div>
+            <PageHeader
+                eyebrow="Notifications"
+                title="My Notifications"
+                description="Alerts and notices from the administrator. Acknowledge each one so the team knows you have seen it."
+            />
 
             {/* Filter */}
-            <div className="rounded-2xl bg-white/50 p-3 shadow-sm ring-1 ring-slate-200">
+            <div className="rounded-2xl border border-gray-200 bg-white p-3 ring-0">
                 <div className="inline-flex items-center gap-0.5 rounded-xl bg-slate-50 p-0.5 ring-1 ring-slate-200">
                     {(["all", "unacknowledged"] as const).map((f) => (
                         <button
@@ -577,7 +554,7 @@ function RecipientInbox() {
             </div>
 
             {rows.length === 0 ? (
-                <div className="rounded-2xl bg-white/50 py-16 text-center shadow-sm ring-1 ring-slate-200">
+                <div className="rounded-2xl border border-gray-200 bg-white py-16 text-center ring-0">
                     <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
                         <BellRing className="h-5 w-5 text-amber-800" />
                     </div>
@@ -608,10 +585,10 @@ function RecipientInbox() {
                                             n.notification_id
                                         );
                                 }}
-                                className={`scroll-mt-24 rounded-2xl bg-white/50 p-4 shadow-sm ring-1 transition-all duration-500 ${
+                                className={`scroll-mt-24 rounded-2xl border border-gray-200 p-4 transition-all duration-500 ${
                                     highlightId === n.notification_id
                                         ? "ring-2 ring-amber-400 bg-amber-50/60"
-                                        : "ring-slate-200"
+                                        : "bg-white"
                                 }`}
                             >
                                 <div className="flex gap-3">

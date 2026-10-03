@@ -49,7 +49,7 @@ export default function UserStats() {
         return (
           <div
             key={stat.title}
-            className="group rounded-2xl bg-white/50 p-4 shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:shadow-md hover:ring-slate-300"
+            className="group rounded-2xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:border-gray-300 ring-0"
           >
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-medium uppercase tracking-widest text-slate-700">

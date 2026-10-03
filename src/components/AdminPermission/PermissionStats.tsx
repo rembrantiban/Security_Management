@@ -44,7 +44,7 @@ const IncidentStats = () => {
         return (
           <div
             key={item.title}
-            className="rounded-2xl bg-white/50 px-6 py-2 shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:shadow-md hover:ring-slate-300"
+            className="rounded-2xl border border-gray-200 bg-white px-6 py-2 transition-all duration-200 hover:border-gray-300 ring-0"
           >
             <div className="flex items-center justify-between gap-2">
               <p className="truncate text-[10px] font-medium uppercase tracking-widest text-slate-900">

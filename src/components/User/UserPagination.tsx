@@ -25,7 +25,7 @@ export default function UserPagination({
   );
 
   return (
-    <div className="flex flex-col items-center justify-between gap-4  border border-gray-300 bg-white/50 rounded-2xl p-5 shadow-sm md:flex-row">
+    <div className="flex flex-col items-center justify-between gap-4 border border-gray-200 bg-white rounded-2xl p-5 md:flex-row ring-0">
 
       <p className="text-sm text-slate-500">
         Showing{" "}

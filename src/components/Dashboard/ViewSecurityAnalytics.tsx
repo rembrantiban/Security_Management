@@ -56,7 +56,7 @@ export default function ViewSecurityAnalytics() {
     const dailyAverage = Math.round((totalIncidents / 7) * 10) / 10;
 
     return (
-        <section className="flex h-full flex-col overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+        <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
 
             {/* Header */}
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">

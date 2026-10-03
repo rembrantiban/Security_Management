@@ -25,6 +25,8 @@ import AddPermissionModal from "@/components/Permissions/AddPermissionModal";
 import UpdatePermissionModal from "@/components/Permissions/UpdatePermissionModal";
 import DeletePermissionDialog from "@/components/Permissions/DeletePermissionDialog";
 
+import { HEADER_SECONDARY_BUTTON } from "@/components/layout/PageHeader";
+import { HEADER_SEGMENTED, headerSegment } from "@/components/layout/pageHeaderStyles";
 /** Configure Permission Matrix — spec 2.29. */
 
 const ROLES: UserRole[] = [
@@ -40,7 +42,7 @@ const ROLE_SHORT: Partial<Record<UserRole, string>> = {
 };
 
 const CARD =
-    "rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm ring-1 ring-slate-200/70";
+    "rounded-2xl border border-gray-200 bg-white ring-0";
 
 type Tab = "matrix" | "catalog";
 
@@ -104,17 +106,13 @@ export default function PermissionMatrixPage() {
                 icon={LayoutGrid}
                 actions={
                     <>
-                        <div className="inline-flex items-center gap-0.5 rounded-xl bg-white/10 p-0.5 ring-1 ring-white/15">
+                        <div className={HEADER_SEGMENTED}>
                             {(["matrix", "catalog"] as Tab[]).map((t) => (
                                 <button
                                     key={t}
                                     type="button"
                                     onClick={() => setTab(t)}
-                                    className={`rounded-lg px-3 py-1.5 text-[11.5px] font-medium capitalize transition ${
-                                        tab === t
-                                            ? "bg-white text-amber-900 shadow-sm"
-                                            : "text-amber-50/80 hover:text-white"
-                                    }`}
+                                    className={headerSegment(tab === t)}
                                 >
                                     {t}
                                 </button>
@@ -124,7 +122,7 @@ export default function PermissionMatrixPage() {
                         <button
                             type="button"
                             onClick={refresh}
-                            className="inline-flex h-9 items-center gap-2 rounded-xl bg-white/10 px-3 text-[12px] font-medium text-amber-50 ring-1 ring-white/15 transition hover:bg-white/20"
+                            className={HEADER_SECONDARY_BUTTON}
                         >
                             <RefreshCw className="h-3.5 w-3.5" />
                             Refresh
@@ -171,7 +169,7 @@ export default function PermissionMatrixPage() {
             ) : filtered.length === 0 ? (
                 <EmptyPermissions onCreate={() => setAddOpen(true)} />
             ) : tab === "matrix" ? (
-                <div className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200/70 backdrop-blur-sm">
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white backdrop-blur-sm ring-0">
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse text-left">
                             <thead>

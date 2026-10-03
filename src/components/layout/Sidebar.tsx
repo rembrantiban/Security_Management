@@ -32,6 +32,11 @@ import {
 import LogoutDialog from "../LogoutModal/LogoutModal";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  BACKGROUND_VIDEO_POSTER,
+  BACKGROUND_VIDEO_SRC,
+  useBackgroundVideo,
+} from "@/hooks/useBackgroundVideo";
 
 type ItemType = {
   name: string;
@@ -246,7 +251,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/");
+    navigate("/login");
   };
 
   function NavItem({ item }: { item: ItemType }) {
@@ -255,30 +260,30 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         to={item.path}
         onClick={onClose}
         className={({ isActive }) =>
-          `group relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${
+          `group relative flex items-center gap-3 rounded-md px-3 py-2 text-[13px] transition-colors ${
             isActive
-              ? "bg-white/12 text-white font-medium ring-1 ring-white/15 shadow-sm shadow-black/10"
-              : "text-amber-100/70 hover:bg-white/8 hover:text-white"
+              ? "bg-white/10 font-medium text-white"
+              : "text-stone-400 hover:bg-white/5 hover:text-white"
           }`
         }
       >
         {({ isActive }) => (
           <>
             <span
-              className={`absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-amber-200 transition-opacity duration-200 ${
+              className={`absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-orange-400 transition-opacity ${
                 isActive ? "opacity-100" : "opacity-0"
               }`}
             />
             <span
               className={`shrink-0 transition-colors ${
-                isActive ? "text-amber-200" : "text-amber-100/50 group-hover:text-amber-200"
+                isActive ? "text-orange-300" : "text-stone-500 group-hover:text-stone-300"
               }`}
             >
               {item.icon}
             </span>
             <span className="truncate">{item.name}</span>
             {typeof item.badge === "number" && item.badge > 0 && (
-              <span className="ml-auto flex h-4.5 min-w-4.5 shrink-0 items-center justify-center rounded-full bg-amber-200 px-1 text-[10px] font-semibold text-amber-900">
+              <span className="ml-auto flex h-4.5 min-w-4.5 shrink-0 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
                 {item.badge > 99 ? "99+" : item.badge}
               </span>
             )}
@@ -305,15 +310,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${
+          className={`group flex w-full items-center gap-3 rounded-md px-3 py-2 text-[13px] transition-colors ${
             hasActiveChild
-              ? "text-white font-medium"
-              : "text-amber-100/70 hover:bg-white/8 hover:text-white"
+              ? "font-medium text-white"
+              : "text-stone-400 hover:bg-white/5 hover:text-white"
           }`}
         >
           <span
             className={`shrink-0 transition-colors ${
-              hasActiveChild ? "text-amber-200" : "text-amber-100/50 group-hover:text-amber-200"
+              hasActiveChild ? "text-orange-300" : "text-stone-500 group-hover:text-stone-300"
             }`}
           >
             {item.icon}
@@ -321,7 +326,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <span className="flex-1 truncate text-left">{item.name}</span>
           <ChevronDown
             size={14}
-            className={`shrink-0 text-amber-100/50 transition-transform duration-200 group-hover:text-amber-200 ${
+            className={`shrink-0 text-stone-500 transition-transform duration-200 group-hover:text-stone-300 ${
               expanded ? "rotate-180" : ""
             }`}
           />
@@ -333,7 +338,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           }`}
         >
           <div className="overflow-hidden">
-            <div className="ml-5.5 mt-1 space-y-0.5 border-l border-white/10 pl-2.5">
+            <div className="ml-5 mt-1 space-y-0.5 border-l border-white/10 pl-3">
               {item.children?.map((child) => (
                 <NavLink
                   key={child.path}
@@ -341,10 +346,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   onClick={onClose}
                   end
                   className={({ isActive }) =>
-                    `group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] transition-all duration-150 ${
+                    `group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[12.5px] transition-colors ${
                       isActive
-                        ? "bg-white/12 text-white font-medium ring-1 ring-white/15"
-                        : "text-amber-100/60 hover:bg-white/8 hover:text-white"
+                        ? "bg-white/10 font-medium text-white"
+                        : "text-stone-400 hover:bg-white/5 hover:text-white"
                     }`
                   }
                 >
@@ -353,8 +358,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       <span
                         className={`shrink-0 transition-colors ${
                           isActive
-                            ? "text-amber-200"
-                            : "text-amber-100/40 group-hover:text-amber-200"
+                            ? "text-orange-300"
+                            : "text-stone-500 group-hover:text-stone-300"
                         }`}
                       >
                         {child.icon}
@@ -376,7 +381,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
     return (
       <div>
-        <p className="mb-1.5 px-3 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-200/50">
+        <p className="mb-1.5 px-3 text-[10.5px] font-medium uppercase tracking-[0.16em] text-stone-500">
           {label}
         </p>
 
@@ -394,24 +399,22 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   }
 
   const SidebarContent = () => (
-    <aside className="flex h-full w-64 flex-col bg-amber-900">
+    <aside className="relative flex h-full w-64 flex-col border-r border-white/5 bg-white/5">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5">
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white ring-1 ring-white/15">
-            <img src="/sfc.png" alt="Logo" className="h-10 w-10 object-contain" />
-          </div>
+          <img src="/sfc.png" alt="" className="h-8 w-8 object-contain bg-white rounded-2xl" />
           <div>
-            <p className="text-[13px] font-semibold leading-none tracking-tight text-white">SMS</p>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-amber-200/70">
-              Security Management
+            <p className="text-[14px] font-semibold leading-none tracking-tight text-white">
+              SFC Security
             </p>
+            <p className="mt-1 text-[11px] text-stone-500">Campus Security Office</p>
           </div>
         </div>
         {/* Close button — mobile only */}
         <button
           onClick={onClose}
-          className="rounded-lg p-1.5 text-amber-100/60 transition hover:bg-white/10 hover:text-white lg:hidden"
+          className="rounded-md p-1.5 text-stone-400 transition-colors hover:bg-white/10 hover:text-white lg:hidden"
           aria-label="Close sidebar"
         >
           <X size={16} />
@@ -420,7 +423,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
       {/* Nav groups */}
       {user?.role === "Administrator" && (
-        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
           <NavGroup label="Main" items={main} />
           <NavGroup label="User Management" items={userManagement} />
           <NavGroup label="Security" items={security} />
@@ -431,7 +434,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       )}
 
       {user?.role === "Security Personnel" && (
-        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
           <NavGroup label="Main" items={personelDashboard} />
           <NavGroup label="Account" items={personnelAccount} />
           <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
@@ -444,14 +447,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       )}
 
       {user?.role === "IT System Administrator" && (
-        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
           <NavGroup label="Access Control" items={itAccessControl} />
           <NavGroup label="Authentication" items={itAuthentication} />
         </nav>
       )}
 
       {user?.role === "Authorized Staff" && (
-        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
           <NavGroup label="Main" items={staffDashboard} />
           <NavGroup label="Incidents" items={staffIncidents} />
           <NavGroup label="Notifications" items={staffNotifications} />
@@ -460,20 +463,20 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       )}
 
       {/* Profile section */}
-      <div className="border-t border-white/10 px-3 py-3">
+      <div className="border-t border-white/10 p-3">
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <button className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-white/8">
+            <button className="group flex w-full items-center gap-2.5 rounded-md px-2 py-2 transition-colors hover:bg-white/5">
               <Avatar firstName={userData.firstName} lastName={userData.lastName} size="md" />
               <div className="min-w-0 flex-1 text-left">
                 <p className="truncate text-[13px] font-medium leading-none text-white">
                   {userData.firstName} {userData.lastName}
                 </p>
-                <p className="mt-1 truncate text-[11px] text-amber-200/60">{userData.role}</p>
+                <p className="mt-1 truncate text-[11px] text-stone-500">{userData.role}</p>
               </div>
               <ChevronDown
                 size={14}
-                className="shrink-0 text-amber-100/50 transition group-hover:text-amber-200"
+                className="shrink-0 text-stone-500 transition-colors group-hover:text-stone-300"
               />
             </button>
           </DropdownMenuTrigger>
@@ -481,30 +484,30 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <DropdownMenuContent
             align="end"
             side="top"
-            className="w-60 rounded-2xl border-0 p-1 shadow-xl ring-1 ring-gray-200"
+            className="w-60 rounded-md border border-stone-200 p-1 shadow-lg"
           >
             <div className="mb-1 flex items-center gap-2.5 px-2.5 py-2">
               <Avatar firstName={userData.firstName} lastName={userData.lastName} size="md" />
               <div className="min-w-0">
-                <p className="truncate text-[13px] font-semibold text-gray-800">
+                <p className="truncate text-[13px] font-semibold text-stone-900">
                   {userData.firstName} {userData.lastName}
                 </p>
-                <p className="truncate text-[11px] text-gray-400">{userData.role}</p>
+                <p className="truncate text-[11px] text-stone-500">{userData.role}</p>
               </div>
             </div>
-            <DropdownMenuSeparator className="bg-gray-100" />
+            <DropdownMenuSeparator className="bg-stone-100" />
             {userData.role === "Administrator" && (
               <DropdownMenuItem
                 onClick={() => navigate("/my-account")}
-                className="cursor-pointer gap-2 rounded-lg text-[13px] text-gray-700 hover:bg-amber-50 hover:text-amber-800"
+                className="cursor-pointer gap-2 rounded-sm text-[13px] text-stone-700 focus:bg-stone-100 focus:text-stone-900"
               >
                 <UserCircle size={15} />
                 My Profile
               </DropdownMenuItem>
             )}
-            <DropdownMenuSeparator className="bg-gray-100" />
+            <DropdownMenuSeparator className="bg-stone-100" />
             <DropdownMenuItem
-              className="cursor-pointer gap-2 rounded-lg text-[13px] text-red-500 focus:bg-red-50 focus:text-red-600"
+              className="cursor-pointer gap-2 rounded-sm text-[13px] text-red-600 focus:bg-red-50 focus:text-red-700"
               onClick={() => setLogoutOpen(true)}
             >
               <LogOut size={15} />
@@ -523,7 +526,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-stone-950/50 lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -531,17 +534,45 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
       {/* Mobile drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 overflow-hidden bg-stone-950 transition-transform duration-300 ease-in-out lg:hidden ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+        <SidebarBackgroundVideo />
         <SidebarContent />
       </div>
 
       {/* Desktop persistent sidebar */}
-      <div className="hidden h-screen lg:flex">
+      <div className="relative hidden h-screen overflow-hidden bg-stone-950 lg:flex">
+        <SidebarBackgroundVideo />
         <SidebarContent />
       </div>
+    </>
+  );
+}
+
+/**
+ * Campus video behind the sidebar, dimmed heavily so navigation stays legible.
+ * Declared at module level so it is not remounted (and restarted) whenever the
+ * sidebar re-renders.
+ */
+function SidebarBackgroundVideo() {
+  const { videoRef } = useBackgroundVideo();
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        className="absolute inset-0 h-full w-full object-cover"
+        src={BACKGROUND_VIDEO_SRC}
+        poster={BACKGROUND_VIDEO_POSTER}
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+      />
+      <div className="absolute inset-0 bg-stone-950/85" aria-hidden="true" />
     </>
   );
 }
@@ -562,7 +593,7 @@ function Avatar({
   };
   return (
     <div
-      className={`flex shrink-0 items-center justify-center rounded-full bg-amber-950 font-semibold text-amber-100 ring-1 ring-white/20 ${sizes[size]}`}
+      className={`flex shrink-0 items-center justify-center rounded-full bg-stone-700 font-semibold text-white ${sizes[size]}`}
     >
       {firstName[0]}
       {lastName[0]}

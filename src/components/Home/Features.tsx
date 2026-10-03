@@ -1,64 +1,60 @@
-import { ShieldCheck, AlertTriangle, Fingerprint } from "lucide-react";
+const MODULES = [
+  {
+    title: "Incident reporting",
+    body: "Staff file a report with location, category, severity and a photo. Each one gets a reference number and moves from Pending to Resolved to Closed.",
+  },
+  {
+    title: "Monitoring schedules",
+    body: "Assign personnel to an area and time window. Shifts start and complete on schedule, and past shifts stay on record.",
+  },
+  {
+    title: "Patrol operations",
+    body: "Guards start and complete patrols from their own dashboard and file a short report on what they found.",
+  },
+  {
+    title: "Visitor access",
+    body: "Visitor requests are reviewed at the gate, approved or rejected with a reason, and checked out when the visitor leaves.",
+  },
+  {
+    title: "Visitor blacklist",
+    body: "Flag people who should not be admitted. Requests are checked against the list before anyone is let in.",
+  },
+  {
+    title: "Reports & audit trail",
+    body: "Generate incident, patrol, visitor and user activity reports, and see who changed what and when.",
+  },
+] as const;
 
 export default function Features() {
-  const features = [
-    {
-      title: "Real-Time Monitoring",
-      desc: "Track activities and security logs instantly with live updates.",
-      icon: <ShieldCheck size={28} />,
-    },
-    {
-      title: "Incident Reporting",
-      desc: "Quickly log, manage, and review security incidents efficiently.",
-      icon: <AlertTriangle size={28} />,
-    },
-    {
-      title: "Access Control",
-      desc: "Secure entry using smart authentication and verification.",
-      icon: <Fingerprint size={28} />,
-    },
-  ];
-
   return (
-    <section id="features" className="relative px-6 md:px-12 py-20 bg-linear-to-b from-gray-50 to-white">
-      
-      {/* Header */}
-      <div className="text-center mb-14">
-        <h2 className="text-3xl md:text-4xl font-bold mb-3">
-          Powerful Security Features
-        </h2>
-        <p className="text-gray-500 max-w-xl mx-auto">
-          Designed to give you full control, visibility, and protection in one system.
-        </p>
-      </div>
+    <section id="modules" className="scroll-mt-16 bg-stone-50 py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <div className="grid gap-6 md:grid-cols-2 md:gap-16">
+          <h2 className="text-3xl font-semibold leading-tight tracking-tight text-stone-900 md:text-4xl">
+            What the security office keeps track of.
+          </h2>
+          <p className="text-base leading-relaxed text-stone-600 md:pt-2">
+            Paper logbooks and group chats are hard to search and easy to lose.
+            The system keeps these six areas in one place, tied to the people
+            responsible for them.
+          </p>
+        </div>
 
-      {/* Cards */}
-      <div className="grid md:grid-cols-3 gap-8">
-        {features.map((f, i) => (
-          <div
-            key={i}
-            className="group relative p-6 rounded-2xl bg-white/70 backdrop-blur-md border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-          >
-            
-            {/* Icon */}
-            <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-100 text-blue-600 mb-4 group-hover:scale-110 transition">
-              {f.icon}
-            </div>
-
-            {/* Title */}
-            <h3 className="text-xl font-semibold mb-2">
-              {f.title}
-            </h3>
-
-            {/* Description */}
-            <p className="text-gray-600 text-sm leading-relaxed">
-              {f.desc}
-            </p>
-
-            {/* Gradient Hover Glow */}
-            <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-          </div>
-        ))}
+        <ol className="mt-16 grid gap-x-12 sm:grid-cols-2 lg:grid-cols-3">
+          {MODULES.map((module, index) => (
+            <li key={module.title} className="border-t border-stone-300 py-7">
+              <span className="font-mono text-xs text-stone-400">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3 className="mt-3 text-lg font-semibold text-stone-900">
+                {module.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                {module.body}
+              </p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast"
+import PageHeader from "@/components/layout/PageHeader";
 type ProfileForm = {
     first_name: string;
     middle_name: string;
@@ -149,13 +150,14 @@ export default function MyAccount() {
             <div className="mx-auto max-w-4xl">
                 {/* Page heading */}
                 <div className="mb-6">
-                    <h1 className="text-xl font-semibold text-gray-800">My Account</h1>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                        Manage your profile information and security settings.
-                    </p>
+                    <PageHeader
+                        eyebrow="Account"
+                        title="My Account"
+                        description="Manage your profile information and security settings."
+                    />
                 </div>
                 {/* Profile header card */}
-                <div className="rounded-2xl border border-gray-300 bg-white/50 p-5 sm:p-6 mb-5 shadow-sm">
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 mb-5 ring-0">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-5">
                         <div className="relative shrink-0 mx-auto sm:mx-0">
                             <div className="w-20 h-20 rounded-full bg-linear-to-br from-orange-700 to-amber-500 flex items-center justify-center text-white text-2xl font-semibold shadow-sm shadow-orange-900/20">
@@ -201,7 +203,7 @@ export default function MyAccount() {
                 </div>
 
                 {/* Profile details card */}
-                <div className="rounded-2xl border border-gray-300 bg-white/50 p-5 sm:p-6 mb-5 shadow-sm">
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 mb-5 ring-0">
                     <p className="text-xs tracking-widest text-gray-500 uppercase mb-4">
                         Profile Information
                     </p>
@@ -272,7 +274,7 @@ export default function MyAccount() {
                 </div>
 
                 {/* Change password card */}
-                <div className="rounded-2xl border border-gray-300 bg-white/50 p-5 sm:p-6 shadow-sm">
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 ring-0">
                     <p className="text-xs tracking-widest text-gray-900 uppercase mb-1">
                         Change Password
                     </p>

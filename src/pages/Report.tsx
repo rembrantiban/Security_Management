@@ -78,6 +78,7 @@ import SecurityPerformanceReportDocument, {
 import GenerateReportModal from "@/components/Report/GenerateReportModal";
 import AllReportsModal from "@/components/Report/AllReportsModal";
 
+import PageHeader, { HEADER_PRIMARY_BUTTON } from "@/components/layout/PageHeader";
 type ReportKey =
     | "incident"
     | "user-activity"
@@ -167,7 +168,7 @@ const formats: { value: ExportFormat; label: string; icon: typeof FileText }[] =
 // Shared visual-layer tokens — keeps every panel on the same card, blur, and
 // label treatment so the page reads as one system instead of six one-offs.
 const CARD =
-    "rounded-2xl bg-white/60 backdrop-blur-sm shadow-sm ring-1 ring-slate-200/70";
+    "rounded-2xl border border-gray-200 bg-white ring-0";
 const SECTION_LABEL =
     "text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500";
 const EMPTY_STATE =
@@ -442,33 +443,15 @@ export default function Report() {
         <div className="space-y-5">
 
             {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm ring-1 ring-black/5">
-
-                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
-
-                <div className="relative flex flex-col gap-5 p-6 lg:flex-row lg:items-center lg:justify-between">
-
-                    <div className="min-w-0">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-                            <FileBarChart2 className="h-3 w-3" />
-                            Reporting &amp; Analytics
-                        </span>
-
-                        <h1 className="mt-3 text-[19px] font-semibold tracking-tight text-white">
-                            Reports Center
-                        </h1>
-
-                        <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
-                            Generate, export, and print operational reports across incidents,
-                            personnel, patrols, visitors, and system activity.
-                        </p>
-                    </div>
-
+            <PageHeader
+                eyebrow="Reporting & analytics"
+                title="Reports Center"
+                description="Generate, export, and print operational reports across incidents, personnel, patrols, visitors, and system activity."
+                actions={
                     <Button
                         onClick={() => setGenerateOpen(true)}
                         disabled={!canGenerate}
-                        className="h-9 shrink-0 gap-2 rounded-xl bg-white px-4 text-[12.5px] font-medium text-amber-900 shadow-sm hover:bg-amber-50 disabled:opacity-60"
+                        className={HEADER_PRIMARY_BUTTON}
                     >
                         {generating ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -477,9 +460,8 @@ export default function Report() {
                         )}
                         {generating ? "Generating…" : "Generate report"}
                     </Button>
-
-                </div>
-            </div>
+                }
+            />
 
             {/* Report type picker */}
             <div className={`${CARD} p-5`}>
@@ -502,10 +484,10 @@ export default function Report() {
                                 key={type.key}
                                 type="button"
                                 onClick={() => setSelected(type.key)}
-                                className={`group relative flex flex-col rounded-xl p-4 text-left transition-all duration-200 ${
+                                className={`group relative flex flex-col rounded-xl border p-4 text-left transition-all duration-200 ${
                                     active
-                                        ? "bg-amber-50/50 shadow-sm ring-2 ring-amber-300"
-                                        : "bg-white/70 ring-1 ring-slate-200/80 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm hover:ring-slate-300"
+                                        ? "border-amber-300 bg-amber-50/50 ring-1 ring-amber-300"
+                                        : "border-gray-200 bg-white hover:-translate-y-0.5 hover:border-gray-300"
                                 }`}
                             >
                                 <div className="flex items-center justify-between">

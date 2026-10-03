@@ -114,7 +114,7 @@ export default function ActiveAlertsNotifications() {
     );
 
     return (
-        <Card className="overflow-hidden rounded-2xl border-0 bg-white/50 shadow-sm ring-1 ring-slate-200">
+        <Card className="overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
             <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 px-5 py-4">
                 <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">

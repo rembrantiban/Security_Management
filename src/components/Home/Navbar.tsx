@@ -1,105 +1,109 @@
-import { useState } from "react";
-import LoginModal from "../Modal/loginModal";
-import { User, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Menu, X } from "lucide-react";
+
+const NAV_LINKS = [
+  { href: "#modules", label: "Modules" },
+  { href: "#workflow", label: "Workflow" },
+  { href: "#roles", label: "Roles" },
+] as const;
 
 export default function Navbar() {
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const links = [
-    { href: "#home", label: "Home" },
-    { href: "#features", label: "Features" },
-    { href: "#mission", label: "Mission" },
-    { href: "#about", label: "About" },
-  ];
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // White once the page is scrolled (or the mobile menu is open);
+  // transparent over the hero video at the very top.
+  const solid = scrolled || mobileOpen;
 
   return (
-    <>
-      <nav className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/70 backdrop-blur-xl">
-        <div className="flex items-center justify-between px-6 py-3 md:px-10">
-          {/* Logo + title block */}
-          <div className="flex items-center gap-3">
-            <img
-              src="/sfc.png"
-              alt="Saint Francis College Logo"
-              className="h-11 w-11 object-contain"
-            />
-            <div className="flex flex-col leading-tight">
-              <span className="text-[15px] font-semibold tracking-tight text-slate-900">
-                Security
-              </span>
-              <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-orange-800">
-                Saint Francis
-              </span>
-            </div>
-          </div>
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-200 ${
+        solid
+          ? "border-b border-stone-200 bg-white text-stone-900"
+          : "border-b border-transparent bg-transparent text-white"
+      }`}
+    >
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 md:px-8">
+        <a href="#top" className="flex items-center gap-2.5">
+          <img src="/sfc.png" alt="" className="h-8 w-8 object-contain bg-white rounded-full" />
+          <span className="text-[15px] font-semibold tracking-tight">
+            SFC Security
+          </span>
+        </a>
 
-          {/* Desktop nav links */}
-          <div className="hidden md:flex items-center justify-around gap-1 rounded-full w-xl border border-slate-200 bg-slate-50/80 px-1.5 py-1">
-            {links.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-white hover:text-blue-600 hover:shadow-sm"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-          {/* Right side actions */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsLoginOpen(true)}
-              className="group hidden items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-md hover:shadow-blue-600/30 md:flex"
+        <nav className="hidden items-center gap-8 md:flex" aria-label="Primary">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className={`text-sm transition-colors ${
+                solid
+                  ? "text-stone-600 hover:text-stone-900"
+                  : "text-white/75 hover:text-white"
+              }`}
             >
-              <User size={16} className="transition-transform group-hover:scale-110" />
-              Login
-            </button>
+              {link.label}
+            </a>
+          ))}
+        </nav>
 
-            {/* Mobile menu toggle */}
-            <button
-              onClick={() => setIsMobileOpen((prev) => !prev)}
-              className="flex items-center justify-center rounded-full p-2.5 text-slate-600 transition hover:bg-slate-100 md:hidden"
-              aria-label="Toggle menu"
-            >
-              {isMobileOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile dropdown panel */}
-        <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileOpen ? "max-h-80 border-t border-slate-200" : "max-h-0"
+        <div className="flex items-center gap-2">
+          <Link
+            to="/login"
+            className={`hidden rounded-md px-4 py-2 text-sm font-medium transition-colors md:inline-block ${
+              solid
+                ? "bg-stone-900 text-white hover:bg-stone-700"
+                : "bg-white text-stone-900 hover:bg-stone-200"
             }`}
-        >
-          <div className="flex flex-col gap-1 px-6 py-4">
-            {links.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsMobileOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-blue-600"
-              >
-                {link.label}
-              </a>
-            ))}
-            <button
-              onClick={() => {
-                setIsLoginOpen(true);
-                setIsMobileOpen(false);
-              }}
-              className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
-              <User size={16} />
-              Login
-            </button>
-          </div>
-        </div>
-      </nav >
+          >
+            Sign in
+          </Link>
 
-      {/* IMPORTANT: Modal stays outside nav */}
-      < LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)
-      } />
-    </>
+          <button
+            type="button"
+            onClick={() => setMobileOpen((open) => !open)}
+            className={`rounded-md p-2 transition-colors md:hidden ${
+              solid ? "hover:bg-stone-100" : "hover:bg-white/10"
+            }`}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+      </div>
+
+      {mobileOpen && (
+        <nav
+          className="border-t border-stone-200 bg-white px-5 pb-5 pt-2 md:hidden"
+          aria-label="Mobile"
+        >
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileOpen(false)}
+              className="block border-b border-stone-100 py-3 text-sm text-stone-700 transition-colors hover:text-stone-900"
+            >
+              {link.label}
+            </a>
+          ))}
+          <Link
+            to="/login"
+            className="mt-4 block rounded-md bg-stone-900 py-2.5 text-center text-sm font-medium text-white"
+          >
+            Sign in
+          </Link>
+        </nav>
+      )}
+    </header>
   );
 }

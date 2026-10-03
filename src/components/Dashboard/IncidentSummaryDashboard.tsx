@@ -92,7 +92,7 @@ export default function IncidentSummaryDashboard() {
         <div className="space-y-5">
 
             {/* Recent incidents */}
-            <Card className="overflow-hidden rounded-2xl border-0 bg-white/50 shadow-sm ring-1 ring-slate-200">
+            <Card className="overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
 
                 <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
                     <div className="flex items-center gap-3">

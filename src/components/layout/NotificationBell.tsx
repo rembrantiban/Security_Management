@@ -79,7 +79,7 @@ function NotificationRow({
                 }
             }}
             className={`flex cursor-pointer gap-3 px-4 py-3 transition hover:bg-slate-50 ${
-                n.read_at ? "" : "bg-amber-50/40"
+                n.read_at ? "" : "bg-orange-50/50"
             }`}
         >
             <div
@@ -94,7 +94,7 @@ function NotificationRow({
                         {n.title}
                     </p>
                     {!n.read_at && (
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" />
                     )}
                 </div>
 
@@ -121,7 +121,7 @@ function NotificationRow({
                                 e.stopPropagation();
                                 onAcknowledge();
                             }}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-800 px-2.5 py-1 text-[10.5px] font-medium text-white transition hover:bg-amber-900"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-stone-900 px-2.5 py-1 text-[10.5px] font-medium text-white transition-colors hover:bg-stone-700"
                         >
                             <Check className="h-3 w-3" />
                             Acknowledge
@@ -213,19 +213,19 @@ export default function NotificationBell() {
         <div ref={rootRef} className="relative">
             <button
                 onClick={toggle}
-                className="relative rounded-xl p-2 text-slate-500 transition hover:bg-amber-50 hover:text-amber-800"
+                className="relative rounded-md p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900"
                 aria-label="Notifications"
             >
                 <Bell size={18} />
                 {unreadCount > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-600 px-1 text-[10px] font-semibold text-white ring-2 ring-white">
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-600 px-1 text-[10px] font-semibold text-white ring-2 ring-white">
                         {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                 )}
             </button>
 
             {open && (
-                <div className="absolute right-0 z-50 mt-2 w-85 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
+                <div className="absolute right-0 z-50 mt-2 w-85 overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg">
                     <div className="flex items-start justify-between border-b border-slate-100 px-4 py-3">
                         <div>
                             <p className="text-[13px] font-semibold tracking-tight text-slate-900">
@@ -241,7 +241,7 @@ export default function NotificationBell() {
                             {unreadCount > 0 && (
                                 <button
                                     onClick={() => markAllRead()}
-                                    className="rounded-lg px-2 py-1 text-[10.5px] font-medium text-amber-800 transition hover:bg-amber-50"
+                                    className="rounded-md px-2 py-1 text-[10.5px] font-medium text-stone-700 transition-colors hover:bg-stone-100 hover:text-stone-900"
                                 >
                                     Mark all read
                                 </button>
@@ -259,8 +259,8 @@ export default function NotificationBell() {
                     <div className="max-h-95 overflow-y-auto">
                         {myNotifications.length === 0 ? (
                             <div className="px-4 py-12 text-center">
-                                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
-                                    <Bell className="h-5 w-5 text-amber-800" />
+                                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-stone-100">
+                                    <Bell className="h-5 w-5 text-stone-500" />
                                 </div>
                                 <p className="mt-3 text-[12.5px] font-medium text-slate-700">
                                     No notifications yet
@@ -288,7 +288,7 @@ export default function NotificationBell() {
                     {myNotifications.length > 0 && (
                         <button
                             onClick={viewAll}
-                            className="block w-full border-t border-slate-100 px-4 py-2.5 text-center text-[11.5px] font-medium text-amber-800 transition hover:bg-amber-50"
+                            className="block w-full border-t border-stone-100 px-4 py-2.5 text-center text-[11.5px] font-medium text-stone-700 transition-colors hover:bg-stone-50 hover:text-stone-900"
                         >
                             View all notifications
                         </button>

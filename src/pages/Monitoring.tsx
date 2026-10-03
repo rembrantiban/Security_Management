@@ -4,7 +4,6 @@ import {
     Plus,
     ScrollText,
     Search,
-    Shield,
     X,
 } from "lucide-react";
 
@@ -23,6 +22,7 @@ import AssignScheduleModal from "@/components/Monitoring/Assignschedulemodal";
 import PatrolLogsPanel from "@/components/Monitoring/PatrolLogsPanel";
 import { useState } from "react";
 
+import PageHeader, { HEADER_PRIMARY_BUTTON, HEADER_SECONDARY_BUTTON, HEADER_TOGGLE_ACTIVE_BUTTON } from "@/components/layout/PageHeader";
 const triggerClass =
     "h-9 w-full rounded-xl border-0 text-[12.5px] ring-1 ring-slate-200 focus:ring-amber-300 lg:w-40";
 
@@ -39,47 +39,18 @@ export default function Monitoring() {
         <div className="space-y-2 p-4">
 
             {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
-
-                {/* Ambient wash */}
-                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
-
-                <div className="relative flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
-
-                    <div className="flex items-center gap-3.5">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
-                            <Shield className="h-5 w-5 text-amber-100" />
-                        </div>
-
-                        <div className="min-w-0">
-                            <span className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-                                Security Operations
-                            </span>
-
-                            <h1 className="mt-2 text-[18px] font-semibold tracking-tight text-white">
-                                Monitoring &amp; Surveillance
-                            </h1>
-
-                            <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
-                                Assign schedules, supervise personnel, and oversee patrol
-                                activity across campus.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-
+            <PageHeader
+                eyebrow="Security operations"
+                title="Monitoring & Surveillance"
+                description="Assign schedules, supervise personnel, and oversee patrol activity across campus."
+                actions={
+                    <>
                         <Button
                             onClick={() =>
                                 setView(showLogs ? "schedules" : "logs")
                             }
                             variant="ghost"
-                            className={`h-9 gap-1.5 rounded-xl px-3 text-[12.5px] font-medium ring-1 transition ${
-                                showLogs
-                                    ? "bg-white text-amber-900 ring-white hover:bg-amber-50"
-                                    : "text-amber-100 ring-white/20 hover:bg-white/10 hover:text-white"
-                            }`}
+                            className={showLogs ? HEADER_TOGGLE_ACTIVE_BUTTON : HEADER_SECONDARY_BUTTON}
                         >
                             <ScrollText className="h-3.5 w-3.5" />
                             {showLogs ? "Back to schedules" : "Patrol logs"}
@@ -87,16 +58,14 @@ export default function Monitoring() {
 
                         <Button
                             onClick={() => setIsAssignModalOpen(true)}
-                            className="h-9 gap-2 rounded-xl bg-white px-4 text-[12.5px] font-medium text-amber-900 shadow-sm hover:bg-amber-50"
+                            className={HEADER_PRIMARY_BUTTON}
                         >
                             <Plus className="h-3.5 w-3.5" />
                             Assign schedule
                         </Button>
-
-                    </div>
-
-                </div>
-            </div>
+                    </>
+                }
+            />
 
             {/* Statistics */}
             <MonitoringStats />
@@ -106,7 +75,7 @@ export default function Monitoring() {
             ) : (
                 <>
                     {/* Toolbar */}
-                    <div className="rounded-2xl bg-white/50 p-3 shadow-sm ring-1 ring-slate-200">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-3 ring-0">
                         <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
 
                             <div className="relative w-full lg:max-w-sm">

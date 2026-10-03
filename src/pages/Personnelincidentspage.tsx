@@ -115,7 +115,7 @@ function SummaryCard({
     tone: keyof typeof summaryTones;
 }) {
     return (
-        <div className="flex items-center gap-3 rounded-2xl bg-white/50 px-4 py-3 shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:ring-slate-300">
+        <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition-all duration-200 hover:border-gray-300 ring-0">
             <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ring-1 ${summaryTones[tone]}`}
             >

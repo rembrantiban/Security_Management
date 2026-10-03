@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/useToast";
 import ITAdminPageHeader from "@/components/ITSystemAdmin/ITAdminPageHeader";
 import EmptyRolePermissions from "@/components/RolePermission/EmptyRolePermissions";
 
+import { HEADER_SECONDARY_BUTTON } from "@/components/layout/PageHeader";
 /** Configure Role-Based Access Control (RBAC) Policies — spec 2.28. */
 
 const ROLE_META: { role: UserRole; icon: LucideIcon }[] = [
@@ -29,7 +30,7 @@ const ROLE_META: { role: UserRole; icon: LucideIcon }[] = [
 ];
 
 const CARD =
-    "rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm ring-1 ring-slate-200/70";
+    "rounded-2xl border border-gray-200 bg-white ring-0";
 
 function Toggle({
     checked,
@@ -181,7 +182,7 @@ export default function RbacPolicies() {
                     <button
                         type="button"
                         onClick={() => loadRolePermissions(selectedRole)}
-                        className="inline-flex h-9 items-center gap-2 rounded-xl bg-white/10 px-3 text-[12px] font-medium text-amber-50 ring-1 ring-white/15 transition hover:bg-white/20"
+                        className={HEADER_SECONDARY_BUTTON}
                     >
                         <RefreshCw className="h-3.5 w-3.5" />
                         Refresh

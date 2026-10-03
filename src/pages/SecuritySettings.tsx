@@ -19,10 +19,11 @@ import { useToast } from "@/hooks/useToast";
 
 import ITAdminPageHeader from "@/components/ITSystemAdmin/ITAdminPageHeader";
 
+import { HEADER_PRIMARY_BUTTON, HEADER_SECONDARY_BUTTON } from "@/components/layout/PageHeader";
 /** Maintain Authentication and Account Security Settings — spec 2.30. */
 
 const CARD =
-    "rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm ring-1 ring-slate-200/70";
+    "rounded-2xl border border-gray-200 bg-white ring-0";
 const SECTION_LABEL =
     "text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500";
 
@@ -261,7 +262,7 @@ export default function SecuritySettings() {
                             type="button"
                             onClick={() => setDraft(settings)}
                             disabled={!dirty || isSaving}
-                            className="inline-flex h-9 items-center gap-2 rounded-xl bg-white/10 px-3 text-[12px] font-medium text-amber-50 ring-1 ring-white/15 transition hover:bg-white/20 disabled:opacity-40"
+                            className={HEADER_SECONDARY_BUTTON}
                         >
                             <RotateCcw className="h-3.5 w-3.5" />
                             Reset
@@ -270,7 +271,7 @@ export default function SecuritySettings() {
                             type="button"
                             onClick={handleSave}
                             disabled={!dirty || isSaving}
-                            className="inline-flex h-9 items-center gap-2 rounded-xl bg-white px-3.5 text-[12px] font-semibold text-amber-900 shadow-sm transition hover:bg-amber-50 disabled:opacity-50"
+                            className={HEADER_PRIMARY_BUTTON}
                         >
                             {isSaving ? (
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />

@@ -58,11 +58,12 @@ import {
 } from "@/lib/securityRecords";
 import ArchivedIncidentsPanel from "@/components/AdminPermission/ArchivedIncidentsPanel";
 
+import PageHeader from "@/components/layout/PageHeader";
 /* ------------------------------------------------------------------ */
 /* Shared visual tokens                                               */
 /* ------------------------------------------------------------------ */
 
-const CARD = "rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200";
+const CARD = "rounded-2xl border border-gray-200 bg-white ring-0";
 const headCell =
     "h-10 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.1em] text-slate-400";
 const chip =
@@ -164,31 +165,11 @@ export default function RecordPage() {
 
 function RecordsHeader() {
     return (
-        <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
-            <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
-
-            <div className="relative flex items-center gap-3.5 p-5">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
-                    <ShieldCheck className="h-5 w-5 text-amber-100" />
-                </div>
-
-                <div className="min-w-0">
-                    <span className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-                        Security Records Management
-                    </span>
-
-                    <h1 className="mt-2 text-[18px] font-semibold tracking-tight text-white">
-                        Security Records
-                    </h1>
-
-                    <p className="mt-1.5 max-w-2xl text-[12.5px] leading-relaxed text-amber-100/70">
-                        View, search, and filter the security incident register. Archive
-                        resolved records, restore archived ones, and export the register.
-                    </p>
-                </div>
-            </div>
-        </div>
+        <PageHeader
+            eyebrow="Security records management"
+            title="Security Records"
+            description="View, search, and filter the security incident register. Archive resolved records, restore archived ones, and export the register."
+        />
     );
 }
 

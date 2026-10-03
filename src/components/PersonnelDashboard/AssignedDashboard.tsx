@@ -106,7 +106,7 @@ export default function AssignedDashboard() {
             <div className="grid gap-2 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
 
                 {/* Assigned incidents */}
-                <div className="flex flex-col overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+                <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
 
                     <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
@@ -264,7 +264,7 @@ function SummaryCard({
     tone: keyof typeof summaryTones;
 }) {
     return (
-        <div className="rounded-2xl bg-white/50 p-4 shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:shadow-md hover:ring-slate-300">
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:border-gray-300 ring-0">
             <div className="flex items-center justify-between gap-2">
                 <p className="truncate text-[10px] font-medium uppercase tracking-widest text-slate-700">
                     {label}

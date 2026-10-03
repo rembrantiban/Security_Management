@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Clock3, History, ChevronRight, Loader2 } from "lucide-react";
 
 import { useActivityStore } from "@/store/useActivityStore";
-import ActivityLogsModal, {
-    actionConfig,
-    describeActivity,
-} from "@/components/Dashboard/ActivityLogsModal";
+import ActivityLogsModal from "@/components/Dashboard/ActivityLogsModal";
+import { actionConfig, describeActivity } from "@/lib/activityLog";
 
 /** Newest entries surfaced directly on the dashboard; the rest live in the modal. */
 const PREVIEW_COUNT = 3;
@@ -55,7 +53,7 @@ export default function ActivityTimeline() {
     );
 
     return (
-        <Card className="overflow-hidden rounded-2xl border-0 bg-white/50 text-slate-700 shadow-sm ring-1 ring-slate-200">
+        <Card className="overflow-hidden rounded-2xl border border-gray-200 bg-white text-slate-700 ring-0">
             <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 px-5 py-4">
                 <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">

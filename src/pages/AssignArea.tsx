@@ -3,7 +3,6 @@ import {
     Clock3,
     MapPin,
     RefreshCw,
-    ShieldCheck,
     Play,
     MapPinned,
     ClipboardCheck,
@@ -24,6 +23,7 @@ import CompletePatrolModal from "@/components/AssignArea/CompletePatrol";
 import { usePatrol } from "@/hooks/usePatrol"
 import { useToast } from "@/hooks/useToast"
 
+import PageHeader, { HEADER_SECONDARY_BUTTON } from "@/components/layout/PageHeader";
 const badgeColor = (status: string) => {
     switch (status) {
         case "Ongoing":
@@ -155,33 +155,22 @@ export default function AssignArea() {
     return (
         <div className="space-y-4 py-4">
             {/* Header */}
-            <div className="flex items-center justify-between gap-4">
-                <div>
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-2.5 py-0.5 text-[11px] font-medium text-orange-700">
-                        <ShieldCheck className="h-3 w-3" />
-                        Security Personnel
-                    </div>
-
-                    <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
-                        Assigned Areas
-                    </h1>
-
-                    <p className="mt-0.5 text-sm text-slate-500">
-                        Today's monitoring locations and patrol schedules.
-                    </p>
-                </div>
-
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-lg"
-                    onClick={() => getMyMonitoringSchedules()}
-                    disabled={loading}
-                >
-                    <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-                    Refresh
-                </Button>
-            </div>
+            <PageHeader
+                eyebrow="Security Personnel"
+                title="Assigned Areas"
+                description="Today's monitoring locations and patrol schedules."
+                actions={
+                    <Button
+                        variant="outline"
+                        className={HEADER_SECONDARY_BUTTON}
+                        onClick={() => getMyMonitoringSchedules()}
+                        disabled={loading}
+                    >
+                        <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+                        Refresh
+                    </Button>
+                }
+            />
 
             {/* Cards */}
             {loading && mySchedules.length === 0 ? (
@@ -196,7 +185,7 @@ export default function AssignArea() {
                     {mySchedules.map((item) => (
                         <Card
                             key={item.schedule_id}
-                            className="overflow-hidden rounded-xl border shadow-sm transition-shadow hover:shadow-md"
+                            className="overflow-hidden rounded-xl border border-gray-200 transition-shadow ring-0"
                         >
                             <CardContent className="p-4">
                                 {/* Top row: area + status on the left, assigned-by on the right */}

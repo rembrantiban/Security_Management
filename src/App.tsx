@@ -19,6 +19,7 @@ import StatusToast from "@/components/GlobalToast/StatusToast"
 import Monitoring from "./pages/Monitoring"
 import AssignAreas from "./pages/AssignArea"
 import Loginpage from "./pages/Loginpage"
+import Home from "./pages/Homapage"
 import RequestPage from "./pages/RequestPage"
 import AdminVisitorRequestsPage from "./pages/Adminvisitorrequestspage";
 import MyPatrolReportsPage from "./pages/MyPatrolReportsPage";
@@ -64,7 +65,8 @@ function App() {
     <>
       <Routes>
         <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Loginpage />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Loginpage />} />
         
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />

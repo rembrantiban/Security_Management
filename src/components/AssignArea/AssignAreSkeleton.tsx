@@ -9,7 +9,7 @@ export default function AssignAreaSkeleton({ rows = 2 }: Props) {
     return (
         <div className="space-y-3">
             {Array.from({ length: rows }).map((_, i) => (
-                <Card key={i} className="overflow-hidden rounded-xl border shadow-sm">
+                <Card key={i} className="overflow-hidden rounded-xl border border-gray-200 ring-0">
                     <CardContent className="p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0 flex-1">

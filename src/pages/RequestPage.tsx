@@ -33,6 +33,7 @@ import VisitorPassModal from "@/components/Request/VisitorPassModal";
 import { useRequest } from "@/hooks/useRequest";
 import { useToast } from "@/hooks/useToast";
 
+import PageHeader, { HEADER_PRIMARY_BUTTON } from "@/components/layout/PageHeader";
 export interface RequestAccess {
     request_id: number;
     request_number: string;
@@ -201,43 +202,23 @@ export default function VisitorRequestsPage() {
         <div className="space-y-2">
 
             {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
-
-                {/* Ambient wash */}
-                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
-
-                <div className="relative flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
-
-                    <div className="min-w-0">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-                            <ShieldCheck className="h-3 w-3" />
-                            Visitor &amp; Access Control
-                        </span>
-
-                        <h1 className="mt-3 text-[18px] font-semibold tracking-tight text-white">
-                            Visitor Access Requests
-                        </h1>
-
-                        <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
-                            Register visitors, verify identity against uploaded ID, issue
-                            passes, and record entry and exit times.
-                        </p>
-                    </div>
-
+            <PageHeader
+                eyebrow="Visitor & access control"
+                title="Visitor Access Requests"
+                description="Register visitors, verify identity against uploaded ID, issue passes, and record entry and exit times."
+                actions={
                     <Button
                         onClick={() => setRegisterModalOpen(true)}
-                        className="h-9 shrink-0 gap-2 rounded-xl bg-white px-4 text-[12.5px] font-medium text-amber-900 shadow-sm hover:bg-amber-50"
+                        className={HEADER_PRIMARY_BUTTON}
                     >
                         <Plus className="h-3.5 w-3.5" />
                         Register visitor entry
                     </Button>
-
-                </div>
-            </div>
+                }
+            />
 
             {/* Toolbar + Table */}
-            <div className="w-full overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+            <div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
 
                 {/* Toolbar */}
                 <div className="flex flex-col gap-2.5 border-b border-slate-100 px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">

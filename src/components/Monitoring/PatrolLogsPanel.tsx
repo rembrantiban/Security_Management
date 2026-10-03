@@ -101,7 +101,7 @@ export default function PatrolLogsPanel({ onBack }: PatrolLogsPanelProps) {
     const clearFilters = () => setSearch("");
 
     return (
-        <div className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
 
             {/* Panel header */}
             <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">

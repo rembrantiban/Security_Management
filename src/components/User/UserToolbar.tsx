@@ -32,7 +32,7 @@ export default function UserToolbar({
   onRefresh,
 }: Props) {
   return (
-    <div className="rounded-2xl bg-white/50 p-3 shadow-sm ring-1 ring-slate-200">
+    <div className="rounded-2xl border border-gray-200 bg-white p-3 ring-0">
       <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
 
         {/* Search */}

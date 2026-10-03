@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-    ClipboardList,
     Search,
     X,
     Eye,
@@ -42,6 +41,7 @@ import PatrolReportDocument, {
     PatrolReportPrintMount,
 } from "@/components/Report/PatrolReportDocument";
 
+import PageHeader, { HEADER_PRIMARY_BUTTON } from "@/components/layout/PageHeader";
 type Tab = "assigned" | "patrol";
 type ExportFormat = "PDF" | "Excel";
 
@@ -161,34 +161,16 @@ export default function MyPatrolReportsPage() {
         <div className="space-y-2">
 
             {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
-
-                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
-
-                <div className="relative flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
-
-                    <div className="min-w-0">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-                            <ClipboardList className="h-3 w-3" />
-                            Personnel Reporting
-                        </span>
-
-                        <h1 className="mt-3 text-[18px] font-semibold tracking-tight text-white">
-                            My Reports
-                        </h1>
-
-                        <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
-                            Review your resolved and closed incident reports and generate a
-                            formal record of your completed patrols.
-                        </p>
-                    </div>
-
-                    {tab === "patrol" && (
+            <PageHeader
+                eyebrow="Personnel reporting"
+                title="My Reports"
+                description="Review your resolved and closed incident reports and generate a formal record of your completed patrols."
+                actions={
+                    tab === "patrol" && (
                         <Button
                             onClick={handleGenerate}
                             disabled={generating}
-                            className="h-9 shrink-0 gap-2 rounded-xl bg-white px-4 text-[12.5px] font-medium text-amber-900 shadow-sm hover:bg-amber-50 disabled:opacity-60"
+                            className={HEADER_PRIMARY_BUTTON}
                         >
                             {generating ? (
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -197,13 +179,12 @@ export default function MyPatrolReportsPage() {
                             )}
                             {generating ? "Generating…" : "Generate report"}
                         </Button>
-                    )}
-
-                </div>
-            </div>
+                    )
+                }
+            />
 
             {/* Tabs */}
-            <div className="rounded-2xl bg-white/50 p-3 shadow-sm ring-1 ring-slate-200">
+            <div className="rounded-2xl border border-gray-200 bg-white p-3 ring-0">
                 <div className="inline-flex items-center gap-0.5 rounded-xl bg-slate-50 p-0.5 ring-1 ring-slate-200">
                     <button
                         type="button"
@@ -246,7 +227,7 @@ export default function MyPatrolReportsPage() {
             {/* 7.9 — Assigned Reports                                           */}
             {/* ---------------------------------------------------------------- */}
             {tab === "assigned" && (
-                <div className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
 
                     <div className="flex flex-col gap-2.5 border-b border-slate-100 px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">
                         <div className="relative w-full lg:max-w-xs">
@@ -398,7 +379,7 @@ export default function MyPatrolReportsPage() {
             {/* ---------------------------------------------------------------- */}
             {tab === "patrol" && (
                 <>
-                    <div className="rounded-2xl bg-white/50 p-4 shadow-sm ring-1 ring-slate-200">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-4 ring-0">
                         <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">
                             Parameters
                         </p>
@@ -480,7 +461,7 @@ export default function MyPatrolReportsPage() {
                         </div>
                     </div>
 
-                    <div className="rounded-2xl bg-white/50 p-4 shadow-sm ring-1 ring-slate-200">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-4 ring-0">
                         <div className="mb-3 flex items-center justify-between">
                             <p className="text-[10px] font-medium uppercase tracking-widest text-slate-500">
                                 Document preview

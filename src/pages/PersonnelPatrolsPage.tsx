@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    ShieldCheck,
     TriangleAlert,
     CalendarClock,
     Radar,
@@ -23,6 +22,7 @@ import { useIncidentReport } from "@/hooks/useIncidentsReport";
 import ViewAssignedPatrol from "@/components/PersonnelDashboard/ViewAssignedPatrol";
 import ReportIncidentModal from "@/components/Incident/ReportIncidentModal";
 
+import PageHeader, { HEADER_SECONDARY_BUTTON } from "@/components/layout/PageHeader";
 const periodFilters = ["All", "Today", "This week", "This month"] as const;
 type PeriodFilter = (typeof periodFilters)[number];
 
@@ -161,45 +161,20 @@ export default function PersonnelPatrolsPage() {
         <div className="space-y-2 p-4">
 
             {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
-
-                {/* Ambient wash */}
-                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-600/30 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-amber-950/40 blur-3xl" />
-
-                <div className="relative flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
-
-                    <div className="flex items-center gap-3.5">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
-                            <ShieldCheck className="h-5 w-5 text-amber-100" />
-                        </div>
-
-                        <div className="min-w-0">
-                            <span className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-                                Patrol Operations
-                            </span>
-
-                            <h1 className="mt-2 text-[18px] font-semibold tracking-tight text-white">
-                                My Patrols
-                            </h1>
-
-                            <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
-                                Track your assigned areas, record patrol logs as you finish
-                                each duty, and flag anything suspicious.
-                            </p>
-                        </div>
-                    </div>
-
+            <PageHeader
+                eyebrow="Patrol operations"
+                title="My Patrols"
+                description="Track your assigned areas, record patrol logs as you finish each duty, and flag anything suspicious."
+                actions={
                     <Button
                         onClick={() => setReportOpen(true)}
-                        className="h-9 shrink-0 gap-2 rounded-xl bg-white px-4 text-[12.5px] font-medium text-red-700 shadow-sm hover:bg-red-50"
+                        className={`${HEADER_SECONDARY_BUTTON} text-red-700 hover:bg-red-50 hover:text-red-800`}
                     >
                         <TriangleAlert className="h-3.5 w-3.5" />
                         Report suspicious activity
                     </Button>
-
-                </div>
-            </div>
+                }
+            />
 
             {/* Statistics */}
             <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -209,7 +184,7 @@ export default function PersonnelPatrolsPage() {
                     return (
                         <div
                             key={item.title}
-                            className="rounded-2xl bg-white/50 py-2 px-4 shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:shadow-md hover:ring-slate-300"
+                            className="rounded-2xl border border-gray-200 bg-white py-2 px-4 transition-all duration-200 hover:border-gray-300 ring-0"
                         >
                             <div className="flex items-center justify-between gap-2">
                                 <p className="truncate text-[10px] font-medium uppercase tracking-widest text-slate-700">
@@ -239,7 +214,7 @@ export default function PersonnelPatrolsPage() {
             <ViewAssignedPatrol />
 
             {/* Recent Patrol Logs */}
-            <div className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
 
                 <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
 

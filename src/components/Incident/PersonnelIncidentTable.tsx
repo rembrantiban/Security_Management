@@ -140,7 +140,7 @@ export default function PersonnelIncidentTable({
 
     if (myIncidents.length === 0) {
         return (
-            <div className="mt-4 rounded-2xl bg-white py-16 text-center shadow-sm ring-1 ring-slate-200">
+            <div className="mt-4 rounded-2xl border border-gray-200 bg-white py-16 text-center ring-0">
                 <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
                     <ClipboardList className="h-5 w-5 text-amber-800" />
                 </div>
@@ -164,7 +164,7 @@ export default function PersonnelIncidentTable({
         });
 
     return (
-        <div className="w-full overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+        <div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
 
             {/* Search & filter toolbar */}
             <div className="flex flex-col gap-2.5 border-b border-slate-100 px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">

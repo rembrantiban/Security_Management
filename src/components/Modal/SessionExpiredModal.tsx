@@ -26,7 +26,7 @@ export default function SessionExpiredModal() {
       // session is already invalid server-side; ignore
     } finally {
       setExpired(false);
-      navigate("/", { replace: true });
+      navigate("/login", { replace: true });
     }
   };
 

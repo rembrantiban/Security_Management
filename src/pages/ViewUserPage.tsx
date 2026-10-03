@@ -180,7 +180,7 @@ export default function ViewUserPage() {
         <div className="lg:col-span-2 space-y-5">
 
       {/* Profile hero card */}
-      <div className="relative bg-white  rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden ring-0">
         {/* Gradient banner */}
         <div className="h-28 bg-linear-to-r from-orange-700 via-amber-700 to-orange-600" />
 
@@ -279,7 +279,7 @@ export default function ViewUserPage() {
       </div>
 
       {/* Activity summary strip */}
-      <div className="bg-white/50 rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
+      <div className="bg-white rounded-2xl border border-gray-200 px-6 py-5 ring-0">
         <div className="flex items-center gap-2 mb-4">
           <Activity size={15} className="text-orange-600" />
           <h2 className="text-sm font-semibold text-gray-700">Account Summary</h2>
@@ -338,7 +338,7 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="bg-white/50 rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-start gap-3">
+    <div className="bg-white rounded-2xl border border-gray-200 px-5 py-4 flex items-start gap-3 ring-0">
       <div className="mt-0.5 p-2 rounded-xl bg-orange-50 shrink-0">{icon}</div>
       <div className="min-w-0">
         <p className="text-xs text-gray-700 mb-0.5">{label}</p>
@@ -376,7 +376,7 @@ function ViewUserSkeleton() {
       </div>
 
       {/* Profile hero card */}
-      <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden ring-0">
         {/* Gradient banner */}
         <div className="h-28 bg-linear-to-r from-orange-200 via-amber-100 to-orange-100" />
 
@@ -413,7 +413,7 @@ function ViewUserSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-start gap-3"
+            className="bg-white rounded-2xl border border-gray-200 px-5 py-4 flex items-start gap-3 ring-0"
           >
             <div className="mt-0.5 p-2 rounded-xl bg-gray-100 shrink-0">
               <div className="w-3.75 h-3.75" />
@@ -427,7 +427,7 @@ function ViewUserSkeleton() {
       </div>
 
       {/* Activity summary strip */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
+      <div className="bg-white rounded-2xl border border-gray-200 px-6 py-5 ring-0">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-3.75 h-3.75 rounded bg-gray-100" />
           <div className="h-3.5 w-28 rounded bg-gray-100" />

@@ -16,6 +16,34 @@ type TopbarProps = {
   onMenuClick: () => void;
 };
 
+/** Page titles shown in the topbar, keyed by route. */
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/users": "Users",
+  "/incidents": "Incidents",
+  "/monitoring": "Monitoring",
+  "/access": "Access Register",
+  "/visitor-history": "Visitor History",
+  "/blacklist": "Blacklisted Visitors",
+  "/reports": "Reports & Logs",
+  "/record": "Records",
+  "/notifications": "Notifications",
+  "/my-account": "My Account",
+  "/other-role-account": "My Account",
+  "/personnel/dashboard": "Dashboard",
+  "/personnel/incidents": "Incidents",
+  "/personnel/surveillance": "Assigned Areas",
+  "/personnel/patrols": "Patrols",
+  "/personnel/visitors": "Visitors",
+  "/personnel/reports": "Patrol Reports",
+  "/personnel/notifications": "Notifications",
+  "/staff/dashboard": "Dashboard",
+  "/staff/incidents": "Incident Reports",
+  "/it-system-administrator/rbac-policies": "RBAC Policies",
+  "/it-system-administrator/permission-matrix": "Permission Matrix",
+  "/it-system-administrator/security-settings": "Security Settings",
+};
+
 /** Roles that see the notifications bell. */
 const NOTIFICATION_ROLES = new Set(["Authorized Staff", "Security Personnel"]);
 
@@ -27,13 +55,8 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   const [logoutOpen, setLogoutOpen] = useState(false);
 
   const getTitle = () => {
-    if (location.pathname === "/dashboard") return "Dashboard";
-    if (location.pathname === "/dashboard/users") return "User Management";
-    if (location.pathname === "/dashboard/logs") return "Security Logs";
-    if (location.pathname === "/dashboard/incidents") return "Incidents";
-    if (location.pathname === "/dashboard/access") return "Access & Visitors";
-    if (location.pathname === "/dashboard/settings") return "Settings";
-    return "Security Management System";
+    if (location.pathname.startsWith("/users/view/")) return "User Details";
+    return PAGE_TITLES[location.pathname] ?? "SFC Security";
   };
 
   const getSubtitle = () =>
@@ -56,27 +79,27 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/");
+    navigate("/login");
   };
 
   return (
-    <header className="sticky top-0 z-10 flex h-15 w-full shrink-0 items-center justify-between gap-4 border-b border-slate-200/80 bg-white/20 px-4 py-3 shadow-sm">
+    <header className="sticky top-0 z-10 flex h-16 w-full shrink-0 items-center justify-between gap-4 border-b border-stone-200 bg-white px-4 sm:px-6">
 
       {/* LEFT: menu + title */}
       <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="shrink-0 rounded-xl p-2 text-slate-500 transition hover:bg-amber-50 hover:text-amber-800 lg:hidden"
+          className="shrink-0 rounded-md p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900 lg:hidden"
           aria-label="Open menu"
         >
           <Menu size={20} />
         </button>
 
         <div className="min-w-0">
-          <h1 className="truncate text-[15px] font-semibold leading-tight text-slate-800">
+          <h1 className="truncate text-[15px] font-semibold leading-tight tracking-tight text-stone-900">
             {getTitle()}
           </h1>
-          <p className="mt-0.5 hidden text-[11px] text-slate-600 sm:block">
+          <p className="mt-0.5 hidden text-xs text-stone-500 sm:block">
             {getSubtitle()}
           </p>
         </div>
@@ -89,66 +112,66 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
         {showNotifications && <NotificationBell />}
 
         {/* Divider */}
-        <div className="mx-0.5 hidden h-6 w-px bg-slate-200 sm:block" />
+        <div className="mx-1 hidden h-6 w-px bg-stone-200 sm:block" />
 
         {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <button className="group flex items-center gap-2.5 rounded-xl p-1 pr-1.5 transition hover:bg-slate-50 sm:pr-2">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-800 text-[12px] font-semibold text-amber-50 ring-1 ring-amber-900/10">
+            <button className="group flex items-center gap-2.5 rounded-md p-1 pr-1.5 transition-colors hover:bg-stone-100 sm:pr-2">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-900 text-[11px] font-semibold text-white">
                 {initials}
               </span>
 
               <span className="hidden min-w-0 text-left sm:block">
-                <span className="block max-w-40 truncate text-[12.5px] font-medium leading-none text-slate-800">
+                <span className="block max-w-40 truncate text-[13px] font-medium leading-none text-stone-900">
                   {fullName}
                 </span>
-                <span className="mt-1 block max-w-40 truncate text-[11px] text-slate-600">
+                <span className="mt-1 block max-w-40 truncate text-[11px] text-stone-500">
                   {role}
                 </span>
               </span>
 
               <ChevronDown
                 size={14}
-                className="hidden shrink-0 text-slate-400 transition group-hover:text-slate-600 sm:block"
+                className="hidden shrink-0 text-stone-400 transition-colors group-hover:text-stone-600 sm:block"
               />
             </button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
             align="end"
-            className="w-60 rounded-2xl border-0 p-1 shadow-xl ring-1 ring-slate-200"
+            className="w-60 rounded-md border border-stone-200 p-1 shadow-lg"
           >
             <div className="mb-1 flex items-center gap-2.5 px-2.5 py-2">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-800 text-[12px] font-semibold text-amber-50">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-900 text-[12px] font-semibold text-white">
                 {initials}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-[13px] font-semibold text-slate-800">
+                <p className="truncate text-[13px] font-semibold text-stone-900">
                   {fullName}
                 </p>
-                <p className="truncate text-[11px] text-slate-600">{role}</p>
+                <p className="truncate text-[11px] text-stone-500">{role}</p>
               </div>
             </div>
 
-            <DropdownMenuSeparator className="bg-slate-100" />
+            <DropdownMenuSeparator className="bg-stone-100" />
 
             <DropdownMenuItem
               onClick={() => navigate(profilePath)}
-              className="cursor-pointer gap-2 rounded-lg text-[13px] text-slate-700 focus:bg-amber-50 focus:text-amber-800"
+              className="cursor-pointer gap-2 rounded-sm text-[13px] text-stone-700 focus:bg-stone-100 focus:text-stone-900"
             >
               <UserCircle size={15} />
               My Profile
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator className="bg-slate-100" />
+            <DropdownMenuSeparator className="bg-stone-100" />
 
             <DropdownMenuItem
               onClick={() => setLogoutOpen(true)}
-              className="cursor-pointer gap-2 rounded-lg text-[13px] text-red-500 focus:bg-red-50 focus:text-red-600"
+              className="cursor-pointer gap-2 rounded-sm text-[13px] text-red-600 focus:bg-red-50 focus:text-red-700"
             >
               <LogOut size={15} />
-              Logout
+              Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

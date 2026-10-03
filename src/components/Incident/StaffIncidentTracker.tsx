@@ -134,7 +134,7 @@ export default function StaffIncidentTracker({
 
     if (!isLoading && incidents.length === 0) {
         return (
-            <div className="rounded-2xl bg-white/50 py-16 text-center shadow-sm ring-1 ring-slate-200">
+            <div className="rounded-2xl border border-gray-200 bg-white py-16 text-center ring-0">
                 <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
                     {hasFilters ? (
                         <SearchX className="h-5 w-5 text-amber-800" />
@@ -165,7 +165,7 @@ export default function StaffIncidentTracker({
                 return (
                     <article
                         key={incident.incident_id}
-                        className="rounded-2xl bg-white/50 p-5 shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:ring-slate-300"
+                        className="rounded-2xl border border-gray-200 bg-white p-5 transition-all duration-200 hover:border-gray-300 ring-0"
                     >
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                             <div className="min-w-0 flex-1 space-y-2.5">

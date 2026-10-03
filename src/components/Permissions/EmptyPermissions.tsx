@@ -6,7 +6,7 @@ type EmptyPermissionsProps = {
 
 export default function EmptyPermissions({ onCreate }: EmptyPermissionsProps) {
     return (
-        <div className="rounded-xl border border-slate-200 bg-white py-16 shadow-sm">
+        <div className="rounded-xl border border-gray-200 bg-white py-16 ring-0">
             <div className="flex flex-col items-center justify-center text-center">
 
                 <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50">

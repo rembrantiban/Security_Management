@@ -101,7 +101,7 @@ export default function MonitoringTable() {
     }
 
     return (
-        <div className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
             <div className="overflow-x-auto">
                 <Table>
                     <TableHeader>

@@ -209,7 +209,7 @@ export default function AccountActivityLogs({ userId }: { userId: number }) {
     const firstLoad = isLoading && logs.length === 0;
 
     return (
-        <div className="bg-white/50 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden ring-0">
             {/* Header */}
             <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">

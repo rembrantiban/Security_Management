@@ -20,6 +20,7 @@ import {
     type NotificationType,
 } from "@/store/useNotificationStore";
 
+import PageHeader, { HeaderStat } from "@/components/layout/PageHeader";
 const chip =
     "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 whitespace-nowrap";
 
@@ -94,54 +95,22 @@ export default function StaffDashboard() {
         <div className="space-y-2">
 
             {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
-
-                <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-amber-600/30 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-amber-950/40 blur-3xl" />
-
-                <div className="relative flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
-
-                    <div className="min-w-0">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-                            <ShieldCheck className="h-3 w-3" />
-                            Authorized Staff
-                        </span>
-
-                        <h1 className="mt-3 text-[22px] font-semibold tracking-tight text-white">
-                            Welcome back, {firstName}
-                        </h1>
-
-                        <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
-                            Stay up to date with campus announcements and security alerts.
-                        </p>
-                    </div>
-
-                    <div className="flex shrink-0 gap-2">
-                        <div className="rounded-xl bg-white/10 px-4 py-2.5 text-center ring-1 ring-white/15">
-                            <p className="text-[18px] font-semibold leading-none tabular-nums text-white">
-                                {announcements.length}
-                            </p>
-                            <p className="mt-1 text-[10px] uppercase tracking-wide text-amber-100/70">
-                                Announcements
-                            </p>
-                        </div>
-                        <div className="rounded-xl bg-white/10 px-4 py-2.5 text-center ring-1 ring-white/15">
-                            <p className="text-[18px] font-semibold leading-none tabular-nums text-white">
-                                {unreadAlerts}
-                            </p>
-                            <p className="mt-1 text-[10px] uppercase tracking-wide text-amber-100/70">
-                                Unread alerts
-                            </p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+            <PageHeader
+                eyebrow="Authorized Staff"
+                title={`Welcome back, ${firstName}`}
+                description="Stay up to date with campus announcements and security alerts."
+                actions={
+                    <>
+                        <HeaderStat label="Announcements" value={announcements.length} />
+                        <HeaderStat label="Unread alerts" value={unreadAlerts} />
+                    </>
+                }
+            />
 
             <div className="grid items-start gap-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,1fr)]">
 
                 {/* Security Announcements */}
-                <section className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+                <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
                     <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
                         <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
@@ -209,7 +178,7 @@ export default function StaffDashboard() {
                 </section>
 
                 {/* Alerts & Notifications */}
-                <section className="overflow-hidden rounded-2xl bg-white/50 shadow-sm ring-1 ring-slate-200">
+                <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
                     <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
                         <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">

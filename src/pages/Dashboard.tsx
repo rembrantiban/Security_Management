@@ -1,12 +1,12 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Users,
   AlertTriangle,
   Clock,
   FileText,
-  Download,
+  ArrowRight,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useIncidentReport } from "@/hooks/useIncidentsReport";
 import { useActivityStore } from "@/store/useActivityStore";
@@ -17,6 +17,8 @@ import PendingRequestsTable from "@/components/Dashboard/PendingRequestsTable";
 import SystemStatus from "@/components/Dashboard/SystemStatus";
 //import ViewIncidentStatistics from "@/components/Dashboard/ViewIncidentStatistics";
 import ViewSecurityAnalytics from "@/components/Dashboard/ViewSecurityAnalytics";
+
+import PageHeader from "@/components/layout/PageHeader";
 
 /** Staff roles excluded from the "Total Users" count on the dashboard. */
 const EXCLUDED_USER_ROLES = ["Administrator", "IT System Administrator"];
@@ -48,43 +50,34 @@ export default function Dashboard() {
     [incidents]
   );
 
+  const criticalOpenIncidents = useMemo(
+    () =>
+      incidents.filter(
+        (i) =>
+          i.severity === "Critical" &&
+          (i.status === "Pending" || i.status === "In Progress")
+      ).length,
+    [incidents]
+  );
+
   const logsCount = logs.length;
 
   return (
     <div className="space-y-2">
 
       {/* HEADER */}
-      <div className="relative overflow-hidden rounded-2xl bg-amber-800 shadow-sm">
-
-        {/* Ambient wash */}
-        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-amber-600/30 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-amber-950/40 blur-3xl" />
-
-        <div className="relative flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
-
-          <div className="min-w-0">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-100 ring-1 ring-white/15">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              Security Management Dashboard
-            </span>
-
-            <h1 className="mt-3 text-[22px] font-semibold tracking-tight text-white">
-              Welcome back, {user?.first_name || "User"}
-            </h1>
-
-            <p className="mt-1.5 max-w-xl text-[12.5px] leading-relaxed text-amber-100/70">
-              Real-time analytics, personnel activity, incidents, and campus
-              surveillance — all in one place.
-            </p>
-          </div>
-
-          <Button className="h-9 shrink-0 gap-2 rounded-xl bg-white px-4 text-[12.5px] font-medium text-amber-900 shadow-sm hover:bg-amber-50">
-            <Download className="h-3.5 w-3.5" />
-            Export report
-          </Button>
-
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Administrator"
+        title={`Welcome back, ${user?.first_name || "User"}`}
+        description="Analytics, personnel activity, incidents, and campus surveillance in one place."
+        actions={
+          <OperationsSummary
+            pending={pendingIncidents}
+            active={activeIncidents}
+            critical={criticalOpenIncidents}
+          />
+        }
+      />
 
       {/* KPI CARDS */}
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -136,6 +129,85 @@ export default function Dashboard() {
 
 /* 🔹 COMPONENTS */
 
+/** Current local time, refreshed every 30 seconds. */
+function useClock() {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return now;
+}
+
+/**
+ * Header summary: local time and the campus incident status at a glance,
+ * derived from the incidents already loaded for the dashboard.
+ */
+function OperationsSummary({
+  pending,
+  active,
+  critical,
+}: {
+  pending: number;
+  active: number;
+  critical: number;
+}) {
+  const now = useClock();
+  const open = pending + active;
+
+  const status =
+    critical > 0
+      ? { dot: "bg-red-500", label: `${critical} critical incident${critical === 1 ? "" : "s"} open` }
+      : open > 0
+        ? { dot: "bg-amber-500", label: `${open} open incident${open === 1 ? "" : "s"}` }
+        : { dot: "bg-emerald-500", label: "All clear" };
+
+  const detail =
+    open === 0
+      ? "No open incident reports"
+      : `${pending} awaiting assignment · ${active} in progress`;
+
+  return (
+    <div className="flex w-full items-stretch divide-x divide-gray-200 rounded-xl border border-gray-200 bg-white sm:w-auto">
+      <div className="px-4 py-3">
+        <p className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-stone-500">
+          Local time
+        </p>
+        <p className="mt-1 text-lg font-semibold leading-none tabular-nums tracking-tight text-stone-900">
+          {now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+        </p>
+        <p className="mt-1.5 text-xs text-stone-500">
+          {now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+        </p>
+      </div>
+
+      <div className="min-w-0 flex-1 px-4 py-3 sm:min-w-56">
+        <p className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-stone-500">
+          Campus status
+        </p>
+        <p className="mt-1 flex items-center gap-2 text-sm font-semibold leading-none text-stone-900">
+          <span className={`h-2 w-2 shrink-0 rounded-full ${status.dot}`} aria-hidden="true" />
+          {status.label}
+        </p>
+        <div className="mt-1.5 flex items-center justify-between gap-3 text-xs text-stone-500">
+          <span className="truncate">{detail}</span>
+          {open > 0 && (
+            <Link
+              to="/incidents"
+              className="inline-flex shrink-0 items-center gap-1 font-medium text-stone-900 hover:underline"
+            >
+              Review
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StatCard({
   title,
   value,
@@ -148,7 +220,7 @@ function StatCard({
   accent: string;
 }) {
   return (
-    <div className="group rounded-2xl bg-white/50 p-4 shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:shadow-md hover:ring-slate-300">
+    <div className="group rounded-2xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-medium uppercase tracking-widest text-slate-700">
           {title}
