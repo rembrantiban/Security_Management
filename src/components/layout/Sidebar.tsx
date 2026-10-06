@@ -404,7 +404,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   }
 
   const SidebarContent = () => (
-    <aside className="relative flex h-full w-64 flex-col border-r border-white/5 bg-amber-950/70">
+    <aside className="relative flex h-full w-64 flex-col border-r border-white/5 bg-amber-950/7 0">
       {/* Header */}
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5">
         <div className="flex items-center gap-2.5">

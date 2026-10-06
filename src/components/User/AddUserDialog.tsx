@@ -27,7 +27,8 @@ const NAME_REGEX = /^[A-Za-z\s.'-]{2,}$/;
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{4,20}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // at least 8 chars, one lowercase, one uppercase, one digit
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&#^()_+=-]{8,}$/;
+// Mirrors the server policy: a special character is any non-alphanumeric character.
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{8,}$/;
 
 const initialFormData: RegisterData = {
     first_name: "",
@@ -80,7 +81,7 @@ export default function AddUserDialog({
                 : "",
         password:
             formData.password.length > 0 && !PASSWORD_REGEX.test(formData.password)
-                ? "8+ characters with uppercase, lowercase & a number"
+                ? "8+ characters with uppercase, lowercase, a number & a special character"
                 : "",
     };
 
@@ -246,7 +247,7 @@ export default function AddUserDialog({
                             <p className="text-xs text-red-500">{errors.password}</p>
                         ) : (
                             <p className="text-xs text-slate-400">
-                                8+ characters, with uppercase, lowercase &amp; a number
+                                8+ characters, with uppercase, lowercase, a number &amp; a special character
                             </p>
                         )}
                     </div>
