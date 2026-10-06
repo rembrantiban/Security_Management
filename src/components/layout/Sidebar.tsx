@@ -190,12 +190,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   ].filter(Boolean) as ItemType[];
 
   const personnelReports: ItemType[] = [
-    { name: "Reports", icon: <FileText size={16} />, path: "/personnel/reports" },
+    { name: "Records", icon: <FileText size={16} />, path: "/personnel/reports" },
   ].filter(Boolean) as ItemType[];
 
-  const personnelRecord: ItemType[] = [
-    { name: " Security Record", icon: <ClipboardList size={16} />, path: "/personnel/record" },
-  ].filter(Boolean) as ItemType[];
+
 
   const personnelNotifications: ItemType[] = [
     hasModulePermission("Notifications Module", "Personnel View Notification") && {
@@ -446,7 +444,6 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <NavGroup label="Security" items={personnelPatrols} />
           <NavGroup label="Visitors" items={personnelVisitors} />
           <NavGroup label="Reports" items={personnelReports} />
-          <NavGroup label="Record" items={personnelRecord} />
           <NavGroup label="Notifications" items={personnelNotifications} />
         </nav>
       )}
