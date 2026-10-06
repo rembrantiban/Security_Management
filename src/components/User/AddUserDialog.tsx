@@ -7,6 +7,10 @@ import {
     BadgeCheck,
     X,
     ChevronDown,
+    Eye,
+    EyeOff,
+    CheckCircle2,
+    Circle,
 } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -26,9 +30,19 @@ type AddUserDialogProps = {
 const NAME_REGEX = /^[A-Za-z\s.'-]{2,}$/;
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{4,20}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-// at least 8 chars, one lowercase, one uppercase, one digit
+// Password policy, checked in order so the user sees the first unmet rule.
 // Mirrors the server policy: a special character is any non-alphanumeric character.
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{8,}$/;
+const PASSWORD_RULES: ReadonlyArray<{ regex: RegExp; label: string; message: string }> = [
+    { regex: /^.{8,}$/, label: "At least 8 characters", message: "Password must be at least 8 characters long." },
+    { regex: /^\S*$/, label: "No spaces", message: "Password must not contain spaces." },
+    { regex: /[a-z]/, label: "One lowercase letter (a-z)", message: "Password must contain at least one lowercase letter." },
+    { regex: /[A-Z]/, label: "One uppercase letter (A-Z)", message: "Password must contain at least one uppercase letter." },
+    { regex: /\d/, label: "One number (0-9)", message: "Password must contain at least one number." },
+    { regex: /[^A-Za-z0-9\s]/, label: "One special character (e.g. ! @ # $ %)", message: "Password must contain at least one special character." },
+];
+
+const getPasswordError = (password: string): string | null =>
+    PASSWORD_RULES.find(({ regex }) => !regex.test(password))?.message ?? null;
 
 const initialFormData: RegisterData = {
     first_name: "",
@@ -52,6 +66,7 @@ export default function AddUserDialog({
     const [statusMessage, setStatusMessage] = useState("");
 
     const [formData, setFormData] = useState<RegisterData>(initialFormData);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         if (!open) return;
@@ -80,8 +95,8 @@ export default function AddUserDialog({
                 ? "Enter a valid email address"
                 : "",
         password:
-            formData.password.length > 0 && !PASSWORD_REGEX.test(formData.password)
-                ? "8+ characters with uppercase, lowercase, a number & a special character"
+            formData.password.length > 0
+                ? getPasswordError(formData.password) ?? ""
                 : "",
     };
 
@@ -90,7 +105,7 @@ export default function AddUserDialog({
         NAME_REGEX.test(formData.last_name) &&
         USERNAME_REGEX.test(formData.username) &&
         EMAIL_REGEX.test(formData.email) &&
-        PASSWORD_REGEX.test(formData.password) &&
+        getPasswordError(formData.password) === null &&
         formData.role.trim() !== "";
 
     const handleSubmit = async () => {
@@ -111,6 +126,7 @@ export default function AddUserDialog({
             showToast("success", "User Created", "The new user account has been created successfully.");
 
             setFormData(initialFormData);
+            setShowPassword(false);
 
             setTimeout(() => {
                 setStatusOpen(false);
@@ -236,20 +252,57 @@ export default function AddUserDialog({
                         <div className="relative">
                             <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                             <Input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                className={`rounded-xl pl-10 ${errors.password ? "border-red-300 focus-visible:ring-red-200" : ""}`}
+                                autoComplete="new-password"
+                                aria-describedby="password-requirements"
+                                aria-invalid={Boolean(errors.password)}
+                                className={`rounded-xl pl-10 pr-10 ${errors.password ? "border-red-300 focus-visible:ring-red-200" : ""}`}
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                aria-pressed={showPassword}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded text-slate-400 transition-colors hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                            >
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
                         </div>
-                        {errors.password ? (
-                            <p className="text-xs text-red-500">{errors.password}</p>
-                        ) : (
-                            <p className="text-xs text-slate-400">
-                                8+ characters, with uppercase, lowercase, a number &amp; a special character
-                            </p>
+
+                        {errors.password && (
+                            <p className="text-xs text-red-500" role="alert">{errors.password}</p>
                         )}
+
+                        <div
+                            id="password-requirements"
+                            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
+                        >
+                            <p className="mb-1.5 text-xs font-medium text-slate-600">
+                                Password must contain:
+                            </p>
+                            <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                                {PASSWORD_RULES.map(({ regex, label }) => {
+                                    const met = formData.password.length > 0 && regex.test(formData.password);
+                                    return (
+                                        <li
+                                            key={label}
+                                            className={`flex items-center gap-1.5 text-xs ${met ? "text-emerald-600" : "text-slate-500"}`}
+                                        >
+                                            {met ? (
+                                                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                                            ) : (
+                                                <Circle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                                            )}
+                                            <span>{label}</span>
+                                            <span className="sr-only">{met ? "(met)" : "(not met)"}</span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
                     </div>
 
                     {/* Role */}
