@@ -13,11 +13,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSessionStore } from "@/store/useSessionStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useSessionExpiryWatcher } from "@/hooks/useSessionExpiryWatcher";
+
+// Must sit above every other overlay (e.g. AddUserDialog uses z-9999),
+// otherwise the prompt opens hidden behind the active modal.
+const SESSION_MODAL_LAYER = "z-[10000]";
 
 export default function SessionExpiredModal() {
   const expired = useSessionStore((state) => state.expired);
   const setExpired = useSessionStore((state) => state.setExpired);
   const navigate = useNavigate();
+
+  useSessionExpiryWatcher();
 
   const handleReturnToLogin = async () => {
     try {
@@ -32,7 +39,11 @@ export default function SessionExpiredModal() {
 
   return (
     <AlertDialog open={expired}>
-      <AlertDialogContent size="sm">
+      <AlertDialogContent
+        size="sm"
+        className={SESSION_MODAL_LAYER}
+        overlayClassName={SESSION_MODAL_LAYER}
+      >
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/10 text-destructive">
             <LockKeyhole />

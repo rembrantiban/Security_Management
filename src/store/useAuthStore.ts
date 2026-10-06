@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import AxiosInstance from "@/api/AxiosInstance";
 import { AxiosError } from "axios";
+import { useSessionStore } from "./useSessionStore";
 import type { UserRole } from "./useRolePermissionStore"
 
 export interface UserPermission {
@@ -592,6 +593,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 password,
             });
 
+            useSessionStore.getState().startSession(data.session_expires_at);
+
             set({
                 user: data.user,
                 isAuthenticated: true,
@@ -617,6 +620,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
             await AxiosInstance.post("/auth/logout");
 
+            useSessionStore.getState().endSession();
+
             set({
                 user: null,
                 isAuthenticated: false,
@@ -633,6 +638,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({ getMeLoading: true });
 
             const { data } = await AxiosInstance.get("/auth/me");
+
+            useSessionStore.getState().startSession(data.session_expires_at);
 
             set({
                 user: data.user,
