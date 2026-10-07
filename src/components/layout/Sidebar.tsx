@@ -151,7 +151,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   ].filter(Boolean) as ItemType[];
 
   const reports: ItemType[] = [
-    hasModulePermission("Reports Module", "Admin View Reports") && {
+    hasModulePermission("Reports Module", "Admin View Report") && {
       name: "Reports & Logs",
       icon: <ClipboardList size={16} />,
       path: "/reports",
@@ -163,7 +163,6 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       name: "Record",
       icon: <ClipboardList size={16} />,
       path: "/record",
-      children: accessChildren,
     },
   ].filter(Boolean) as ItemType[];
 
@@ -186,7 +185,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   ].filter(Boolean) as ItemType[];
 
   const personnelAccount: ItemType[] = [
-    { name: "Account", icon: <Layers size={16} />, path: "/other-role-account" },
+    hasModulePermission("User Role and Access Control Module", "View Own Account") && {
+      name: "Account",
+      icon: <Layers size={16} />,
+      path: "/other-role-account",
+    },
   ].filter(Boolean) as ItemType[];
 
   const personnelIncidents: ItemType[] = [
@@ -198,18 +201,28 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   ].filter(Boolean) as ItemType[];
 
   const personnelPatrols: ItemType[] = [
-    { name: "Patrols", icon: <ShieldCheck size={16} />, path: "/personnel/patrols" },
+    hasModulePermission("Security Monitoring Module", "Personnel View Patrol Schedules") && {
+      name: "Patrols",
+      icon: <ShieldCheck size={16} />,
+      path: "/personnel/patrols",
+    },
   ].filter(Boolean) as ItemType[];
 
   const personnelVisitors: ItemType[] = [
-    { name: "Visitors", icon: <HatGlasses size={16} />, path: "/personnel/visitors" },
+    hasModulePermission("Visitor and Access Control Module", "Personnel View Visitor Records") && {
+      name: "Visitors",
+      icon: <HatGlasses size={16} />,
+      path: "/personnel/visitors",
+    },
   ].filter(Boolean) as ItemType[];
 
   const personnelReports: ItemType[] = [
-    { name: "Records", icon: <FileText size={16} />, path: "/personnel/reports" },
+    hasModulePermission("Reports Module", "Personnel View Report") && {
+      name: "Records",
+      icon: <FileText size={16} />,
+      path: "/personnel/reports",
+    },
   ].filter(Boolean) as ItemType[];
-
-
 
   const personnelNotifications: ItemType[] = [
     hasModulePermission("Notifications Module", "Personnel View Notification") && {
@@ -248,25 +261,37 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   //AUTHORIZED STAFF
 
   const staffDashboard: ItemType[] = [
-    { name: "Dashboard", icon: <LayoutDashboard size={16} />, path: "/staff/dashboard" },
+    hasModulePermission("Dashboard Module", "View Authorized Staff Dashboard") && {
+      name: "Dashboard",
+      icon: <LayoutDashboard size={16} />,
+      path: "/staff/dashboard",
+    },
   ].filter(Boolean) as ItemType[];
 
   const staffIncidents: ItemType[] = [
-    { name: "Incident Reports", icon: <ShieldAlert size={16} />, path: "/staff/incidents" },
+    hasModulePermission("Incident Reporting and Management Module", "Authorized Staff View Incident ") && {
+      name: "Incident Reports",
+      icon: <ShieldAlert size={16} />,
+      path: "/staff/incidents",
+    },
   ].filter(Boolean) as ItemType[];
 
   const staffAccount: ItemType[] = [
-    { name: "Account", icon: <Layers size={16} />, path: "/other-role-account" },
+    hasModulePermission("User Role and Access Control Module", "Authorized Staff View Own Account") && {
+      name: "Account",
+      icon: <Layers size={16} />,
+      path: "/other-role-account",
+    },
   ].filter(Boolean) as ItemType[];
 
   const staffNotifications: ItemType[] = [
-    {
+    hasModulePermission("Notifications Module", "Authorized Staff View Notification") && {
       name: "Notifications",
       icon: <Bell size={16} />,
       path: "/notifications",
       badge: unreadCount,
     },
-  ];
+  ].filter(Boolean) as ItemType[];
 
   const handleLogout = async () => {
     await logout();
@@ -440,45 +465,41 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         </button>
       </div>
 
-      {/* Nav groups */}
-      {user?.role === "Administrator" && (
-        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
-          <NavGroup label="Main" items={main} />
-          <NavGroup label="User Management" items={userManagement} />
-          <NavGroup label="Security" items={security} />
-          <NavGroup label="Reports & Logs" items={reports} />
-          <NavGroup label="Others" items={record} />
-          <NavGroup label="System" items={system} />
-        </nav>
-      )}
+      {/* Nav groups — one scroll container. Visibility is driven by
+          permissions; a group with no permitted items renders nothing. */}
+      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+        {/* Administrator */}
+        <NavGroup label="Main" items={main} />
+        <NavGroup label="User Management" items={userManagement} />
+        <NavGroup label="Security" items={security} />
+        <NavGroup label="Reports & Logs" items={reports} />
+        <NavGroup label="Others" items={record} />
+        <NavGroup label="System" items={system} />
 
-      {user?.role === "Security Personnel" && (
-        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
-          <NavGroup label="Main" items={personelDashboard} />
-          <NavGroup label="Account" items={personnelAccount} />
-          <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
-          <NavGroup label="Security" items={personnelPatrols} />
-          <NavGroup label="Visitors" items={personnelVisitors} />
-          <NavGroup label="Reports" items={personnelReports} />
-          <NavGroup label="Notifications" items={personnelNotifications} />
-        </nav>
-      )}
+        {/* Security Personnel */}
+        <NavGroup label="Main" items={personelDashboard} />
+        <NavGroup label="Account" items={personnelAccount} />
+        <NavGroup label="Incidents & Surveillance" items={personnelIncidents} />
+        <NavGroup label="Security" items={personnelPatrols} />
+        <NavGroup label="Visitors" items={personnelVisitors} />
+        <NavGroup label="Reports" items={personnelReports} />
+        <NavGroup label="Notifications" items={personnelNotifications} />
 
-      {user?.role === "IT System Administrator" && (
-        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
-          <NavGroup label="Access Control" items={itAccessControl} />
-          <NavGroup label="Authentication" items={itAuthentication} />
-        </nav>
-      )}
+        {/* IT System Administrator — these items have no permission check
+            yet, so they stay behind the role check. */}
+        {user?.role === "IT System Administrator" && (
+          <>
+            <NavGroup label="Access Control" items={itAccessControl} />
+            <NavGroup label="Authentication" items={itAuthentication} />
+          </>
+        )}
 
-      {user?.role === "Authorized Staff" && (
-        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
-          <NavGroup label="Main" items={staffDashboard} />
-          <NavGroup label="Incidents" items={staffIncidents} />
-          <NavGroup label="Notifications" items={staffNotifications} />
-          <NavGroup label="Account" items={staffAccount} />
-        </nav>
-      )}
+        {/* Authorized Staff */}
+        <NavGroup label="Main" items={staffDashboard} />
+        <NavGroup label="Incidents" items={staffIncidents} />
+        <NavGroup label="Notifications" items={staffNotifications} />
+        <NavGroup label="Account" items={staffAccount} />
+      </nav>
 
       {/* Profile section */}
       <div className="border-t border-white/10 p-3">

@@ -69,11 +69,12 @@ export default function OtherRoleAccount() {
       first_name: draft.first_name,
       middle_name: draft.middle_name,
       last_name: draft.last_name,
-      email: draft.email,
+      // Email is locked on this page; send the current value unchanged.
+      email: profile.email,
     });
 
     if (result.success) {
-      setProfile(draft);
+      setProfile({ ...draft, email: profile.email });
       setIsEditing(false);
 
       showToast(
@@ -222,10 +223,10 @@ export default function OtherRoleAccount() {
             <Field
               label="Email Address"
               icon={<Mail size={15} />}
-              value={isEditing ? draft.email : profile.email}
-              editable={isEditing}
-              type="email"
-              onChange={(v) => setDraft((d) => ({ ...d, email: v }))}
+              value={profile.email}
+              editable={false}
+              locked
+              hint="Your email is used to sign in and can only be changed by an administrator."
             />
 
           </div>
@@ -335,6 +336,8 @@ function Field({
   value,
   editable,
   type = "text",
+  locked = false,
+  hint,
   onChange,
 }: {
   label: string;
@@ -342,7 +345,9 @@ function Field({
   value: string;
   editable: boolean;
   type?: string;
-  onChange: (v: string) => void;
+  locked?: boolean;
+  hint?: string;
+  onChange?: (v: string) => void;
 }) {
   return (
     <div>
@@ -358,13 +363,21 @@ function Field({
           <input
             type={type}
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => onChange?.(e.target.value)}
             className="w-full bg-transparent text-sm text-gray-800 outline-none"
           />
         ) : (
-          <span className="text-sm text-gray-700">{value}</span>
+          <span className="min-w-0 flex-1 truncate text-sm text-gray-700">{value}</span>
+        )}
+        {locked && (
+          <Lock
+            size={14}
+            className="shrink-0 text-gray-400"
+            aria-label="Not editable"
+          />
         )}
       </div>
+      {hint && <p className="mt-1.5 text-xs text-gray-400">{hint}</p>}
     </div>
   );
 }
