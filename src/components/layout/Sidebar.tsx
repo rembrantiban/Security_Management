@@ -92,6 +92,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     role: user?.role || "User",
   };
 
+    //Administrator Item Dashboard
+
+
   const main: ItemType[] = [
     hasModulePermission("Dashboard Module", "View Administrator Dashboard") && {
       name: "Dashboard",
@@ -127,7 +130,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   ].filter(Boolean) as ItemType[];
 
   const security: ItemType[] = [
-    hasModulePermission("Incident Reporting and Management Module", "Admin View") && {
+    hasModulePermission("Incident Reporting and Management Module", "Admin View Reports") && {
       name: "Incidents",
       icon: <AlertTriangle size={16} />,
       path: "/incidents",
@@ -148,7 +151,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   ].filter(Boolean) as ItemType[];
 
   const reports: ItemType[] = [
-    hasModulePermission("Reports & Logs Module", "Admin View Reports") && {
+    hasModulePermission("Reports Module", "Admin View Reports") && {
       name: "Reports & Logs",
       icon: <ClipboardList size={16} />,
       path: "/reports",
@@ -173,10 +176,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     },
   ].filter(Boolean) as ItemType[];
 
-  //Personnel Item Dashboard
 
   const personelDashboard: ItemType[] = [
-    hasModulePermission("Dashbaord Module", "View Personnel Dashboard") && {
+    hasModulePermission("Dashboard Module", "View Personnel Dashboard") && {
       name: "Dashboard",
       icon: <LayoutDashboard size={16} />,
       path: "/personnel/dashboard",

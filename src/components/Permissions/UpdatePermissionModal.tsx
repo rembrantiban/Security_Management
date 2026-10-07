@@ -72,9 +72,9 @@ export default function UpdatePermissionModal({
             await updatePermission(
                 permission.permission_id,
                 {
-                    module_name: moduleName,
+                    module_name: moduleName.trim(),
                     permission_name:
-                        permissionName,
+                        permissionName.trim(),
                 }
             );
 

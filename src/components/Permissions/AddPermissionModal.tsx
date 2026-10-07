@@ -59,8 +59,8 @@ export default function AddPermissionModal({
 
         const success =
             await createPermission({
-                module_name: moduleName,
-                permission_name: permissionName,
+                module_name: moduleName.trim(),
+                permission_name: permissionName.trim(),
             });
 
         if (success) {

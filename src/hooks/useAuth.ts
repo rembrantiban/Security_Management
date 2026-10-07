@@ -30,9 +30,14 @@ export const useAuth = () => {
 
     const permissions = user?.permissions ?? [];
 
+    // Permission names are free text entered from the Permission Matrix, so
+    // compare them insensitive to case and stray whitespace.
+    const normalize = (value: string) =>
+        value.trim().replace(/\s+/g, " ").toLowerCase();
+
     const hasPermission = (permission: string) =>
         permissions.some(
-            (p) => p.permission_name === permission
+            (p) => normalize(p.permission_name) === normalize(permission)
         );
 
     const hasModulePermission = (
@@ -41,8 +46,8 @@ export const useAuth = () => {
     ) =>
         permissions.some(
             (p) =>
-                p.module_name === module &&
-                p.permission_name === permission
+                normalize(p.module_name) === normalize(module) &&
+                normalize(p.permission_name) === normalize(permission)
         );
 
     return {
