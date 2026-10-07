@@ -19,6 +19,7 @@ import {
     usePermissionStore,
     type Permission,
 } from "@/store/usePermissionsStore";
+import { useToast } from "@/hooks/useToast";
 
 type Props = {
     open: boolean;
@@ -33,6 +34,8 @@ export default function UpdatePermissionModal({
 }: Props) {
     const { updatePermission, isLoading } =
         usePermissionStore();
+
+    const { showToast } = useToast();
 
     const [moduleName, setModuleName] =
         useState("");
@@ -76,7 +79,19 @@ export default function UpdatePermissionModal({
             );
 
         if (success) {
+            showToast(
+                "success",
+                "Permission Updated",
+                `"${permissionName.trim()}" has been updated successfully.`
+            );
             handleClose();
+        } else {
+            showToast(
+                "error",
+                "Update Failed",
+                usePermissionStore.getState().error ??
+                    "Unable to update the permission. Please try again."
+            );
         }
     };
 

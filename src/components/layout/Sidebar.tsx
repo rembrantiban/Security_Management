@@ -148,16 +148,30 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   ].filter(Boolean) as ItemType[];
 
   const reports: ItemType[] = [
-    { name: "Reports & Logs", icon: <ClipboardList size={16} />, path: "/reports" },
-  ];
+    hasModulePermission("Reports & Logs Module", "Admin View Reports") && {
+      name: "Reports & Logs",
+      icon: <ClipboardList size={16} />,
+      path: "/reports",
+    },
+  ].filter(Boolean) as ItemType[];
 
   const record: ItemType[] = [
-    { name: "Record", icon: <ClipboardList size={16} />, path: "/record" },
-  ];
+    hasModulePermission("Security Records Management Module", "Admin View Record") && {
+      name: "Record",
+      icon: <ClipboardList size={16} />,
+      path: "/record",
+      children: accessChildren,
+    },
+  ].filter(Boolean) as ItemType[];
 
   const system: ItemType[] = [
-    { name: "Notifications", icon: <Bell size={16} />, path: "/notifications" },
-  ];
+    hasModulePermission("Notifications Module", "Admin View Notification") && {
+      name: "Notifications",
+      icon: <Bell size={16} />,
+      path: "/notifications",
+      badge: unreadCount,
+    },
+  ].filter(Boolean) as ItemType[];
 
   //Personnel Item Dashboard
 

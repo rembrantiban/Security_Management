@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { usePermissionStore } from "@/store/usePermissionsStore";
+import { useToast } from "@/hooks/useToast";
 
 type Props = {
     open: boolean;
@@ -29,6 +30,8 @@ export default function AddPermissionModal({
 }: Props) {
     const { createPermission, isLoading } =
         usePermissionStore();
+
+    const { showToast } = useToast();
 
     const [moduleName, setModuleName] =
         useState("");
@@ -61,7 +64,19 @@ export default function AddPermissionModal({
             });
 
         if (success) {
+            showToast(
+                "success",
+                "Permission Created",
+                `"${permissionName.trim()}" has been added to ${moduleName.trim()}.`
+            );
             handleClose();
+        } else {
+            showToast(
+                "error",
+                "Creation Failed",
+                usePermissionStore.getState().error ??
+                    "Unable to create the permission. Please try again."
+            );
         }
     };
 

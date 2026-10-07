@@ -19,6 +19,7 @@ import {
     usePermissionStore,
     type Permission,
 } from "@/store/usePermissionsStore";
+import { useToast } from "@/hooks/useToast";
 
 type DeletePermissionDialogProps = {
     open: boolean;
@@ -36,6 +37,8 @@ export default function DeletePermissionDialog({
         isLoading,
     } = usePermissionStore();
 
+    const { showToast } = useToast();
+
     const handleDelete = async () => {
         if (!permission) return;
 
@@ -44,7 +47,19 @@ export default function DeletePermissionDialog({
         );
 
         if (success) {
+            showToast(
+                "success",
+                "Permission Deleted",
+                `"${permission.permission_name}" has been removed from ${permission.module_name}.`
+            );
             onOpenChange(false);
+        } else {
+            showToast(
+                "error",
+                "Delete Failed",
+                usePermissionStore.getState().error ??
+                    "Unable to delete the permission. Please try again."
+            );
         }
     };
 
