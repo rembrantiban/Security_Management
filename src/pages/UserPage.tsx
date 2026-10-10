@@ -63,8 +63,7 @@ const paginatedUsers = filteredUsers.slice(
   }, []);
 
   return (
-    <div className="min-h-screen ">
-      <div className="mx-auto max-w-7xl space-y-2 ">
+    <div className="space-y-2">
         <UserHeader />
 
         <UserStats />
@@ -88,7 +87,6 @@ const paginatedUsers = filteredUsers.slice(
           itemsPerPage={ITEMS_PER_PAGE}
           onPageChange={setCurrentPage}
         />
-      </div>
     </div>
   );
 }

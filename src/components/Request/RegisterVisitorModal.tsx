@@ -27,7 +27,6 @@ const idTypes = [
   "SSS ID",
   "Postal ID",
   "Company ID",
-  "Other",
 ];
 
 export default function RegisterVisitorModal({

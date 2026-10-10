@@ -140,7 +140,7 @@ export default function PersonnelIncidentTable({
 
     if (myIncidents.length === 0) {
         return (
-            <div className="mt-4 rounded-2xl border border-gray-200 bg-white py-16 text-center ring-0">
+            <div className="rounded-2xl border border-gray-200 bg-white py-16 text-center ring-0">
                 <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
                     <ClipboardList className="h-5 w-5 text-amber-800" />
                 </div>

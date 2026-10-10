@@ -3,6 +3,8 @@ import { Clock3, Loader2, CheckCircle2, Siren, ShieldAlert } from "lucide-react"
 import PersonnelIncidentHeader from "@/components/Incident/PersonnelIncidentHeader";
 import ReportIncidentModal from "@/components/Incident/ReportIncidentModal";
 import PersonnelIncidentTable from "@/components/Incident/PersonnelIncidentTable";
+import IncidentReportSummary from "@/components/Incident/IncidentReportSummary";
+import IncidentStatusGuide from "@/components/Incident/IncidentStatusGuide";
 import ResolveIncidentDialog from "@/components/PersonnelDashboard/ResolveIncidentDialog";
 import { useIncidentReport } from "@/hooks/useIncidentsReport";
 import type { Incident } from "@/store/useIncidentReportStore";
@@ -69,19 +71,29 @@ export default function PersonnelIncidentsPage() {
                     />
                 </div>
 
-                <PersonnelIncidentTable
-                    incidents={myIncidents}
-                    onUpdateDetails={(incident) =>
-                        console.log("Update details:", incident.incident_id)
-                    }
-                    onUploadEvidence={(incident) =>
-                        console.log("Upload evidence:", incident.incident_id)
-                    }
-                    onMarkResolved={(incident) => {
-                        setResolveTarget(incident);
-                        setResolveOpen(true);
-                    }}
-                />
+                <div className="grid items-start gap-2 xl:grid-cols-[minmax(0,1fr)_300px]">
+                    <div className="min-w-0 space-y-2">
+                        <PersonnelIncidentTable
+                            incidents={myIncidents}
+                            onUpdateDetails={(incident) =>
+                                console.log("Update details:", incident.incident_id)
+                            }
+                            onUploadEvidence={(incident) =>
+                                console.log("Upload evidence:", incident.incident_id)
+                            }
+                            onMarkResolved={(incident) => {
+                                setResolveTarget(incident);
+                                setResolveOpen(true);
+                            }}
+                        />
+
+                        <IncidentStatusGuide />
+                    </div>
+
+                    <div className="xl:sticky xl:top-0">
+                        <IncidentReportSummary incidents={myIncidents} />
+                    </div>
+                </div>
 
                 <ReportIncidentModal open={reportOpen} onOpenChange={setReportOpen} />
 

@@ -3,7 +3,6 @@ import {
     Eye,
     UserPlus,
     CheckCircle2,
-    Trash2,
     EllipsisVertical,
     AlertTriangle,
     ShieldAlert,
@@ -20,7 +19,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 import {
@@ -117,8 +115,6 @@ export default function IncidentTable({
     const [assignOpen, setAssignOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
-    const [deleteTarget, setDeleteTarget] = useState<Incident | null>(null);
-    const [deleteOpen, setDeleteOpen] = useState(false);
     const {
         incidents,
         assignIncident,
@@ -444,20 +440,6 @@ export default function IncidentTable({
                                                         <Archive className="h-3.5 w-3.5" />
                                                         Archive incident
                                                     </DropdownMenuItem>
-
-                                                    <DropdownMenuSeparator className="bg-slate-100" />
-
-                                                    {/* 5.1.5 Delete Incident Record */}
-                                                    <DropdownMenuItem
-                                                        className="cursor-pointer gap-2 rounded-lg text-[12.5px] text-red-600 focus:bg-red-50 focus:text-red-700"
-                                                        onClick={() => {
-                                                            setDeleteTarget(incident);
-                                                            setDeleteOpen(true);
-                                                        }}
-                                                    >
-                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                        Delete record
-                                                    </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
@@ -542,38 +524,6 @@ export default function IncidentTable({
                 onOpenChange={setViewOpen}
                 incident={viewTarget}
             />
-
-            <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-                <AlertDialogContent className="rounded-2xl">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className="text-[15px]">
-                            Delete incident record?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-[12.5px]">
-                            {deleteTarget && (
-                                <>
-                                    This will permanently delete{" "}
-                                    <span className="font-medium text-slate-700">
-                                        {deleteTarget.incident_number}
-                                    </span>{" "}
-                                    ({deleteTarget.title}). This action cannot be undone.
-                                </>
-                            )}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-xl text-[12.5px]">
-                            Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                            // onClick={handleDeleteConfirm}
-                            className="rounded-xl bg-red-600 text-[12.5px] hover:bg-red-700"
-                        >
-                            Delete record
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
 
             {/* Close Incident Modal */}
             <AlertDialog open={closeOpen} onOpenChange={setCloseOpen}>

@@ -249,7 +249,16 @@ function PassCard({
                     </div>
 
                     <div className="shrink-0 text-right">
-                        <div className={`${s.sig} ml-auto border-b border-slate-400`} />
+                        <div className={`${s.sig} ml-auto flex items-end justify-center border-b border-slate-400 pb-0.5`}>
+                            {isApproved && (
+                                <span
+                                    className={`inline-flex items-center gap-1 rounded-sm border border-emerald-600 px-1.5 py-px font-bold uppercase tracking-[0.18em] text-emerald-700 ${s.sigLabel}`}
+                                >
+                                    <ShieldCheck className={s.verifiedIcon} />
+                                    Approved
+                                </span>
+                            )}
+                        </div>
                         <p className={`mt-1 font-medium uppercase text-slate-400 ${s.sigLabel}`}>
                             {request.approved_by_name ?? "Authorized signature"}
                         </p>

@@ -1,6 +1,7 @@
-import { Users, UserCheck, UserX, Shield } from "lucide-react";
+import { Users, UserCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
+import UserSummary from "./UserSummary";
 
 export default function UserStats() {
   const { stats, getUserStatistics } = useAuth();
@@ -14,42 +15,26 @@ export default function UserStats() {
     {
       title: "Total Users",
       value: stats.totalUsers,
-      subtitle: "+12 this month",
       icon: Users,
       accent: "bg-blue-50 text-blue-600 ring-blue-100",
     },
     {
       title: "Active Users",
       value: stats.activeUsers,
-      subtitle: "94% active",
       icon: UserCheck,
       accent: "bg-emerald-50 text-emerald-600 ring-emerald-100",
-    },
-    {
-      title: "Authorized Staff",
-      value: stats.authorized_staff,
-      subtitle: "With system access",
-      icon: Shield,
-      accent: "bg-violet-50 text-violet-600 ring-violet-100",
-    },
-    {
-      title: "Deactivated Users",
-      value: stats.disabledUsers,
-      subtitle: "Need review",
-      icon: UserX,
-      accent: "bg-red-50 text-red-600 ring-red-100",
     },
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
       {statsData.map((stat) => {
         const Icon = stat.icon;
 
         return (
           <div
             key={stat.title}
-            className="group rounded-2xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:border-gray-300 ring-0"
+            className="group rounded-2xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300"
           >
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-medium uppercase tracking-widest text-slate-700">
@@ -66,11 +51,11 @@ export default function UserStats() {
             <p className="mt-3 text-[26px] font-semibold leading-none tabular-nums tracking-tight text-slate-900">
               {stat.value}
             </p>
-
-            <p className="mt-2 text-[11px] text-slate-600">{stat.subtitle}</p>
           </div>
         );
       })}
+
+      <UserSummary />
     </div>
   );
 }

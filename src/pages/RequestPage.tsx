@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
     Search,
     Plus,
@@ -6,13 +6,8 @@ import {
     Clock,
     CheckCircle2,
     XCircle,
-    User,
-    Building2,
     X,
     Eye,
-    LogOut,
-    Printer,
-    ShieldCheck,
     Inbox,
 } from "lucide-react";
 
@@ -27,9 +22,8 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import RegisterVisitorModal from "@/components/Request/RegisterVisitorModal";
-import ApproveRequestDialog from "@/components/Request/ApproveRequestModal";
-import RejectRequestDialog from "@/components/Request/RejectRequestModal";
 import VisitorPassModal from "@/components/Request/VisitorPassModal";
+import VisitorRequestDetailModal from "@/components/Request/VisitorRequestDetailModal";
 import { useRequest } from "@/hooks/useRequest";
 import { useToast } from "@/hooks/useToast";
 
@@ -104,10 +98,8 @@ export default function VisitorRequestsPage() {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
     const [selected, setSelected] = useState<RequestAccess | null>(null);
     const [registerModalOpen, setRegisterModalOpen] = useState(false);
-    const [approveDialogOpen, setApproveDialogOpen] = useState(false);
-    const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
     const [passModalOpen, setPassModalOpen] = useState(false);
-    const { myRequests, approveRequest, rejectRequest, checkOutVisitor, isLoading } =
+    const { myRequests, checkOutVisitor, isLoading } =
         useRequest();
     const { showToast } = useToast();
 
@@ -141,43 +133,7 @@ export default function VisitorRequestsPage() {
         setSelected(r);
     };
 
-    const approveSelected = async () => {
-        if (!selected) return;
-
-        const success = await approveRequest(selected.request_id);
-
-        if (success) {
-            showToast(
-                "success",
-                "Identity Verified",
-                `${fullName(selected)}'s request has been approved.`
-            );
-            setSelected((prev) => (prev ? { ...prev, status: "Approved" } : prev));
-        } else {
-            showToast("error", "Approval Failed", "Something went wrong.");
-        }
-
-        setApproveDialogOpen(false);
-    };
-
-    const rejectSelected = async () => {
-        if (!selected) return;
-
-        const success = await rejectRequest(selected.request_id);
-
-        if (success) {
-            showToast(
-                "success",
-                "Request Rejected",
-                `${fullName(selected)}'s request has been rejected.`
-            );
-            setSelected((prev) => (prev ? { ...prev, status: "Rejected" } : prev));
-        } else {
-            showToast("error", "Action Failed", "Something went wrong.");
-        }
-
-        setRejectDialogOpen(false);
-    };
+    const closeDetail = useCallback(() => setSelected(null), []);
 
     const handleRecordExit = async () => {
         if (!selected) return;
@@ -404,213 +360,17 @@ export default function VisitorRequestsPage() {
                 </div>
             </div>
 
-            {/* Detail modal — plain overlay, no Radix Dialog (backdrop-blur fix) */}
-            {selected && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-
-                    <div
-                        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
-                        onClick={() => setSelected(null)}
-                    />
-
-                    <div className="relative flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200">
-
-                        {/* Header */}
-                        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-3.5">
-                            <p className="text-[13px] font-semibold tracking-tight text-slate-900">
-                                Visitor request
-                            </p>
-
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                                onClick={() => setSelected(null)}
-                                aria-label="Close"
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </div>
-
-                        <div className="overflow-y-auto px-5 py-4">
-
-                            {/* Visitor identity */}
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-800 text-[13px] font-semibold text-amber-50 ring-1 ring-amber-900/10">
-                                    {getInitials(fullName(selected))}
-                                </div>
-
-                                <div className="min-w-0">
-                                    <p className="truncate text-[15px] font-semibold leading-none tracking-tight text-slate-900">
-                                        {fullName(selected)}
-                                    </p>
-
-                                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                                        <span className="font-mono text-[11px] tracking-tight text-slate-400">
-                                            {selected.request_number}
-                                        </span>
-
-                                        <span className={`${chip} ${statusConfig[selected.status].className}`}>
-                                            {selected.status}
-                                        </span>
-
-                                        {selected.checked_out_at && (
-                                            <span className={`${chip} bg-slate-50 text-slate-500 ring-slate-200`}>
-                                                Exited
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Purpose */}
-                            <div className="mt-5">
-                                <p className="text-[10px] font-medium uppercase tracking-widest text-slate-400">
-                                    Purpose of visit
-                                </p>
-                                <p className="mt-1.5 text-[13px] leading-relaxed text-slate-700">
-                                    {selected.purpose}
-                                </p>
-                            </div>
-
-                            {/* ID verification */}
-                            <div className="mt-4 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
-                                <div className="flex items-center gap-2 text-[12.5px] text-slate-700">
-                                    <IdCard className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                                    <span>{selected.id_type ?? "No ID type on file"}</span>
-                                </div>
-
-                                {selected.id_image ? (
-                                    <img
-                                        src={selected.id_image}
-                                        alt="Visitor ID"
-                                        className="mt-2.5 max-h-40 w-full rounded-lg object-contain"
-                                    />
-                                ) : (
-                                    <p className="mt-2 text-[11px] text-slate-400">
-                                        No ID image uploaded.
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Meta */}
-                            <div className="mt-4 space-y-2">
-                                <div className="flex items-center gap-2.5 text-[12.5px] text-slate-600">
-                                    <User className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                                    <span>Requested by {selected.requested_by_name}</span>
-                                </div>
-
-                                {selected.approved_by_name && (
-                                    <div className="flex items-center gap-2.5 text-[12.5px] text-slate-600">
-                                        <Building2 className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                                        <span>
-                                            {selected.status === "Rejected" ? "Reviewed" : "Approved"} by{" "}
-                                            {selected.approved_by_name}
-                                        </span>
-                                    </div>
-                                )}
-
-                                <div className="flex items-center gap-2.5 text-[12.5px] text-slate-600">
-                                    <Clock className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                                    <span className="tabular-nums">
-                                        {formatDateTime(selected.created_at)}
-                                    </span>
-                                </div>
-
-                                {selected.checked_out_at && (
-                                    <div className="flex items-center gap-2.5 text-[12.5px] text-slate-600">
-                                        <LogOut className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                                        <span>
-                                            Exited{" "}
-                                            <span className="tabular-nums">
-                                                {formatDateTime(selected.checked_out_at)}
-                                            </span>
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                        </div>
-
-                        {/* Footer actions */}
-                        {selected.status === "Pending" && (
-                            <div className="grid shrink-0 grid-cols-2 gap-2 border-t border-slate-100 p-4">
-                                <Button
-                                    variant="ghost"
-                                    className="h-9 gap-1.5 rounded-xl text-[12.5px] font-medium text-red-600 ring-1 ring-red-100 hover:bg-red-50 hover:text-red-700"
-                                    disabled={isLoading}
-                                    onClick={() => setRejectDialogOpen(true)}
-                                >
-                                    <XCircle className="h-3.5 w-3.5" />
-                                    Reject
-                                </Button>
-
-                                <Button
-                                    className="h-9 gap-1.5 rounded-xl bg-emerald-600 text-[12.5px] font-medium hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400"
-                                    disabled={isLoading}
-                                    onClick={() => setApproveDialogOpen(true)}
-                                >
-                                    <ShieldCheck className="h-3.5 w-3.5" />
-                                    Verify &amp; approve
-                                </Button>
-                            </div>
-                        )}
-
-                        {selected.status === "Approved" && (
-                            <div className="grid shrink-0 grid-cols-2 gap-2 border-t border-slate-100 p-4">
-                                <Button
-                                    variant="ghost"
-                                    className="h-9 gap-1.5 rounded-xl text-[12.5px] font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"
-                                    onClick={() => setPassModalOpen(true)}
-                                >
-                                    <Printer className="h-3.5 w-3.5" />
-                                    Print pass
-                                </Button>
-
-                                <Button
-                                    className="h-9 gap-1.5 rounded-xl bg-amber-800 text-[12.5px] font-medium hover:bg-amber-900 disabled:bg-slate-100 disabled:text-slate-400"
-                                    disabled={isLoading || !!selected.checked_out_at}
-                                    onClick={handleRecordExit}
-                                >
-                                    <LogOut className="h-3.5 w-3.5" />
-                                    {selected.checked_out_at ? "Exit recorded" : "Record exit"}
-                                </Button>
-                            </div>
-                        )}
-
-                        {selected.status === "Rejected" && (
-                            <div className="shrink-0 border-t border-slate-100 p-4">
-                                <p className="text-center text-[11px] text-slate-400">
-                                    This request has already been rejected.
-                                </p>
-                            </div>
-                        )}
-
-                    </div>
-                </div>
-            )}
+            <VisitorRequestDetailModal
+                request={selected}
+                onClose={closeDetail}
+                onPrintPass={() => setPassModalOpen(true)}
+                onRecordExit={handleRecordExit}
+                isLoading={isLoading}
+            />
 
             <RegisterVisitorModal
                 open={registerModalOpen}
                 onOpenChange={setRegisterModalOpen}
-            />
-
-            <ApproveRequestDialog
-                open={approveDialogOpen}
-                onOpenChange={setApproveDialogOpen}
-                visitorName={selected ? fullName(selected) : undefined}
-                requestNumber={selected?.request_number}
-                isLoading={isLoading}
-                onConfirm={approveSelected}
-            />
-
-            <RejectRequestDialog
-                open={rejectDialogOpen}
-                onOpenChange={setRejectDialogOpen}
-                visitorName={selected ? fullName(selected) : undefined}
-                requestNumber={selected?.request_number}
-                isLoading={isLoading}
-                onConfirm={rejectSelected}
             />
 
             <VisitorPassModal

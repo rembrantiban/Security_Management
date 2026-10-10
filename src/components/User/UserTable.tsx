@@ -60,11 +60,14 @@ const roleConfig: Record<string, { className: string; icon: typeof Shield }> = {
 };
 
 function formatDate(value: string) {
-    return new Date(value).toLocaleString("en-US", {
+    const date = new Date(value);
+    const sameYear = date.getFullYear() === new Date().getFullYear();
+
+    return date.toLocaleString("en-US", {
         month: "short",
-        day: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
+        day: "numeric",
+        ...(sameYear ? {} : { year: "numeric" }),
+        hour: "numeric",
         minute: "2-digit",
         hour12: true,
     });
@@ -110,14 +113,14 @@ export default function UserTable({ users }: Props) {
                 <Table>
                     <TableHeader className="sticky top-0 z-10">
                         <TableRow className="border-slate-100 bg-slate-100/70 backdrop-blur hover:bg-slate-50/90">
-                            <TableHead className={`${headCell} w-65 px-5`}>User</TableHead>
-                            <TableHead className={headCell}>Email</TableHead>
+                            <TableHead className={`${headCell} px-4`}>User</TableHead>
+                            <TableHead className={`${headCell} hidden xl:table-cell`}>Email</TableHead>
                             <TableHead className={headCell}>Role</TableHead>
                             <TableHead className={headCell}>Status</TableHead>
                             <TableHead className={headCell}>Approval</TableHead>
-                            <TableHead className={headCell}>Created</TableHead>
-                            <TableHead className={headCell}>Last Login</TableHead>
-                            <TableHead className={`${headCell} px-5 text-right`}>Actions</TableHead>
+                            <TableHead className={`${headCell} hidden 2xl:table-cell`}>Created</TableHead>
+                            <TableHead className={`${headCell} hidden lg:table-cell`}>Last Login</TableHead>
+                            <TableHead className={`${headCell} px-4 text-right`}>Actions</TableHead>
                         </TableRow>
                     </TableHeader>
 
@@ -134,12 +137,12 @@ export default function UserTable({ users }: Props) {
                                 >
 
                                     {/* User */}
-                                    <TableCell className="px-5 py-3">
+                                    <TableCell className="max-w-64 px-4 py-2.5">
                                         <div className="flex items-center gap-3">
                                             <button
                                                 type="button"
                                                 onClick={() => navigate(`/users/view/${user.user_id}`)}
-                                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[11px] font-semibold text-amber-50 ring-1 ring-amber-900/10 transition hover:bg-amber-900"
+                                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[11px] font-semibold text-amber-50 ring-1 ring-amber-900/10 transition hover:bg-amber-900"
                                             >
                                                 {user.first_name[0]}
                                                 {user.last_name[0]}
@@ -151,18 +154,19 @@ export default function UserTable({ users }: Props) {
                                                 </p>
                                                 <p className="mt-1 truncate text-[11px] text-slate-400">
                                                     @{user.username}
+                                                    <span className="xl:hidden"> · {user.email}</span>
                                                 </p>
                                             </div>
                                         </div>
                                     </TableCell>
 
                                     {/* Email */}
-                                    <TableCell className="py-3">
+                                    <TableCell className="hidden py-2.5 xl:table-cell">
                                         <span className="text-[12.5px] text-slate-600">{user.email}</span>
                                     </TableCell>
 
                                     {/* Role */}
-                                    <TableCell className="py-3">
+                                    <TableCell className="py-2.5">
                                         {role && (
                                             <span className={`${chip} ${role.className}`}>
                                                 <RoleIcon className="h-3 w-3" />
@@ -172,7 +176,7 @@ export default function UserTable({ users }: Props) {
                                     </TableCell>
 
                                     {/* Status */}
-                                    <TableCell className="py-3">
+                                    <TableCell className="py-2.5">
                                         {user.status ? (
                                             <span className={`${chip} bg-emerald-50 text-emerald-700 ring-emerald-100`}>
                                                 <CircleCheck className="h-3 w-3" />
@@ -187,7 +191,7 @@ export default function UserTable({ users }: Props) {
                                     </TableCell>
 
                                     {/* Approval */}
-                                    <TableCell className="py-3">
+                                    <TableCell className="py-2.5">
                                         {user.approval_status === "Approved" ? (
                                             <span className={`${chip} bg-emerald-50 text-emerald-700 ring-emerald-100`}>
                                                 <Check className="h-3 w-3" />
@@ -207,14 +211,14 @@ export default function UserTable({ users }: Props) {
                                     </TableCell>
 
                                     {/* Created */}
-                                    <TableCell className="py-3">
+                                    <TableCell className="hidden py-2.5 2xl:table-cell">
                                         <span className="whitespace-nowrap text-[11px] tabular-nums text-slate-700">
                                             {formatDate(user.created_at)}
                                         </span>
                                     </TableCell>
 
                                     {/* Last Login */}
-                                    <TableCell className="py-3">
+                                    <TableCell className="hidden py-2.5 lg:table-cell">
                                         {user.last_login ? (
                                             <span className="whitespace-nowrap text-[11px] tabular-nums text-slate-700">
                                                 {formatDate(user.last_login)}
@@ -225,7 +229,7 @@ export default function UserTable({ users }: Props) {
                                     </TableCell>
 
                                     {/* Actions */}
-                                    <TableCell className="px-5 py-3 text-right">
+                                    <TableCell className="px-4 py-2.5 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger>
                                                 <Button
