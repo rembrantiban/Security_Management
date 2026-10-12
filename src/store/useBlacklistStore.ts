@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import AxiosInstance from "@/api/AxiosInstance";
 import { AxiosError } from "axios";
+import { useRequestStore } from "./useRequestStore";
 
 export interface BlacklistEntry {
     blacklist_id: number;
@@ -71,7 +72,15 @@ export const useBlacklistStore = create<BlacklistStore>((set, get) => ({
 
             await AxiosInstance.post("/blacklist/add", data);
 
-            await get().getBlacklist();
+            // Blacklisting rejects the visitor's pending requests server-side,
+            // so refresh the request lists alongside the blacklist.
+            const requestStore = useRequestStore.getState();
+
+            await Promise.all([
+                get().getBlacklist(),
+                requestStore.getAllRequests(),
+                requestStore.getPendingRequests(),
+            ]);
 
             set({
                 isLoading: false,

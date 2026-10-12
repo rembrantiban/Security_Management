@@ -69,8 +69,6 @@ export default function OtherRoleAccount() {
       first_name: draft.first_name,
       middle_name: draft.middle_name,
       last_name: draft.last_name,
-      // Email is locked on this page; send the current value unchanged.
-      email: profile.email,
     });
 
     if (result.success) {

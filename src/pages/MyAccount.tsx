@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
     User as UserIcon,
     Mail,
+    AtSign,
     Shield,
     Eye,
     EyeOff,
@@ -17,7 +18,6 @@ type ProfileForm = {
     first_name: string;
     middle_name: string;
     last_name: string;
-    email: string;
 };
 
 type PasswordForm = {
@@ -37,7 +37,6 @@ export default function MyAccount() {
         first_name: "",
         middle_name: "",
         last_name: "",
-        email: "",
     });
 
 
@@ -57,7 +56,6 @@ export default function MyAccount() {
                 first_name: user.first_name,
                 middle_name: user.middle_name,
                 last_name: user.last_name,
-                email: user.email,
             });
         }
     }, [user]);
@@ -83,7 +81,6 @@ export default function MyAccount() {
             first_name: draft.first_name,
             middle_name: draft.middle_name,
             last_name: draft.last_name,
-            email: draft.email,
         });
 
         if (result.success) {
@@ -170,6 +167,9 @@ export default function MyAccount() {
                             <p className="text-lg font-semibold text-gray-800">
                                 {user?.first_name} {user?.last_name}
                             </p>
+                            {user?.username && (
+                                <p className="text-sm text-gray-500">@{user.username}</p>
+                            )}
                             <div className="mt-1.5 flex items-center justify-center sm:justify-start gap-2">
 
                                 <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700 border border-orange-200">
@@ -232,12 +232,21 @@ export default function MyAccount() {
                         />
 
                         <Field
+                            label="Username"
+                            icon={<AtSign size={15} />}
+                            value={user?.username || ""}
+                            editable={false}
+                            locked
+                            hint="Your username can only be changed by an administrator."
+                        />
+
+                        <Field
                             label="Email Address"
                             icon={<Mail size={15} />}
-                            value={isEditing ? draft.email : user?.email || ""}
-                            editable={isEditing}
-                            type="email"
-                            onChange={(v) => setDraft((d) => ({ ...d, email: v }))}
+                            value={user?.email || ""}
+                            editable={false}
+                            locked
+                            hint="Your email is used to sign in and can only be changed by an administrator."
                         />
 
                     </div>
@@ -349,6 +358,8 @@ function Field({
     value,
     editable,
     type = "text",
+    locked = false,
+    hint,
     onChange,
 }: {
     label: string;
@@ -356,7 +367,9 @@ function Field({
     value: string;
     editable: boolean;
     type?: string;
-    onChange: (v: string) => void;
+    locked?: boolean;
+    hint?: string;
+    onChange?: (v: string) => void;
 }) {
     return (
         <div>
@@ -372,13 +385,21 @@ function Field({
                     <input
                         type={type}
                         value={value}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={(e) => onChange?.(e.target.value)}
                         className="w-full bg-transparent text-sm text-gray-800 outline-none"
                     />
                 ) : (
-                    <span className="text-sm text-gray-700">{value}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm text-gray-700">{value}</span>
+                )}
+                {locked && (
+                    <Lock
+                        size={14}
+                        className="shrink-0 text-gray-400"
+                        aria-label="Not editable"
+                    />
                 )}
             </div>
+            {hint && <p className="mt-1.5 text-xs text-gray-400">{hint}</p>}
         </div>
     );
 }

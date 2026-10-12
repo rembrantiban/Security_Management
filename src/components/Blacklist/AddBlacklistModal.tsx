@@ -85,7 +85,7 @@ export default function AddBlacklistModal({
             showToast(
                 "success",
                 "Visitor Blacklisted",
-                `${formData.first_name} ${formData.last_name} has been added to the blacklist.`
+                `${formData.first_name} ${formData.last_name} has been added to the blacklist. Any pending requests were rejected.`
             );
             handleClose();
         } else {
