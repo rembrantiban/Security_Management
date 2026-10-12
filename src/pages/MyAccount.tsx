@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
     User as UserIcon,
     Mail,
@@ -20,6 +20,12 @@ type ProfileForm = {
     last_name: string;
 };
 
+const EMPTY_PROFILE: ProfileForm = {
+    first_name: "",
+    middle_name: "",
+    last_name: "",
+};
+
 type PasswordForm = {
     current: string;
     next: string;
@@ -33,32 +39,13 @@ export default function MyAccount() {
 
 
     const [isEditing, setIsEditing] = useState(false);
-    const [profile, setProfile] = useState<ProfileForm>({
-        first_name: "",
-        middle_name: "",
-        last_name: "",
-    });
-
-
+    const [draft, setDraft] = useState<ProfileForm>(EMPTY_PROFILE);
 
     const [password, setPassword] = useState<PasswordForm>({
         current: "",
         next: "",
         confirm: "",
     });
-
-    const [draft, setDraft] = useState(profile);
-
-    useEffect(() => {
-        if (user) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setDraft({
-                first_name: user.first_name,
-                middle_name: user.middle_name,
-                last_name: user.last_name,
-            });
-        }
-    }, [user]);
 
     const [showPw, setShowPw] = useState({ current: false, next: false, confirm: false });
     const [savingProfile, setSavingProfile] = useState(false);
@@ -68,8 +55,13 @@ export default function MyAccount() {
     const initials = `${user?.first_name?.[0] ?? ""}${user?.last_name?.[0] ?? ""}`.toUpperCase();
 
     function handleEditToggle() {
-        if (isEditing) {
-            setDraft(profile);
+        if (!isEditing) {
+            // Seed the form from the authenticated user (the source of truth) each time editing starts.
+            setDraft({
+                first_name: user?.first_name ?? "",
+                middle_name: user?.middle_name ?? "",
+                last_name: user?.last_name ?? "",
+            });
         }
         setIsEditing((v) => !v);
     }
@@ -84,7 +76,6 @@ export default function MyAccount() {
         });
 
         if (result.success) {
-            setProfile(draft);
             setIsEditing(false);
 
             showToast(
