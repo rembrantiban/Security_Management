@@ -633,12 +633,24 @@ export const useIncidentStore = create<IncidentStore>((set, get) => ({
                 `/incidents/archive/${incident_id}`
             );
 
-            set((state) => ({
-                incidents: state.incidents.filter(
-                    (incident) => incident.incident_id !== incident_id
-                ),
-                isLoading: false,
-            }));
+            set((state) => {
+                const archived = state.incidents.find(
+                    (incident) => incident.incident_id === incident_id
+                );
+
+                return {
+                    incidents: state.incidents.filter(
+                        (incident) => incident.incident_id !== incident_id
+                    ),
+                    archivedIncidents: archived
+                        ? [
+                              { ...archived, updated_at: new Date().toISOString() },
+                              ...state.archivedIncidents,
+                          ]
+                        : state.archivedIncidents,
+                    isLoading: false,
+                };
+            });
 
             await get().getIncidentStatistics();
 

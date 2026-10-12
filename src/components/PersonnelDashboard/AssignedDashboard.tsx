@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
     CheckCircle2,
     Clock3,
@@ -10,9 +9,7 @@ import {
 } from "lucide-react";
 import { useIncidentReport } from "@/hooks/useIncidentsReport";
 import { useNotificationStore } from "@/store/useNotificationStore";
-import { Button } from "@/components/ui/button";
 import PersonnelActiveAlerts from "./PersonnelActiveAlerts";
-import ResolveIncidentDialog from "./ResolveIncidentDialog";
 import type { Incident } from "@/store/useIncidentReportStore";
 
 type IncidentStatus = "Pending" | "In Progress" | "Resolved" | "Closed";
@@ -53,8 +50,6 @@ const severityStyles: Record<Incident["severity"], { chip: string; tile: string;
 export default function AssignedDashboard() {
     const { getMyAssignedIncidents, personnelStats } = useIncidentReport();
     const { unacknowledgedCount } = useNotificationStore();
-    const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
-    const [openResolveDialog, setOpenResolveDialog] = useState(false);
 
     const formatRelativeTime = (date: string) => {
         const now = new Date();
@@ -188,31 +183,12 @@ export default function AssignedDashboard() {
                                                 </div>
                                             </div>
 
-                                            <Button
-                                                size="sm"
-                                                type="button"
-                                                onClick={() => {
-                                                    setSelectedIncident(incident);
-                                                    setOpenResolveDialog(true);
-                                                }}
-                                                className="h-7 shrink-0 gap-1.5 self-start rounded-lg bg-amber-800 px-3 text-[11px] font-medium text-white shadow-sm hover:bg-amber-900"
-                                            >
-                                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                                Resolve
-                                            </Button>
-
                                         </div>
                                     </article>
                                 );
                             })
                         )}
                     </div>
-
-                    <ResolveIncidentDialog
-                        open={openResolveDialog}
-                        onOpenChange={setOpenResolveDialog}
-                        incident={selectedIncident}
-                    />
                 </div>
 
                 {/* Sidebar */}

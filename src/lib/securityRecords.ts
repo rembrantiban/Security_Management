@@ -77,7 +77,10 @@ function triggerDownload(blob: Blob, filename: string): void {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function exportSecurityRecordsExcel(rows: Incident[]): void {
+export function exportSecurityRecordsExcel(
+    rows: Incident[],
+    label = "Security Records"
+): void {
     const headers = [
         "#",
         "Incident No.",
@@ -89,6 +92,7 @@ export function exportSecurityRecordsExcel(rows: Incident[]): void {
         "Reported By",
         "Assigned To",
         "Reported At",
+        "Last Updated",
     ];
 
     const th = headers
@@ -103,8 +107,10 @@ export function exportSecurityRecordsExcel(rows: Incident[]): void {
     const body =
         rows
             .map((incident, i) => {
+                // Force text format so user-entered values (e.g. "=HYPERLINK(...)")
+                // are never evaluated as spreadsheet formulas.
                 const cell = (v: unknown) =>
-                    `<td style="border:1px solid #999;padding:5px 9px;vertical-align:top">${esc(
+                    `<td style="border:1px solid #999;padding:5px 9px;vertical-align:top;mso-number-format:'\\@'">${esc(
                         v
                     )}</td>`;
 
@@ -119,6 +125,7 @@ export function exportSecurityRecordsExcel(rows: Incident[]): void {
                     incident.reported_by_name,
                     incident.assigned_to_name || "Unassigned",
                     fmtDateTime(incident.created_at),
+                    fmtDateTime(incident.updated_at),
                 ]
                     .map(cell)
                     .join("")}</tr>`;
@@ -132,13 +139,13 @@ export function exportSecurityRecordsExcel(rows: Incident[]): void {
 <head>
 <meta charset="utf-8" />
 <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
-<x:Name>Security Records</x:Name>
+<x:Name>${esc(label).slice(0, 31)}</x:Name>
 <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
 </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
 </head>
 <body>
 <table>
-  <tr><td colspan="2" style="font-size:15px;font-weight:bold">SECURITY RECORDS EXPORT</td></tr>
+  <tr><td colspan="2" style="font-size:15px;font-weight:bold">${esc(label.toUpperCase())} EXPORT</td></tr>
   <tr><td style="font-weight:bold;width:150px">Generated</td><td>${esc(generatedAt)}</td></tr>
   <tr><td style="font-weight:bold">Total Records</td><td>${rows.length}</td></tr>
   <tr><td style="font-weight:bold">Classification</td><td>Confidential</td></tr>
@@ -153,5 +160,6 @@ export function exportSecurityRecordsExcel(rows: Incident[]): void {
     });
 
     const stamp = new Date().toISOString().slice(0, 10);
-    triggerDownload(blob, `Security-Records_${stamp}.xls`);
+    const slug = label.trim().replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    triggerDownload(blob, `${slug || "Security-Records"}_${stamp}.xls`);
 }
