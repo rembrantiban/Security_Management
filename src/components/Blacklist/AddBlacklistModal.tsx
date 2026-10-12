@@ -19,6 +19,8 @@ type AddBlacklistModalProps = {
         middle_name?: string | null;
         last_name: string;
     };
+    /** Called after the visitor has been blacklisted successfully. */
+    onSuccess?: () => void;
 };
 
 const emptyForm = { first_name: "", middle_name: "", last_name: "", reason: "" };
@@ -27,6 +29,7 @@ export default function AddBlacklistModal({
     open,
     onOpenChange,
     initialName,
+    onSuccess,
 }: AddBlacklistModalProps) {
     const { addToBlacklist, isLoading, error } = useBlacklist();
     const { showToast } = useToast();
@@ -88,6 +91,7 @@ export default function AddBlacklistModal({
                 `${formData.first_name} ${formData.last_name} has been added to the blacklist. Any pending requests were rejected.`
             );
             handleClose();
+            onSuccess?.();
         } else {
             showToast(
                 "error",

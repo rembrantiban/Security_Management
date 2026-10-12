@@ -701,6 +701,7 @@ export default function AdminVisitorRequestsPage() {
                         }
                         : undefined
                 }
+                onSuccess={() => setSelected(null)}
             />
         </div>
     );

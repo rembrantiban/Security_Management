@@ -113,7 +113,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
   const accessChildren: ItemType[] = [
     hasModulePermission("Visitor and Access Control Module", "Administrator View Register") && {
-      name: "Access Register",
+      name: "Visitor Requests",
       icon: <DoorOpen size={15} />,
       path: "/access",
     },
@@ -218,7 +218,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
   const personnelReports: ItemType[] = [
     hasModulePermission("Reports Module", "Personnel View Report") && {
-      name: "Records",
+      name: "Reports",
       icon: <FileText size={16} />,
       path: "/personnel/reports",
     },

@@ -29,6 +29,29 @@ export interface Incident {
     updated_at: string;
 }
 
+/** An incident assigned to the current user (GET /incidents/get-assigned-incidents). */
+export interface AssignedIncident {
+    incident_id: number;
+    incident_number: string;
+    title: string;
+    category: string;
+    severity: Incident["severity"];
+    location: string;
+    description: string;
+    incident_image: string | null;
+    status: Incident["status"];
+    /** Instructions left by the administrator when assigning. */
+    note: string | null;
+    created_at: string;
+    updated_at: string;
+
+    reported_by_id: number;
+    reported_by: string;
+
+    assigned_by_id: number | null;
+    assigned_by: string | null;
+}
+
 type CreateIncidentData = {
     title: string;
     category: string;
@@ -68,6 +91,8 @@ interface IncidentStore {
     mySubmittedIncidents: Incident[];
     isFetchingSubmitted: boolean;
     getMyAssignedIncidents: Incident[];
+    assignedIncidents: AssignedIncident[];
+    isFetchingAssigned: boolean;
     archivedIncidents: Incident[];
     isFetchingArchived: boolean;
     stats: IncidentStats | null;
@@ -81,8 +106,9 @@ interface IncidentStore {
     assignIncident: (incidentId: number, assignedTo: number, note: string) => Promise<boolean>;
     reAssignIncident: (incidentId: number, assignedTo: number, note: string) => Promise<boolean>;
     closeIncident: (incidentId: number) => Promise<boolean>;
-    resolvedIncident: (incident_id: number) => Promise<boolean>;
+    resolvedIncident: (incident_id: number, resolutionNote?: string) => Promise<boolean>;
     fetchMyAssignedIncidents: () => Promise<void>;
+    getAssignedIncidents: () => Promise<void>;
     fetchPersonnelDashboardStats: () => Promise<void>;
     updateIncident: (incident_id: number, data: UpdateIncidentData) => Promise<boolean>;
     getArchivedIncidents: () => Promise<void>;
@@ -99,10 +125,39 @@ export const useIncidentStore = create<IncidentStore>((set, get) => ({
     mySubmittedIncidents: [],
     isFetchingSubmitted: false,
     getMyAssignedIncidents: [],
+    assignedIncidents: [],
+    isFetchingAssigned: false,
     archivedIncidents: [],
     isFetchingArchived: false,
     stats: null,
     personnelStats: null,
+
+    getAssignedIncidents: async () => {
+        try {
+            set({
+                isFetchingAssigned: true,
+                error: null,
+            });
+
+            const res = await AxiosInstance.get(
+                "/incidents/get-assigned-incidents"
+            );
+
+            set({
+                assignedIncidents: res.data.incidents,
+                isFetchingAssigned: false,
+            });
+        } catch (error) {
+            const err = error as AxiosError<{ message: string }>;
+
+            set({
+                isFetchingAssigned: false,
+                error:
+                    err.response?.data.message ??
+                    "Failed to fetch assigned incidents.",
+            });
+        }
+    },
 
     fetchPersonnelDashboardStats: async () => {
         try {
@@ -208,7 +263,7 @@ export const useIncidentStore = create<IncidentStore>((set, get) => ({
         }
     },
 
-    resolvedIncident: async (incident_id) => {
+    resolvedIncident: async (incident_id, resolutionNote) => {
         try {
             set({
                 isLoading: true,
@@ -216,18 +271,22 @@ export const useIncidentStore = create<IncidentStore>((set, get) => ({
             });
 
             await AxiosInstance.put(
-                `/incidents/resolve/${incident_id}`
+                `/incidents/resolve/${incident_id}`,
+                resolutionNote ? { resolution_note: resolutionNote } : undefined
             );
 
-            const markResolved = (incident: Incident): Incident =>
+            const markResolved = <T extends { incident_id: number; status: Incident["status"] }>(
+                incident: T
+            ): T =>
                 incident.incident_id === incident_id
-                    ? { ...incident, status: "Resolved" }
+                    ? { ...incident, status: "Resolved", updated_at: new Date().toISOString() }
                     : incident;
 
             set((state) => ({
                 getMyAssignedIncidents: state.getMyAssignedIncidents.filter(
                     (incident) => incident.incident_id !== incident_id
                 ),
+                assignedIncidents: state.assignedIncidents.map(markResolved),
                 myIncidents: state.myIncidents.map(markResolved),
                 incidents: state.incidents.map(markResolved),
                 isLoading: false,

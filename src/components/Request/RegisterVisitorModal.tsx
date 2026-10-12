@@ -5,9 +5,11 @@ import {
   ClipboardList,
   UploadCloud,
   UserPlus,
+  ShieldAlert,
   X,
 } from "lucide-react";
-import { useRequest } from "@/hooks/useRequest" 
+import { useRequest } from "@/hooks/useRequest"
+import type { BlacklistMatch } from "@/store/useRequestStore";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 
@@ -34,8 +36,9 @@ export default function RegisterVisitorModal({
   onOpenChange,
 }: RegisterVisitorModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { createRequest, isLoading, error } = useRequest();
+  const { createRequest, isLoading } = useRequest();
   const { showToast } = useToast();
+  const [blacklistMatch, setBlacklistMatch] = useState<BlacklistMatch | null>(null);
   const [formData, setFormData] = useState({
     first_name: "",
     middle_name: "",
@@ -47,6 +50,11 @@ export default function RegisterVisitorModal({
   const [image, setImage] = useState<File | null>(null);
 
   const preview = image ? URL.createObjectURL(image) : null;
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!open) setBlacklistMatch(null);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -100,7 +108,9 @@ export default function RegisterVisitorModal({
         );
         return;
     }
-    const success = await createRequest({
+    setBlacklistMatch(null);
+
+    const result = await createRequest({
         first_name: formData.first_name,
         middle_name: formData.middle_name,
         last_name: formData.last_name,
@@ -109,11 +119,21 @@ export default function RegisterVisitorModal({
         purpose: formData.purpose,
     });
 
-    if (!success) {
+    if (!result.success) {
+        if (result.blacklist) {
+            setBlacklistMatch(result.blacklist);
+            showToast(
+                "error",
+                "Visitor is Blacklisted",
+                result.message
+            );
+            return;
+        }
+
         showToast(
             "error",
             "Registration Failed",
-            error ?? "Unable to register visitor."
+            result.message
         );
         return;
     }
@@ -121,7 +141,7 @@ export default function RegisterVisitorModal({
     showToast(
         "success",
         "Visitor Registered",
-        "Visitor access request has been submitted successfully."
+        result.message
     );
 
     // Reset form
@@ -185,6 +205,40 @@ export default function RegisterVisitorModal({
         <form onSubmit={handleSubmit} className="overflow-y-auto">
 
           <div className="space-y-6 px-5 py-5">
+
+            {blacklistMatch && (
+              <div
+                role="alert"
+                className="flex gap-3 rounded-xl border border-red-200 bg-red-50 p-4"
+              >
+                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+                <div className="min-w-0 text-sm">
+                  <p className="font-semibold text-red-800">
+                    Visitor is Blacklisted — Entry Denied
+                  </p>
+                  <p className="mt-1 text-red-700">
+                    {blacklistMatch.name} is on the visitor blacklist and cannot
+                    be registered for campus access.
+                  </p>
+                  <dl className="mt-2 space-y-0.5 text-xs text-red-700">
+                    <div className="flex gap-1">
+                      <dt className="font-medium">Reason:</dt>
+                      <dd className="break-words">{blacklistMatch.reason}</dd>
+                    </div>
+                    <div className="flex gap-1">
+                      <dt className="font-medium">Blacklisted since:</dt>
+                      <dd>
+                        {new Date(blacklistMatch.since).toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+            )}
 
             {/* PERSONAL */}
             <section>

@@ -38,6 +38,20 @@ type CreateRequestData = {
     purpose: string;
 };
 
+export type BlacklistMatch = {
+    blacklist_id: number;
+    name: string;
+    reason: string;
+    since: string;
+};
+
+export type CreateRequestResult = {
+    success: boolean;
+    message: string;
+    /** Present when the visitor was refused because they are blacklisted. */
+    blacklist?: BlacklistMatch;
+};
+
 interface RequestStore {
     requests: RequestAccess[];
     myRequests: RequestAccess[];
@@ -48,7 +62,7 @@ interface RequestStore {
 
     createRequest: (
         data: CreateRequestData
-    ) => Promise<boolean>;
+    ) => Promise<CreateRequestResult>;
 
     getAllRequests: () => Promise<void>;
 
@@ -110,20 +124,35 @@ export const useRequestStore = create<RequestStore>(
                     isLoading: false,
                 }));
 
-                return true;
+                return {
+                    success: true,
+                    message:
+                        res.data.message ??
+                        "Visitor access request has been submitted successfully.",
+                };
             } catch (error) {
                 const err = error as AxiosError<{
                     message: string;
+                    blacklisted?: boolean;
+                    blacklist?: BlacklistMatch;
                 }>;
+
+                const message =
+                    err.response?.data?.message ??
+                    "Failed to create request.";
 
                 set({
                     isLoading: false,
-                    error:
-                        err.response?.data.message ??
-                        "Failed to create request.",
+                    error: message,
                 });
 
-                return false;
+                return {
+                    success: false,
+                    message,
+                    blacklist: err.response?.data?.blacklisted
+                        ? err.response.data.blacklist
+                        : undefined,
+                };
             }
         },
 
