@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 import { useMonitoring } from "@/hooks/useMonitoring"
 import { useToast } from "@/hooks/useToast"
+import { getTodayLocal } from "@/lib/date"
 
 interface AssignScheduleModalProps {
   open: boolean;
@@ -27,7 +28,6 @@ interface ScheduleFormData {
   end_time: string;
   remarks: string;
 }
-
 
 export default function AssignScheduleModal({
   open,
@@ -74,6 +74,15 @@ const handleAssign = async () => {
             "error",
             "Missing Information",
             "Please complete all required fields."
+        );
+        return;
+    }
+
+    if (form.schedule_date < getTodayLocal()) {
+        showToast(
+            "error",
+            "Invalid Date",
+            "Schedule date cannot be in the past."
         );
         return;
     }
@@ -186,6 +195,7 @@ const handleAssign = async () => {
             <input
               type="date"
               value={form.schedule_date}
+              min={getTodayLocal()}
               onChange={(e) => update("schedule_date", e.target.value)}
               className="select-input"
             />

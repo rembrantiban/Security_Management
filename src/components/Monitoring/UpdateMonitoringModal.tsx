@@ -17,6 +17,7 @@ import type { MonitoringSchedule } from "@/store/useMonitoringStore"
 import { useAuth } from "@/hooks/useAuth";
 import { useMonitoring } from "@/hooks/useMonitoring";
 import { useToast } from "@/hooks/useToast";
+import { getTodayLocal, toLocalDateString } from "@/lib/date";
 
 interface Props {
     open: boolean;
@@ -49,9 +50,7 @@ export default function UpdateMonitoringModal({
         setForm({
             ...schedule,
             schedule_date: schedule.schedule_date
-                ? new Date(schedule.schedule_date)
-                    .toISOString()
-                    .split("T")[0]
+                ? toLocalDateString(new Date(schedule.schedule_date))
                 : "",
             start_time: schedule.start_time?.slice(0, 5),
             end_time: schedule.end_time?.slice(0, 5),
@@ -71,6 +70,15 @@ export default function UpdateMonitoringModal({
 
    const handleSave = async () => {
     if (!form) return;
+
+    if (form.schedule_date < getTodayLocal()) {
+        showToast(
+            "error",
+            "Invalid Date",
+            "Schedule date cannot be in the past."
+        );
+        return;
+    }
 
     const result = await updateMonitoringSchedule(
         form.schedule_id,
@@ -219,6 +227,7 @@ export default function UpdateMonitoringModal({
                             <Input
                                 type="date"
                                 value={form.schedule_date}
+                                min={getTodayLocal()}
                                 onChange={(e) => update("schedule_date", e.target.value)}
                                 className="pl-9 rounded-md"
                             />
