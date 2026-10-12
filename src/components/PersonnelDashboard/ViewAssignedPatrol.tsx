@@ -1,13 +1,19 @@
 import { useEffect } from "react";
 import {
     CalendarDays,
+    ClipboardCheck,
     Clock3,
     Loader2,
     MapPin,
+    Play,
     ShieldCheck,
     UserRound,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import StartPatrolModal from "@/components/AssignArea/StartPatrol";
+import CompletePatrolModal from "@/components/AssignArea/CompletePatrol";
 import { useMonitoring } from "@/hooks/useMonitoring";
+import { usePatrolActions } from "@/hooks/usePatrolActions";
 import type { MonitoringSchedule } from "@/store/useMonitoringStore";
 
 const chip =
@@ -29,6 +35,18 @@ const statusDotStyles: Record<MonitoringSchedule["status"], string> = {
 
 export default function ViewAssignedPatrol() {
     const { mySchedules, getMyMonitoringSchedules, loading } = useMonitoring();
+    const {
+        startOpen,
+        completeOpen,
+        selectedSchedule,
+        isloading,
+        openStart,
+        openComplete,
+        closeStart,
+        closeComplete,
+        handleStartPatrol,
+        handleCompletePatrol,
+    } = usePatrolActions();
 
     useEffect(() => {
         getMyMonitoringSchedules();
@@ -152,6 +170,28 @@ export default function ViewAssignedPatrol() {
                                             />
                                             {schedule.status}
                                         </span>
+
+                                        {schedule.status === "Pending" && (
+                                            <Button
+                                                size="sm"
+                                                onClick={() => openStart(schedule)}
+                                                className="h-8 gap-1.5 rounded-lg bg-orange-700 px-3 text-[12px] hover:bg-orange-800"
+                                            >
+                                                <Play className="h-3.5 w-3.5" />
+                                                Record Patrol
+                                            </Button>
+                                        )}
+
+                                        {schedule.status === "Ongoing" && (
+                                            <Button
+                                                size="sm"
+                                                onClick={() => openComplete(schedule)}
+                                                className="h-8 gap-1.5 rounded-lg bg-emerald-700 px-3 text-[12px] hover:bg-emerald-800"
+                                            >
+                                                <ClipboardCheck className="h-3.5 w-3.5" />
+                                                Complete Patrol
+                                            </Button>
+                                        )}
                                     </div>
 
                                 </div>
@@ -160,6 +200,22 @@ export default function ViewAssignedPatrol() {
                     </div>
                 )}
             </div>
+
+            <StartPatrolModal
+                open={startOpen}
+                onClose={closeStart}
+                schedule={selectedSchedule}
+                loading={isloading}
+                onStart={handleStartPatrol}
+            />
+
+            <CompletePatrolModal
+                open={completeOpen}
+                onClose={closeComplete}
+                schedule={selectedSchedule}
+                loading={isloading}
+                onComplete={handleCompletePatrol}
+            />
         </section>
     );
 }

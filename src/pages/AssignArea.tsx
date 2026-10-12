@@ -15,13 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useMonitoring } from "@/hooks/useMonitoring";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import AssignAreaSkeleton from "@/components/AssignArea/AssignAreSkeleton";
-import type { MonitoringSchedule } from "@/store/useMonitoringStore"
 import StartPatrolModal from "@/components/AssignArea/StartPatrol";
 import CompletePatrolModal from "@/components/AssignArea/CompletePatrol";
-import { usePatrol } from "@/hooks/usePatrol"
-import { useToast } from "@/hooks/useToast"
+import { usePatrolActions } from "@/hooks/usePatrolActions"
 
 import PageHeader, { HEADER_SECONDARY_BUTTON } from "@/components/layout/PageHeader";
 const badgeColor = (status: string) => {
@@ -52,81 +50,19 @@ const dotColor = (status: string) => {
 
 export default function AssignArea() {
     const { getMyMonitoringSchedules, mySchedules, loading } = useMonitoring();
-    const [startOpen, setStartOpen] = useState(false);
-    const [completeOpen, setCompleteOpen] = useState(false);
-    const [selectedSchedule, setSelectedSchedule] = useState<MonitoringSchedule | null>(null);
-    const { startPatrol, completePatrol, getMyPatrols, isloading } = usePatrol();
-    const { showToast } = useToast();
+    const {
+        startOpen,
+        completeOpen,
+        selectedSchedule,
+        isloading,
+        openStart,
+        openComplete,
+        closeStart,
+        closeComplete,
+        handleStartPatrol,
+        handleCompletePatrol,
+    } = usePatrolActions();
 
-
-    const handleStartPatrol = async () => {
-        if (!selectedSchedule) return;
-
-        const result = await startPatrol(
-            selectedSchedule.schedule_id
-        );
-
-        if (result.success) {
-
-            showToast(
-                "success",
-                "Patrol Recorded",
-                result.message
-            );
-
-            await Promise.all([
-                getMyMonitoringSchedules(),
-                getMyPatrols(),
-            ]);
-
-            setStartOpen(false);
-            setSelectedSchedule(null);
-
-        } else {
-
-            showToast(
-                "error",
-                "Unable to Record Patrol",
-                result.message
-            );
-
-        }
-    };
-
-    const handleCompletePatrol = async (observations: string) => {
-        if (!selectedSchedule) return;
-
-        const result = await completePatrol(
-            selectedSchedule.schedule_id,
-            observations
-        );
-
-        if (result.success) {
-
-            showToast(
-                "success",
-                "Patrol Completed",
-                result.message
-            );
-
-            await Promise.all([
-                getMyMonitoringSchedules(),
-                getMyPatrols(),
-            ]);
-
-            setCompleteOpen(false);
-            setSelectedSchedule(null);
-
-        } else {
-
-            showToast(
-                "error",
-                "Unable to Complete Patrol",
-                result.message
-            );
-
-        }
-    };
     useEffect(() => {
         getMyMonitoringSchedules();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -268,10 +204,7 @@ export default function AssignArea() {
                                         {item.status === "Pending" && (
                                             <Button
                                                 size="sm"
-                                                onClick={() => {
-                                                    setSelectedSchedule(item);
-                                                    setStartOpen(true);
-                                                }}
+                                                onClick={() => openStart(item)}
                                                 className="group rounded-lg bg-orange-700 hover:bg-orange-800"
                                             >
                                                 <span className="mr-2 h-2 w-2 rounded-full bg-green-400 animate-pulse" />
@@ -285,10 +218,7 @@ export default function AssignArea() {
                                         {item.status === "Ongoing" && (
                                             <Button
                                                 size="sm"
-                                                onClick={() => {
-                                                    setSelectedSchedule(item);
-                                                    setCompleteOpen(true);
-                                                }}
+                                                onClick={() => openComplete(item)}
                                                 className="group rounded-lg bg-emerald-700 hover:bg-emerald-800"
                                             >
                                                 <ClipboardCheck className="mr-2 h-4 w-4" />
@@ -306,7 +236,7 @@ export default function AssignArea() {
 
             <StartPatrolModal
                 open={startOpen}
-                onClose={() => setStartOpen(false)}
+                onClose={closeStart}
                 schedule={selectedSchedule}
                 loading={isloading}
                 onStart={handleStartPatrol}
@@ -314,7 +244,7 @@ export default function AssignArea() {
 
             <CompletePatrolModal
                 open={completeOpen}
-                onClose={() => setCompleteOpen(false)}
+                onClose={closeComplete}
                 schedule={selectedSchedule}
                 loading={isloading}
                 onComplete={handleCompletePatrol}
