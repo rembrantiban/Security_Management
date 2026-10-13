@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import AxiosInstance from "@/api/AxiosInstance";
 import { AxiosError } from "axios";
-import { useRequestStore } from "./useRequestStore";
+import { useRequestStore, type BlacklistMatch } from "./useRequestStore";
 
 export interface BlacklistEntry {
     blacklist_id: number;
@@ -23,6 +23,12 @@ type AddToBlacklistData = {
     reason: string;
 };
 
+export type VisitorNameQuery = {
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
+};
+
 interface BlacklistStore {
     blacklist: BlacklistEntry[];
     isLoading: boolean;
@@ -31,6 +37,16 @@ interface BlacklistStore {
     getBlacklist: () => Promise<void>;
     addToBlacklist: (data: AddToBlacklistData) => Promise<boolean>;
     removeFromBlacklist: (blacklistId: number) => Promise<boolean>;
+    /**
+     * Screens a visitor name against the active blacklist.
+     * Resolves to the match, or null when the visitor is clear.
+     * Rejects on network/server failure so callers can fail open
+     * (the server still enforces the rule on submit).
+     */
+    checkVisitor: (
+        name: VisitorNameQuery,
+        signal?: AbortSignal
+    ) => Promise<BlacklistMatch | null>;
 }
 
 export const useBlacklistStore = create<BlacklistStore>((set, get) => ({
@@ -130,5 +146,13 @@ export const useBlacklistStore = create<BlacklistStore>((set, get) => ({
 
             return false;
         }
+    },
+
+    checkVisitor: async (name, signal) => {
+        const { data } = await AxiosInstance.get<{
+            data: { blacklisted: boolean; blacklist: BlacklistMatch | null };
+        }>("/blacklist/check", { params: name, signal });
+
+        return data.data.blacklisted ? data.data.blacklist : null;
     },
 }));

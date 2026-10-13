@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { useRequest } from "@/hooks/useRequest"
+import { useBlacklistCheck } from "@/hooks/useBlacklistCheck";
 import type { BlacklistMatch } from "@/store/useRequestStore";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
@@ -39,7 +40,7 @@ export default function RegisterVisitorModal({
   const { createRequest, isLoading } = useRequest();
   const { showToast } = useToast();
   const [blacklistMatch, setBlacklistMatch] = useState<BlacklistMatch | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<VisitorFormData>({
     first_name: "",
     middle_name: "",
     last_name: "",
@@ -48,6 +49,21 @@ export default function RegisterVisitorModal({
   });
 
   const [image, setImage] = useState<File | null>(null);
+
+  const { match: liveBlacklistMatch, isChecking: isCheckingBlacklist } =
+    useBlacklistCheck(formData, open);
+
+  // Live pre-check wins; the submit response covers the case where the
+  // visitor was blacklisted between the pre-check and the submit.
+  const activeBlacklistMatch = liveBlacklistMatch ?? blacklistMatch;
+
+  const updateName = (
+    field: "first_name" | "middle_name" | "last_name",
+    value: string
+  ) => {
+    setBlacklistMatch(null);
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const preview = image ? URL.createObjectURL(image) : null;
 
@@ -82,32 +98,22 @@ export default function RegisterVisitorModal({
  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.first_name.trim()) {
+    const missingField = getMissingField(formData, image);
+
+    if (missingField) {
+        showToast("error", "Missing Information", missingField);
+        return;
+    }
+
+    if (activeBlacklistMatch) {
         showToast(
             "error",
-            "Missing Information",
-            "First name is required."
+            "Visitor is Blacklisted",
+            `${activeBlacklistMatch.name} is on the visitor blacklist and cannot be registered.`
         );
         return;
     }
 
-    if (!formData.last_name.trim()) {
-        showToast(
-            "error",
-            "Missing Information",
-            "Last name is required."
-        );
-        return;
-    }
-
-    if (!formData.purpose.trim()) {
-        showToast(
-            "error",
-            "Missing Information",
-            "Please enter the purpose of the visit."
-        );
-        return;
-    }
     setBlacklistMatch(null);
 
     const result = await createRequest({
@@ -206,7 +212,7 @@ export default function RegisterVisitorModal({
 
           <div className="space-y-6 px-5 py-5">
 
-            {blacklistMatch && (
+            {activeBlacklistMatch && (
               <div
                 role="alert"
                 className="flex gap-3 rounded-xl border border-red-200 bg-red-50 p-4"
@@ -217,18 +223,18 @@ export default function RegisterVisitorModal({
                     Visitor is Blacklisted — Entry Denied
                   </p>
                   <p className="mt-1 text-red-700">
-                    {blacklistMatch.name} is on the visitor blacklist and cannot
+                    {activeBlacklistMatch.name} is on the visitor blacklist and cannot
                     be registered for campus access.
                   </p>
                   <dl className="mt-2 space-y-0.5 text-xs text-red-700">
                     <div className="flex gap-1">
                       <dt className="font-medium">Reason:</dt>
-                      <dd className="break-words">{blacklistMatch.reason}</dd>
+                      <dd className="break-words">{activeBlacklistMatch.reason}</dd>
                     </div>
                     <div className="flex gap-1">
                       <dt className="font-medium">Blacklisted since:</dt>
                       <dd>
-                        {new Date(blacklistMatch.since).toLocaleDateString(undefined, {
+                        {new Date(activeBlacklistMatch.since).toLocaleDateString(undefined, {
                           year: "numeric",
                           month: "short",
                           day: "numeric",
@@ -249,27 +255,27 @@ export default function RegisterVisitorModal({
               <div className="grid gap-3 sm:grid-cols-3">
                 <Field
                   icon={<User size={16} />}
-                  placeholder="First Name"
+                  placeholder="First Name *"
                   value={formData.first_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, first_name: e.target.value })
-                  }
+                  onChange={(e) => updateName("first_name", e.target.value)}
                 />
                 <Field
-                  placeholder="Middle Name"
+                  placeholder="Middle Name *"
                   value={formData.middle_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, middle_name: e.target.value })
-                  }
+                  onChange={(e) => updateName("middle_name", e.target.value)}
                 />
                 <Field
-                  placeholder="Last Name"
+                  placeholder="Last Name *"
                   value={formData.last_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, last_name: e.target.value })
-                  }
+                  onChange={(e) => updateName("last_name", e.target.value)}
                 />
               </div>
+
+              {isCheckingBlacklist && (
+                <p className="mt-2 text-xs text-slate-400">
+                  Checking visitor blacklist…
+                </p>
+              )}
             </section>
 
             {/* IDENTIFICATION */}
@@ -289,7 +295,7 @@ export default function RegisterVisitorModal({
                     }
                     className="h-10 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                   >
-                    <option value="">Select Government ID</option>
+                    <option value="">Select Government ID *</option>
                     {idTypes.map((id) => (
                       <option key={id} value={id}>
                         {id}
@@ -327,7 +333,7 @@ export default function RegisterVisitorModal({
                         <UploadCloud className="h-5 w-5 text-orange-700" />
                       </div>
                       <h4 className="text-sm font-semibold text-slate-800">
-                        Upload ID Image
+                        Upload ID Image <span className="text-red-500">*</span>
                       </h4>
                       <p className="mt-1 text-xs text-slate-500">
                         Drag & drop or click to browse
@@ -356,7 +362,7 @@ export default function RegisterVisitorModal({
                   onChange={(e) =>
                     setFormData({ ...formData, purpose: e.target.value })
                   }
-                  placeholder="Briefly describe the purpose of the visit..."
+                  placeholder="Briefly describe the purpose of the visit... *"
                   className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                 />
               </div>
@@ -377,10 +383,20 @@ export default function RegisterVisitorModal({
 
             <Button
               type="submit"
+              disabled={isLoading || activeBlacklistMatch !== null}
               className="gap-1.5 rounded-xl bg-orange-700 hover:bg-orange-800"
             >
-              <UserPlus className="h-4 w-4" />
-              {isLoading ? "Submitting..." : "Register Visitor"}
+              {activeBlacklistMatch ? (
+                <>
+                  <ShieldAlert className="h-4 w-4" />
+                  Entry Denied
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4" />
+                  {isLoading ? "Submitting..." : "Register Visitor"}
+                </>
+              )}
             </Button>
           </div>
 
@@ -389,6 +405,39 @@ export default function RegisterVisitorModal({
       </div>
     </div>
   );
+}
+
+type VisitorFormData = {
+  first_name: string;
+  middle_name: string;
+  last_name: string;
+  id_type: string;
+  purpose: string;
+};
+
+/** Every field is required. Checked in display order so the first gap is reported. */
+const requiredTextFields: { key: keyof VisitorFormData; message: string }[] = [
+  { key: "first_name", message: "First name is required." },
+  { key: "middle_name", message: "Middle name is required." },
+  { key: "last_name", message: "Last name is required." },
+  { key: "id_type", message: "Please select a government ID type." },
+];
+
+function getMissingField(
+  formData: VisitorFormData,
+  image: File | null
+): string | null {
+  const missingText = requiredTextFields.find(
+    ({ key }) => !formData[key].trim()
+  );
+  if (missingText) return missingText.message;
+
+  if (!image) return "Please upload an image of the visitor's ID.";
+  if (!image.type.startsWith("image/")) return "The ID upload must be an image file.";
+
+  if (!formData.purpose.trim()) return "Please enter the purpose of the visit.";
+
+  return null;
 }
 
 type FieldProps = {
