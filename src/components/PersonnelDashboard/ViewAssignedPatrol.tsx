@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
     CalendarDays,
     ClipboardCheck,
     Clock3,
+    Eye,
     Loader2,
     MapPin,
     Play,
@@ -15,23 +16,15 @@ import CompletePatrolModal from "@/components/AssignArea/CompletePatrol";
 import { useMonitoring } from "@/hooks/useMonitoring";
 import { usePatrolActions } from "@/hooks/usePatrolActions";
 import type { MonitoringSchedule } from "@/store/useMonitoringStore";
-
-const chip =
-    "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1 whitespace-nowrap";
-
-const statusStyles: Record<MonitoringSchedule["status"], string> = {
-    Pending: "bg-yellow-50 text-yellow-700 ring-yellow-100",
-    Ongoing: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-    Completed: "bg-blue-50 text-blue-700 ring-blue-100",
-    Cancelled: "bg-slate-50 text-slate-500 ring-slate-200",
-};
-
-const statusDotStyles: Record<MonitoringSchedule["status"], string> = {
-    Pending: "bg-yellow-500",
-    Ongoing: "bg-emerald-500",
-    Completed: "bg-blue-500",
-    Cancelled: "bg-slate-400",
-};
+import PatrolDetailsModal, {
+    ScheduleStatusBadge,
+} from "@/components/PersonnelDashboard/PatrolDetailsModal";
+import {
+    formatScheduleCode,
+    formatTimeOfDay,
+    getScheduleEnd,
+} from "@/lib/patrolSchedule";
+import { useNow } from "@/hooks/useNow";
 
 export default function ViewAssignedPatrol() {
     const { mySchedules, getMyMonitoringSchedules, loading } = useMonitoring();
@@ -48,6 +41,13 @@ export default function ViewAssignedPatrol() {
         handleCompletePatrol,
     } = usePatrolActions();
 
+    const [detailsSchedule, setDetailsSchedule] = useState<MonitoringSchedule | null>(null);
+    const now = useNow(30_000, mySchedules.some((s) => s.status === "Ongoing"));
+
+    // Patrols may only be completed once their scheduled end time is reached.
+    const canComplete = (schedule: MonitoringSchedule) =>
+        now >= getScheduleEnd(schedule.schedule_date, schedule.start_time, schedule.end_time);
+
     useEffect(() => {
         getMyMonitoringSchedules();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,19 +59,6 @@ export default function ViewAssignedPatrol() {
             day: "numeric",
             year: "numeric",
         });
-
-    const formatTime = (time: string) => {
-        const [hours, minutes] = time.split(":").map(Number);
-        const date = new Date();
-        date.setHours(hours);
-        date.setMinutes(minutes);
-
-        return date.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-        });
-    };
 
     return (
         <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white ring-0">
@@ -131,7 +118,7 @@ export default function ViewAssignedPatrol() {
                                                     {schedule.assigned_area}
                                                 </p>
                                                 <p className="mt-1 font-mono text-[11px] tracking-tight text-slate-400">
-                                                    PTL-{String(schedule.schedule_id).padStart(4, "0")}
+                                                    {formatScheduleCode(schedule.schedule_id)}
                                                 </p>
                                             </div>
                                         </div>
@@ -144,9 +131,9 @@ export default function ViewAssignedPatrol() {
                                             <span className="text-slate-300">·</span>
                                             <span className="inline-flex items-center gap-1 tabular-nums">
                                                 <Clock3 className="h-3 w-3" />
-                                                {formatTime(schedule.start_time)}
+                                                {formatTimeOfDay(schedule.start_time)}
                                                 <span className="text-slate-300">–</span>
-                                                {formatTime(schedule.end_time)}
+                                                {formatTimeOfDay(schedule.end_time)}
                                             </span>
                                             <span className="text-slate-300">·</span>
                                             <span className="inline-flex items-center gap-1">
@@ -164,12 +151,17 @@ export default function ViewAssignedPatrol() {
                                     </div>
 
                                     <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end">
-                                        <span className={`${chip} ${statusStyles[schedule.status]}`}>
-                                            <span
-                                                className={`h-1.5 w-1.5 rounded-full ${statusDotStyles[schedule.status]}`}
-                                            />
-                                            {schedule.status}
-                                        </span>
+                                        <ScheduleStatusBadge status={schedule.status} />
+
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => setDetailsSchedule(schedule)}
+                                            className="h-8 gap-1.5 rounded-lg px-3 text-[12px]"
+                                        >
+                                            <Eye className="h-3.5 w-3.5" />
+                                            View details
+                                        </Button>
 
                                         {schedule.status === "Pending" && (
                                             <Button
@@ -186,10 +178,18 @@ export default function ViewAssignedPatrol() {
                                             <Button
                                                 size="sm"
                                                 onClick={() => openComplete(schedule)}
+                                                disabled={!canComplete(schedule)}
+                                                title={
+                                                    canComplete(schedule)
+                                                        ? undefined
+                                                        : "A patrol can only be completed once its scheduled end time is reached."
+                                                }
                                                 className="h-8 gap-1.5 rounded-lg bg-emerald-700 px-3 text-[12px] hover:bg-emerald-800"
                                             >
                                                 <ClipboardCheck className="h-3.5 w-3.5" />
-                                                Complete Patrol
+                                                {canComplete(schedule)
+                                                    ? "Complete Patrol"
+                                                    : `Complete at ${formatTimeOfDay(schedule.end_time)}`}
                                             </Button>
                                         )}
                                     </div>
@@ -200,6 +200,19 @@ export default function ViewAssignedPatrol() {
                     </div>
                 )}
             </div>
+
+            <PatrolDetailsModal
+                open={detailsSchedule !== null}
+                onOpenChange={(open) => {
+                    if (!open) setDetailsSchedule(null);
+                }}
+                schedule={
+                    mySchedules.find((s) => s.schedule_id === detailsSchedule?.schedule_id) ??
+                    detailsSchedule
+                }
+                onRecord={openStart}
+                onComplete={openComplete}
+            />
 
             <StartPatrolModal
                 open={startOpen}

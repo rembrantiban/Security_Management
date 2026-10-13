@@ -1,23 +1,48 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Shield,
-  X,
-  UserRound,
-  MapPin,
   CalendarDays,
   Clock,
-  ArrowRight,
+  Hourglass,
+  Loader2,
+  MapPin,
+  ShieldCheck,
   StickyNote,
+  UserRound,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth"
-import { useMonitoring } from "@/hooks/useMonitoring"
-import { useToast } from "@/hooks/useToast"
-import { getTodayLocal } from "@/lib/date"
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Field,
+  FormSection,
+  PersonInitials,
+  scheduleInputClass,
+  scheduleTextareaClass,
+} from "@/components/Monitoring/ScheduleFormFields";
+import { scheduledDuration } from "@/lib/patrolSchedule";
+import { useAuth } from "@/hooks/useAuth";
+import { useMonitoring } from "@/hooks/useMonitoring";
+import { useToast } from "@/hooks/useToast";
+import { getTodayLocal } from "@/lib/date";
 
 interface AssignScheduleModalProps {
   open: boolean;
   onClose: () => void;
-  //onAssign?: (data: ScheduleFormData) => void;
 }
 
 interface ScheduleFormData {
@@ -29,267 +54,315 @@ interface ScheduleFormData {
   remarks: string;
 }
 
+type RequiredField = Exclude<keyof ScheduleFormData, "remarks">;
+
+const EMPTY_FORM: ScheduleFormData = {
+  user_id: 0,
+  assigned_area: "",
+  schedule_date: "",
+  start_time: "",
+  end_time: "",
+  remarks: "",
+};
+
+function getMissingFields(form: ScheduleFormData): RequiredField[] {
+  const missing: RequiredField[] = [];
+  if (!form.user_id) missing.push("user_id");
+  if (!form.assigned_area.trim()) missing.push("assigned_area");
+  if (!form.schedule_date) missing.push("schedule_date");
+  if (!form.start_time) missing.push("start_time");
+  if (!form.end_time) missing.push("end_time");
+  return missing;
+}
+
 export default function AssignScheduleModal({
   open,
   onClose,
- // onAssign,
 }: AssignScheduleModalProps) {
-  const [form, setForm] = useState<ScheduleFormData>({
-    user_id: 0,
-    assigned_area: "",
-    schedule_date: "",
-    start_time: "",
-    end_time: "",
-    remarks: "",
-  });
+  const [form, setForm] = useState<ScheduleFormData>(EMPTY_FORM);
+  const [submitted, setSubmitted] = useState(false);
 
-  const { createMonitoringSchedule, loading, getMonitoringSchedules } = useMonitoring();
+  const { createMonitoringSchedule, loading, schedules, getMonitoringSchedules } = useMonitoring();
   const { securityPersonnel, getSecurityPersonnel } = useAuth();
   const { showToast } = useToast();
 
   useEffect(() => {
     getSecurityPersonnel();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
+  // Personnel can only take a new patrol once all their previous patrols are completed.
+  const personnelWithUnfinishedPatrol = useMemo(
+    () =>
+      new Set(
+        schedules
+          .filter((s) => s.status === "Pending" || s.status === "Ongoing")
+          .map((s) => s.user_id)
+      ),
+    [schedules]
+  );
 
-  if (!open) return null;
+  const availableCount = securityPersonnel.filter(
+    (p) => !personnelWithUnfinishedPatrol.has(p.user_id)
+  ).length;
 
-  const update = (field: keyof ScheduleFormData, value: string | number) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const selectedPerson = securityPersonnel.find((p) => p.user_id === form.user_id);
+  const missingFields = submitted ? getMissingFields(form) : [];
+  const isInvalid = (field: RequiredField) => missingFields.includes(field);
+
+  const hasTimeRange = form.start_time !== "" && form.end_time !== "";
+  const endsNextDay = hasTimeRange && form.end_time <= form.start_time;
+
+  const update = <K extends keyof ScheduleFormData>(field: K, value: ScheduleFormData[K]) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-const handleAssign = async () => {
-    if (
-        !form.user_id ||
-        !form.assigned_area ||
-        !form.schedule_date ||
-        !form.start_time ||
-        !form.end_time
-    ) {
-        showToast(
-            "error",
-            "Missing Information",
-            "Please complete all required fields."
-        );
-        return;
+  const handleClose = () => {
+    setForm(EMPTY_FORM);
+    setSubmitted(false);
+    onClose();
+  };
+
+  const handleAssign = async () => {
+    setSubmitted(true);
+
+    if (getMissingFields(form).length > 0) {
+      showToast("error", "Missing Information", "Please complete all required fields.");
+      return;
     }
 
     if (form.schedule_date < getTodayLocal()) {
-        showToast(
-            "error",
-            "Invalid Date",
-            "Schedule date cannot be in the past."
-        );
-        return;
+      showToast("error", "Invalid Date", "Schedule date cannot be in the past.");
+      return;
     }
 
-    const result = await createMonitoringSchedule(form);
+    const result = await createMonitoringSchedule({
+      ...form,
+      assigned_area: form.assigned_area.trim(),
+      remarks: form.remarks.trim(),
+    });
 
     if (result.success) {
-        showToast(
-            "success",
-            "Schedule Assigned",
-            result.message
-        );
-
-        // Refresh monitoring schedules
-        await getMonitoringSchedules();
-
-        // onAssign?.(form);
-
-        setForm({
-            user_id: 0,
-            assigned_area: "",
-            schedule_date: "",
-            start_time: "",
-            end_time: "",
-            remarks: "",
-        });
-
-        onClose();
+      showToast("success", "Schedule Assigned", result.message);
+      await getMonitoringSchedules();
+      handleClose();
     } else {
-        showToast(
-            "error",
-            "Assignment Failed",
-            result.message
-        );
+      showToast("error", "Assignment Failed", result.message);
     }
-};
-
+  };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-      onClick={onClose}
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen && !loading) handleClose();
+      }}
     >
-      <div
-        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-sm bg-white shadow-2xl ring-1 ring-black/5"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="relative px-4 pt-3 pb-5 text-center border-b border-orange-100 bg-linear-to-b from-orange-50 to-white rounded-t-2xl">
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 hover:bg-orange-100 hover:text-orange-600 transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
+      <DialogContent className="gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-lg">
 
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500 text-white shadow-md shadow-orange-200">
-            <Shield className="h-6 w-6" />
+        {/* Header */}
+        <div className="flex items-start gap-3 border-b border-slate-100 px-5 py-4 pr-12">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-800 ring-1 ring-amber-100">
+            <ShieldCheck className="h-4.5 w-4.5" />
           </div>
 
-          <h2 className="text-md font-semibold text-slate-900">
-            Assign Monitoring Schedule
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Create a monitoring schedule for a security personnel.
-          </p>
+          <div className="min-w-0">
+            <DialogTitle className="text-[15px] font-semibold tracking-tight text-slate-900">
+              Assign Monitoring Schedule
+            </DialogTitle>
+            <DialogDescription className="mt-0.5 text-[12px] text-slate-500">
+              Schedule a patrol duty for a security personnel.
+            </DialogDescription>
+          </div>
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 space-y-4">
-          {/* Personnel */}
-          <Field icon={<UserRound className="h-3.5 w-3.5" />} label="Security Personnel">
-            <select value={form.user_id}
-              onChange={(e) =>
-                update(
-                  "user_id",
-                  Number(e.target.value)
-                )
-              }
-              className="select-input"
+        <form
+          id="assign-schedule-form"
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleAssign();
+          }}
+          className="max-h-[65vh] space-y-5 overflow-y-auto px-5 py-4"
+        >
+
+          <FormSection title="Personnel">
+            <Field
+              id="schedule-personnel"
+              label="Security personnel"
+              icon={UserRound}
+              required
+              hint={`${availableCount} of ${securityPersonnel.length} available · personnel with an unfinished patrol cannot be assigned`}
             >
-              <option value={0}>
-                Select Personnel
-              </option>
-
-              {securityPersonnel.map((person) => (
-                <option
-                  key={person.user_id}
-                  value={person.user_id}
+              <Select
+                value={form.user_id ? String(form.user_id) : ""}
+                onValueChange={(value) => update("user_id", value ? Number(value) : 0)}
+              >
+                <SelectTrigger
+                  id="schedule-personnel"
+                  aria-invalid={isInvalid("user_id")}
+                  className={`w-full ${scheduleInputClass}`}
                 >
-                  {person.first_name} {person.last_name}
-                </option>
-              ))}
-            </select>
-          </Field>
+                  <SelectValue>
+                    {selectedPerson ? (
+                      <span className="flex items-center gap-2">
+                        <PersonInitials firstName={selectedPerson.first_name} lastName={selectedPerson.last_name} className="h-5 w-5 bg-amber-100 text-[9px] text-amber-900" />
+                        {selectedPerson.first_name} {selectedPerson.last_name}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">Select personnel</span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
 
-          {/* Area */}
-          <Field icon={<MapPin className="h-3.5 w-3.5" />} label="Assigned Area">
-            <input
-              type="text"
-              value={form.assigned_area}
-              placeholder="Enter assigned area"
-              onChange={(e) => update("assigned_area", e.target.value)}
-              className="select-input"
-            />
-          </Field>
+                <SelectContent>
+                  {securityPersonnel.length === 0 ? (
+                    <p className="px-3 py-2 text-[12px] text-slate-500">
+                      No active security personnel found.
+                    </p>
+                  ) : (
+                    securityPersonnel.map((person) => {
+                      const busy = personnelWithUnfinishedPatrol.has(person.user_id);
 
-          {/* Date + Status */}
-          <Field icon={<CalendarDays className="h-3.5 w-3.5" />} label="Schedule Date">
-            <input
-              type="date"
-              value={form.schedule_date}
-              min={getTodayLocal()}
-              onChange={(e) => update("schedule_date", e.target.value)}
-              className="select-input"
-            />
-          </Field>
-
-          {/* Time range */}
-          <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
-            <Field icon={<Clock className="h-3.5 w-3.5" />} label="Start Time">
-              <input
-                type="time"
-                value={form.start_time}
-                onChange={(e) => update("start_time", e.target.value)}
-                className="select-input"
-              />
+                      return (
+                        <SelectItem
+                          key={person.user_id}
+                          value={String(person.user_id)}
+                          disabled={busy}
+                          className="text-[12.5px]"
+                        >
+                          <span className="flex w-full items-center gap-2">
+                            <PersonInitials firstName={person.first_name} lastName={person.last_name} className="h-6 w-6 bg-slate-100 text-[10px] text-slate-700" />
+                            <span className="truncate">
+                              {person.first_name} {person.last_name}
+                            </span>
+                            {busy && (
+                              <span className="ml-auto rounded-md bg-yellow-50 px-1.5 py-0.5 text-[9.5px] font-medium uppercase tracking-wide text-yellow-700 ring-1 ring-yellow-100">
+                                On patrol
+                              </span>
+                            )}
+                          </span>
+                        </SelectItem>
+                      );
+                    })
+                  )}
+                </SelectContent>
+              </Select>
             </Field>
-            <div className="flex h-9 items-center justify-center text-orange-400">
-              <ArrowRight className="h-4 w-4" />
+          </FormSection>
+
+          <FormSection title="Patrol details">
+            <div className="space-y-3">
+              <Field id="schedule-area" label="Assigned area" icon={MapPin} required>
+                <Input
+                  id="schedule-area"
+                  value={form.assigned_area}
+                  placeholder="e.g. Main Gate, Building A – Lobby"
+                  onChange={(e) => update("assigned_area", e.target.value)}
+                  aria-invalid={isInvalid("assigned_area")}
+                  className={scheduleInputClass}
+                />
+              </Field>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <Field id="schedule-date" label="Date" icon={CalendarDays} required>
+                  <Input
+                    id="schedule-date"
+                    type="date"
+                    value={form.schedule_date}
+                    min={getTodayLocal()}
+                    onChange={(e) => update("schedule_date", e.target.value)}
+                    aria-invalid={isInvalid("schedule_date")}
+                    className={`${scheduleInputClass} tabular-nums`}
+                  />
+                </Field>
+
+                <Field id="schedule-start" label="Start time" icon={Clock} required>
+                  <Input
+                    id="schedule-start"
+                    type="time"
+                    value={form.start_time}
+                    onChange={(e) => update("start_time", e.target.value)}
+                    aria-invalid={isInvalid("start_time")}
+                    className={`${scheduleInputClass} tabular-nums`}
+                  />
+                </Field>
+
+                <Field id="schedule-end" label="End time" icon={Clock} required>
+                  <Input
+                    id="schedule-end"
+                    type="time"
+                    value={form.end_time}
+                    onChange={(e) => update("end_time", e.target.value)}
+                    aria-invalid={isInvalid("end_time")}
+                    className={`${scheduleInputClass} tabular-nums`}
+                  />
+                </Field>
+              </div>
+
+              {hasTimeRange && (
+                <div className="flex items-center gap-2 rounded-xl bg-amber-50/60 px-3 py-2 text-[11.5px] text-amber-900 ring-1 ring-amber-100">
+                  <Hourglass className="h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    Shift length{" "}
+                    <span className="font-semibold tabular-nums">
+                      {scheduledDuration(form.start_time, form.end_time)}
+                    </span>
+                    {endsNextDay && " · ends the following day"}
+                  </span>
+                </div>
+              )}
             </div>
-            <Field icon={<Clock className="h-3.5 w-3.5" />} label="End Time">
-              <input
-                type="time"
-                value={form.end_time}
-                onChange={(e) => update("end_time", e.target.value)}
-                className="select-input"
+          </FormSection>
+
+          <FormSection title="Instructions">
+            <Field id="schedule-remarks" label="Remarks" icon={StickyNote} optional>
+              <Textarea
+                id="schedule-remarks"
+                value={form.remarks}
+                onChange={(e) => update("remarks", e.target.value)}
+                placeholder="Checkpoints to cover, special instructions, or areas of concern…"
+                rows={3}
+                className={scheduleTextareaClass}
               />
             </Field>
-          </div>
-
-          {/* Remarks */}
-          <Field icon={<StickyNote className="h-3.5 w-3.5" />} label="Remarks (Optional)">
-            <textarea
-              value={form.remarks}
-              onChange={(e) => update("remarks", e.target.value)}
-              placeholder="Additional instructions..."
-              rows={3}
-              className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-            />
-          </Field>
-        </div>
+          </FormSection>
+        </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4">
-          <button
-            onClick={onClose}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+        <DialogFooter className="gap-2 border-t border-slate-100 bg-slate-50 px-5 py-3 sm:gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={loading}
+            className="h-9 rounded-xl text-[12.5px]"
           >
             Cancel
-          </button>
-          <button
-            onClick={handleAssign}
-            className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-orange-200 hover:bg-orange-600 active:bg-orange-700 transition-colors"
+          </Button>
+
+          <Button
+            type="submit"
+            form="assign-schedule-form"
+            disabled={loading}
+            className="h-9 gap-1.5 rounded-xl bg-amber-700 text-[12.5px] hover:bg-amber-800"
           >
-            { loading ? "Assigning..." : "Assign Schedule" }
-          </button>
-        </div>
-      </div>
+            {loading ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Assigning…
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Assign Schedule
+              </>
+            )}
+          </Button>
+        </DialogFooter>
 
-      <style>{`
-        .select-input {
-          width: 100%;
-          border-radius: 0.5rem;
-          border: 1px solid #e2e8f0;
-          background-color: white;
-          padding: 0.5rem 0.75rem;
-          font-size: 0.875rem;
-          color: #1e293b;
-          outline: none;
-          transition: border-color 0.15s, box-shadow 0.15s;
-        }
-        .select-input:focus {
-          border-color: #fb923c;
-          box-shadow: 0 0 0 3px rgba(254, 215, 170, 0.5);
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function Field({
-  icon,
-  label,
-  children,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-600">
-        <span className="text-orange-500">{icon}</span>
-        {label}
-      </label>
-      {children}
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

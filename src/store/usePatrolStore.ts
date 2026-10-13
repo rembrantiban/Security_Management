@@ -33,6 +33,10 @@ export interface PatrolLog {
     end_time: string;
 
     personnel_name: string;
+
+    // Returned by the personnel completed-patrols endpoint
+    remarks?: string | null;
+    assigned_by_name?: string | null;
 }
 
 type PatrolStore = {

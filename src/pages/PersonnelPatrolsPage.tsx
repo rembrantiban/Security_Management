@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     TriangleAlert,
@@ -11,6 +11,8 @@ import {
     ArrowRight,
     ScrollText,
     Search,
+    Eye,
+    RefreshCw,
     X,
 } from "lucide-react";
 
@@ -21,6 +23,8 @@ import { usePatrol } from "@/hooks/usePatrol";
 import { useIncidentReport } from "@/hooks/useIncidentsReport";
 import ViewAssignedPatrol from "@/components/PersonnelDashboard/ViewAssignedPatrol";
 import ReportIncidentModal from "@/components/Incident/ReportIncidentModal";
+import PatrolLogDetailsModal from "@/components/PersonnelDashboard/PatrolLogDetailsModal";
+import type { PatrolLog } from "@/store/usePatrolStore";
 
 import PageHeader, { HEADER_SECONDARY_BUTTON } from "@/components/layout/PageHeader";
 const periodFilters = ["All", "Today", "This week", "This month"] as const;
@@ -93,13 +97,26 @@ export default function PersonnelPatrolsPage() {
     const [reportOpen, setReportOpen] = useState(false);
     const [logSearch, setLogSearch] = useState("");
     const [period, setPeriod] = useState<PeriodFilter>("All");
+    const [selectedLog, setSelectedLog] = useState<PatrolLog | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
-    useEffect(() => {
-        getMyMonitoringSchedules();
-        getMyCompletedPatrols();
-        getMyIncidentReports();
+    const loadPatrolData = useCallback(async () => {
+        setIsRefreshing(true);
+        try {
+            await Promise.allSettled([
+                getMyMonitoringSchedules(),
+                getMyCompletedPatrols(),
+                getMyIncidentReports(),
+            ]);
+        } finally {
+            setIsRefreshing(false);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        void loadPatrolData();
+    }, [loadPatrolData]);
 
     const assignedCount = mySchedules.length;
     const ongoingCount = mySchedules.filter((s) => s.status === "Ongoing").length;
@@ -166,13 +183,24 @@ export default function PersonnelPatrolsPage() {
                 title="My Patrols"
                 description="Track your assigned areas, record patrol logs as you finish each duty, and flag anything suspicious."
                 actions={
-                    <Button
-                        onClick={() => setReportOpen(true)}
-                        className={`${HEADER_SECONDARY_BUTTON} text-red-700 hover:bg-red-50 hover:text-red-800`}
-                    >
-                        <TriangleAlert className="h-3.5 w-3.5" />
-                        Report suspicious activity
-                    </Button>
+                    <>
+                        <Button
+                            className={HEADER_SECONDARY_BUTTON}
+                            onClick={() => void loadPatrolData()}
+                            disabled={isRefreshing}
+                        >
+                            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+                            {isRefreshing ? "Refreshing…" : "Refresh"}
+                        </Button>
+
+                        <Button
+                            onClick={() => setReportOpen(true)}
+                            className={`${HEADER_SECONDARY_BUTTON} text-red-700 hover:bg-red-50 hover:text-red-800`}
+                        >
+                            <TriangleAlert className="h-3.5 w-3.5" />
+                            Report suspicious activity
+                        </Button>
+                    </>
                 }
             />
 
@@ -341,6 +369,16 @@ export default function PersonnelPatrolsPage() {
                                             ? formatDuration(log.patrol_start, log.patrol_end)
                                             : "—"}
                                     </span>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setSelectedLog(log)}
+                                        className="h-7 gap-1 rounded-lg px-2.5 text-[11px] font-medium"
+                                    >
+                                        <Eye className="h-3 w-3" />
+                                        View details
+                                    </Button>
                                 </div>
                             </div>
                         ))
@@ -349,6 +387,14 @@ export default function PersonnelPatrolsPage() {
             </div>
 
             <ReportIncidentModal open={reportOpen} onOpenChange={setReportOpen} />
+
+            <PatrolLogDetailsModal
+                open={selectedLog !== null}
+                onOpenChange={(open) => {
+                    if (!open) setSelectedLog(null);
+                }}
+                log={selectedLog}
+            />
 
         </div>
     );

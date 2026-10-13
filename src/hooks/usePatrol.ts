@@ -7,8 +7,9 @@ export const usePatrol = () => {
      const getMyPatrols = usePatrolStore((state) => state.getMyPatrols);
      const getMyCompletedPatrols = usePatrolStore((state) => state.getMyCompletedPatrols);
      const completedPatrols = usePatrolStore((state) => state.completedPatrols);
+     const patrols = usePatrolStore((state) => state.patrols);
      const allPatrolLogs = usePatrolStore((state) => state.allPatrolLogs);
      const isFetchingLogs = usePatrolStore((state) => state.isFetchingLogs);
      const getAllPatrolLogs = usePatrolStore((state) => state.getAllPatrolLogs);
-     return { startPatrol, completePatrol, isloading, getMyPatrols, getMyCompletedPatrols, completedPatrols, allPatrolLogs, isFetchingLogs, getAllPatrolLogs };
+     return { startPatrol, completePatrol, isloading, patrols, getMyPatrols, getMyCompletedPatrols, completedPatrols, allPatrolLogs, isFetchingLogs, getAllPatrolLogs };
 }
