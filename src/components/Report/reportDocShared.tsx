@@ -20,10 +20,14 @@ export const DOC_STYLES = `
     padding:56px 60px;box-shadow:0 1px 4px rgba(15,23,42,.16);
 }
 .ir-doc *{box-sizing:border-box}
-.ir-letterhead{text-align:center;border-bottom:2.5px solid var(--ink);padding-bottom:12px}
-.ir-org{font-size:17px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.ir-unit{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:5px}
-.ir-addr{font-size:10px;color:var(--faint);margin-top:3px}
+.ir-letterhead{border-bottom:2.5px solid var(--ink);padding-bottom:10px}
+.ir-lh-top{display:flex;align-items:center;justify-content:center;gap:14px}
+.ir-seal{width:66px;height:66px;object-fit:contain;flex-shrink:0;filter:grayscale(1) contrast(1.15)}
+.ir-lh-text{text-align:center}
+.ir-school{font-family:'UnifrakturMaguntia','Old English Text MT',Georgia,serif;font-size:24px;line-height:1.1;font-weight:400;color:#000}
+.ir-campus-addr{font-family:Arial,Helvetica,sans-serif;font-size:10.5px;color:#000;margin-top:2px}
+.ir-unit{text-align:center;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#000;margin-top:8px}
+.ir-addr{text-align:center;font-size:10px;color:var(--faint);margin-top:2px}
 .ir-title{text-align:center;font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin:26px 0 4px}
 .ir-sub{text-align:center;font-size:11px;font-style:italic;color:var(--muted);margin-bottom:22px}
 .ir-info{width:100%;border-collapse:collapse;margin-bottom:26px}
@@ -66,7 +70,19 @@ export const DOC_STYLES = `
 export function ReportLetterhead({ unit }: { unit: string }) {
     return (
         <header className="ir-letterhead">
-            <div className="ir-org">Security Management System</div>
+            <div className="ir-lh-top">
+                <img src="/sfc.png" alt="St. Francis College seal" className="ir-seal" />
+                <div className="ir-lh-text">
+                    <div className="ir-school">
+                        Saint Francis College, Guihulngan,
+                        <br />
+                        Negros Oriental, Incorporated
+                    </div>
+                    <div className="ir-campus-addr">
+                        Bateria, Poblacion, Guihulngan City, Negros Oriental
+                    </div>
+                </div>
+            </div>
             <div className="ir-unit">Office of Campus Safety &amp; Security</div>
             <div className="ir-addr">{unit}</div>
         </header>

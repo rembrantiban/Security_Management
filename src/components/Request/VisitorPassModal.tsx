@@ -37,16 +37,6 @@ function formatDate(value: string) {
     });
 }
 
-/** Deterministic bar pattern so the same pass always renders the same "barcode". */
-function barPattern(seed: string) {
-    const bars: number[] = [];
-    for (let i = 0; i < 48; i++) {
-        const c = seed.charCodeAt(i % seed.length) + i * 13;
-        bars.push((c % 3) + 1);
-    }
-    return bars;
-}
-
 const SIZES = {
     sm: {
         band: "w-6",
@@ -68,9 +58,6 @@ const SIZES = {
         verified: "text-[9px]",
         verifiedIcon: "h-3 w-3",
         footPad: "px-4 py-2.5",
-        barcode: "h-7",
-        barUnit: 1,
-        barCode: "text-[8px] tracking-[0.2em]",
         sig: "h-7 w-28",
         sigLabel: "text-[7.5px] tracking-[0.16em]",
         strip: "px-4 py-1 text-[7px] tracking-[0.18em]",
@@ -96,9 +83,6 @@ const SIZES = {
         verified: "text-sm",
         verifiedIcon: "h-4 w-4",
         footPad: "px-8 py-5",
-        barcode: "h-14",
-        barUnit: 2,
-        barCode: "text-[11px] tracking-[0.3em]",
         sig: "h-12 w-60",
         sigLabel: "text-[10px] tracking-[0.2em]",
         strip: "px-8 py-2 text-[10px] tracking-[0.22em]",
@@ -116,7 +100,6 @@ function PassCard({
     const s = SIZES[size];
     const name = fullName(request);
     const issued = formatDate(request.approved_at ?? request.created_at);
-    const bars = barPattern(request.request_number);
     const isApproved = request.status === "Approved";
     const approverName = request.approved_by_name ?? "Admin";
 
@@ -231,23 +214,8 @@ function PassCard({
                     </div>
                 </div>
 
-                {/* Footer — barcode + signature */}
-                <div className={`flex items-end justify-between gap-6 border-t border-dashed border-slate-300 ${s.footPad}`}>
-                    <div className="min-w-0">
-                        <div className={`flex items-end gap-px ${s.barcode}`}>
-                            {bars.map((w, i) => (
-                                <div
-                                    key={i}
-                                    style={{ width: `${w * s.barUnit}px` }}
-                                    className={`h-full ${i % 2 === 0 ? "bg-slate-900" : "bg-transparent"}`}
-                                />
-                            ))}
-                        </div>
-                        <p className={`mt-1 font-mono uppercase text-slate-500 ${s.barCode}`}>
-                            {request.request_number}
-                        </p>
-                    </div>
-
+                {/* Footer — signature */}
+                <div className={`flex items-end justify-end border-t border-dashed border-slate-300 ${s.footPad}`}>
                     <div className="shrink-0 text-right">
                         <div className={`${s.sig} ml-auto flex items-end justify-center border-b border-slate-400 pb-0.5`}>
                             {isApproved && (
